@@ -136,24 +136,6 @@ function mai_cyber_gallery_register_field_group() {
 					'ui'            => 1,
 				],
 				[
-					'key'           => 'mai_cyber_gallery_lightbox_arrow_style',
-					'label'         => esc_html__( 'Lightbox Arrow Design', 'mai-cyber-gallery' ),
-					'name'          => 'lightbox_arrow_style',
-					'type'          => 'select',
-					'default_value' => 'circle',
-					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
-					'ui'            => 1,
-					'conditional_logic' => [
-						[
-							[
-								'field'    => 'mai_cyber_gallery_click_action',
-								'operator' => '==',
-								'value'    => 'lightbox',
-							],
-						],
-					],
-				],
-				[
 					'key'           => 'mai_cyber_gallery_images',
 					'label'         => esc_html__( 'Images', 'mai-cyber-gallery' ),
 					'name'          => 'images',
@@ -339,6 +321,24 @@ function mai_cyber_gallery_register_field_group() {
 					'default_value' => 'masonry',
 					'choices'       => mai_cyber_gallery_get_layout_choices(),
 					'ui'            => 1,
+				],
+				[
+					'key'           => 'mai_cyber_gallery_lightbox_arrow_style',
+					'label'         => esc_html__( 'Lightbox Arrow Design', 'mai-cyber-gallery' ),
+					'name'          => 'lightbox_arrow_style',
+					'type'          => 'select',
+					'default_value' => 'circle',
+					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
+					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_click_action',
+								'operator' => '==',
+								'value'    => 'lightbox',
+							],
+						],
+					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_slider_navigation',
