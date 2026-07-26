@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.5.1
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,9 +33,11 @@ Masonry places each image in the current shortest column to reduce unnecessary g
 
 Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
 
-Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
+Slider has independent Primary and Secondary Navigation selectors, so arrows, circles, and the slide counter can be combined or disabled. Duplicate choices render only once. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
 
-Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. The seven animated entrance presets use Fast, Normal, and Slow speeds; Smooth Slide keeps native scroll timing. Navigation hover effects include Color Shift, Grow, Nudge, Glow, Fill, and Ring while retaining stable hit targets. Motion effects honor the visitor's reduced-motion preference.
+Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. Smooth Slide keeps native horizontal movement. Controls and autoplay render the other presets as in-place crossfades with their selected entrance treatment; direct touch and trackpad gestures remain native. Navigation hover effects include Color Shift, Grow, Nudge, Glow, Fill, and Ring while retaining stable hit targets. Motion effects honor the visitor's reduced-motion preference.
+
+Optional Slider autoplay has a configurable 3–30 second interval, mouse-over pause, and an accessible Pause/Start control.
 
 Slider navigation background, border, and inner colors have independent normal and hover settings. Each reuses the Mai Engine palette and supports a custom color.
 
@@ -48,6 +50,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.6.0 =
+
+Adds true in-place Slider transitions, two combinable navigation selectors, sharper circles, and accessible autoplay with timing and mouse-over pause controls. Existing Arrows + Circles settings are preserved.
 
 = 0.5.1 =
 
@@ -108,9 +114,18 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 
 = Does the Slider autoplay? =
 
-No. It uses native scroll snap with accessible navigation and keyboard controls.
+Autoplay is optional. Set the time between slides from 3 through 30 seconds and optionally pause while the pointer is over the Slider. A Pause/Start control remains available to visitors.
 
 == Changelog ==
+
+= 0.6.0 =
+
+* Changed Fade and the animated Slider presets to true in-place crossfades for control-driven and autoplay navigation instead of combining them with horizontal movement.
+* Kept direct touch, pointer, and trackpad gestures native while preserving reduced-motion behavior.
+* Sharpened Slider circle navigation by removing fractional scaling and blurred shadows.
+* Replaced the combined navigation selector with independent Primary and Secondary selectors; duplicate controls are prevented in the editor and rendered only once.
+* Preserved legacy Arrows + Circles settings through runtime mapping.
+* Added optional autoplay, a 3–30 second time-between-slides setting, mouse-over pause, and an accessible Pause/Start control.
 
 = 0.5.1 =
 

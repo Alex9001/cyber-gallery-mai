@@ -74,11 +74,10 @@ function mai_cyber_gallery_get_arrow_style_choices(): array {
  */
 function mai_cyber_gallery_get_slider_navigation_choices(): array {
 	$choices = [
-		'arrows-dots' => esc_html__( 'Arrows + Circles', 'mai-cyber-gallery' ),
-		'arrows'      => esc_html__( 'Arrows', 'mai-cyber-gallery' ),
-		'dots'        => esc_html__( 'Circles', 'mai-cyber-gallery' ),
-		'counter'     => esc_html__( 'Slide Counter', 'mai-cyber-gallery' ),
-		'none'        => esc_html__( 'None', 'mai-cyber-gallery' ),
+		'arrows'  => esc_html__( 'Arrows', 'mai-cyber-gallery' ),
+		'dots'    => esc_html__( 'Circles', 'mai-cyber-gallery' ),
+		'counter' => esc_html__( 'Slide Counter', 'mai-cyber-gallery' ),
+		'none'    => esc_html__( 'None', 'mai-cyber-gallery' ),
 	];
 
 	/**

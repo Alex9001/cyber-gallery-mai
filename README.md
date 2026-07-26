@@ -20,6 +20,8 @@ Version 0.5.0 adds selectable Slider transitions, navigation hover treatments an
 
 Version 0.5.1 completes a source-level Mai Engine integration audit. ACF color migration/formatting, column defaults and sanitization, instance indexes, CSS unit formatting, the configured XL breakpoint, control foundations, shadows, icons, typography, palettes, and design tokens now delegate to Mai Engine wherever it exposes a matching implementation.
 
+Version 0.6.0 gives Slider effects true in-place transitions instead of layering them over a horizontal slide, sharpens circle navigation, adds two independently combinable navigation slots, and adds accessible autoplay timing and hover-pause controls.
+
 ## Mai Engine integration boundary
 
 Mai Cyber Gallery intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
@@ -59,9 +61,11 @@ Slider uses a dedicated **Slides** repeater. Every row has a required image plus
 
 Slider does not fall back to the legacy `images` array. Slider blocks created before 0.3.0 must be repopulated through the **Slides** repeater.
 
-Slider navigation choices are Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, width mode, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
+Slider has Primary and Secondary Navigation selectors. Each can use Arrows, Circles, Slide Counter, or None, so combinations such as Arrows + Circles and Circles + Counter are possible. Choosing the same control twice renders it only once, and the editor prevents duplicate selections. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, width mode, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
 
-Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. The seven animated entrance presets use Fast, Normal, and Slow speeds; Smooth Slide keeps the browser's native scroll timing. Motion is reduced when the visitor requests reduced motion.
+Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. Smooth Slide uses native horizontal scrolling. Controls and autoplay render every other preset as an in-place crossfade, with the selected entrance treatment layered into that crossfade instead of exposing an underlying slide. Direct touch and trackpad gestures remain native. The animated presets use Fast, Normal, and Slow speeds, and motion is removed when the visitor requests reduced motion.
+
+Optional autoplay uses a configurable 3–30 second interval and can pause while the pointer is over the Slider. A visible Pause/Start control is always provided while autoplay is enabled, including when both navigation selectors are None. Keyboard focus and manual navigation stop rotation until the visitor explicitly starts it again.
 
 Navigation hover choices are Color Shift, Grow, Nudge, Glow, Fill, and Ring. Main, border, and inner colors can each be set independently for normal and hover states using the Mai Engine palette or a custom color. Hover treatments preserve the navigation controls' hit targets.
 
@@ -99,7 +103,12 @@ echo mai_get_cyber_gallery(
 		'slider_width_mode'            => 'full',
 		'slider_transition'            => 'cinematic',
 		'slider_transition_speed'      => 'normal',
+		'slider_navigation'            => 'arrows',
+		'slider_navigation_secondary'  => 'dots',
 		'slider_navigation_hover'      => 'glow',
+		'slider_autoplay'              => true,
+		'slider_autoplay_interval'     => 5,
+		'slider_pause_on_hover'        => true,
 		'slider_overlay_style'         => 'gradient-bottom',
 		'slider_overlay_color'         => 'black',
 		'slider_overlay_opacity'       => 35,
@@ -149,12 +158,16 @@ echo mai_get_cyber_gallery(
 | `shadow` | `false` | Boolean value sanitized by Mai Engine. |
 | `hover` | `zoom` | `none`, `zoom`, `lift`, or `fade`; ignored by Slider. |
 | `justified_row_height` | `240` | Target pixel height from 100 through 600. |
-| `slider_navigation` | `arrows-dots` | `arrows-dots`, `arrows`, `dots`, `counter`, or `none`. |
+| `slider_navigation` | `arrows` | Primary navigation: `arrows`, `dots`, `counter`, or `none`. The legacy aggregate `arrows-dots` value remains accepted and maps to Arrows + Circles. |
+| `slider_navigation_secondary` | `dots` | Secondary navigation: `arrows`, `dots`, `counter`, or `none`. A duplicate of the primary value is reduced to `none`. |
 | `slider_navigation_position` | `overlay` | `overlay` or `below`. |
 | `slider_dots_position` | `top` | `top` or `bottom`; applies to circle navigation when it overlays the image. |
 | `slider_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by navigation modes that include arrows. |
 | `slider_transition` | `native` | `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, or `cinematic`. |
-| `slider_transition_speed` | `normal` | `fast`, `normal`, or `slow`; applies to the animated entrance presets while `native` keeps browser scroll timing. |
+| `slider_transition_speed` | `normal` | `fast`, `normal`, or `slow`; applies to in-place animated transitions while `native` keeps browser scroll timing. |
+| `slider_autoplay` | `false` | Boolean; automatically advances and wraps the Slider when enabled. |
+| `slider_autoplay_interval` | `5` | Seconds between automatic slides, clamped from 3 through 30. |
+| `slider_pause_on_hover` | `true` | Boolean; temporarily pauses autoplay while a mouse or pen pointer is over the Slider. |
 | `slider_navigation_hover` | `color` | `color`, `grow`, `nudge`, `glow`, `fill`, or `ring`; applies to interactive Slider navigation. |
 | `slider_navigation_main`, `slider_navigation_border`, `slider_navigation_inner` | empty/site default | A Mai Engine palette slug or custom color for the navigation background, border, and inner icon/text/dot. |
 | `slider_navigation_main_hover`, `slider_navigation_border_hover`, `slider_navigation_inner_hover` | empty/site default | A Mai Engine palette slug or custom color for the corresponding navigation hover state. |
@@ -172,6 +185,8 @@ echo mai_get_cyber_gallery(
 | `align_columns`, `align_columns_vertical` | Mai defaults | Mai column-alignment values; ignored by Slider. |
 | `column_gap`, `row_gap` | Mai defaults | Mai spacing-size slugs or empty for no gap; ignored by Slider. |
 | `margin_top`, `margin_bottom` | Mai defaults | Mai spacing-size slugs or empty. |
+
+For backward compatibility, a PHP API call that explicitly supplies an atomic `slider_navigation` value but omits `slider_navigation_secondary` keeps that original single-control behavior. Pass both arguments to opt into a combination. The legacy `arrows-dots` aggregate continues to map to Arrows + Circles.
 
 Custom links use the same array shape returned by ACF's Link field:
 
@@ -202,7 +217,7 @@ The helpers are available after Mai Engine has set up the theme. A gallery rende
 
 - `mai_cyber_gallery_layouts( array $layouts ): array` filters layout slug/label pairs. A custom layout must supply its own CSS and behavior.
 - `mai_cyber_gallery_arrow_styles( array $styles ): array` filters the arrow design slug/label pairs shared by the lightbox and Slider.
-- `mai_cyber_gallery_slider_navigation_choices( array $choices ): array` filters Slider navigation slug/label pairs.
+- `mai_cyber_gallery_slider_navigation_choices( array $choices ): array` filters the atomic Slider navigation choices shared by the Primary and Secondary selectors.
 - `mai_cyber_gallery_slider_transition_choices( array $choices ): array` filters Slider transition slug/label pairs.
 - `mai_cyber_gallery_slider_transition_speed_choices( array $choices ): array` filters Slider transition-speed slug/label pairs.
 - `mai_cyber_gallery_slider_navigation_hover_choices( array $choices ): array` filters Slider navigation-hover slug/label pairs.
@@ -228,8 +243,8 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 - Justified Rows progressively enhances the normal Mai grid and recalculates through `ResizeObserver`.
 - Tiled Mosaic uses image ratios to build mixed, close-packed groups while preserving source order.
 - Filmstrip uses native scrolling and never autoplays.
-- Slider uses canonical content rows, a responsive contrast scrim, Mai-styled CTAs, native scroll snap, keyboard navigation, counters, titled status updates, and no autoplay.
-- Slider transitions and navigation hover effects retain stable control hit targets and honor `prefers-reduced-motion`.
+- Slider uses canonical content rows, a responsive contrast scrim, Mai-styled CTAs, native scroll snap, keyboard navigation, counters, titled status updates, and optional accessible autoplay.
+- Non-native Slider presets use an in-place transition compositor for controls and autoplay; direct gestures retain native scrolling. Transitions and navigation hover effects honor `prefers-reduced-motion`.
 - Slider image overlays use Mai Engine palette colors when selected and remain separate from the content-legibility scrim.
 - The lightbox uses the browser's modal `<dialog>` behavior, supports Escape/arrow/Home/End keys, offers four arrow designs, and returns focus to its trigger.
 - No updater is bundled until this fork has its own release repository. It will never use the upstream Mai Galleries update channel.

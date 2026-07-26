@@ -51,6 +51,24 @@
 	}
 
 	/**
+	 * Parse one computed CSS time into milliseconds.
+	 *
+	 * @param {*}      value    CSS time such as 560ms or 0.56s.
+	 * @param {number} fallback Fallback milliseconds.
+	 * @return {number}
+	 */
+	function cssTimeMilliseconds( value, fallback ) {
+		const string = String( value || '' ).trim().toLowerCase();
+		const parsed = Number.parseFloat( string );
+
+		if ( ! Number.isFinite( parsed ) || 0 > parsed ) {
+			return fallback;
+		}
+
+		return string.endsWith( 'ms' ) ? parsed : ( string.endsWith( 's' ) ? parsed * 1000 : parsed );
+	}
+
+	/**
 	 * Get direct gallery items from a track.
 	 *
 	 * @param {HTMLElement} track Gallery track.
@@ -58,6 +76,72 @@
 	 */
 	function getTrackItems( track ) {
 		return Array.from( track.querySelectorAll( ':scope > .mai-cyber-gallery-item' ) );
+	}
+
+	/**
+	 * Keep the two Slider navigation selects from choosing the same control.
+	 *
+	 * @param {Document|Element} scope   Search scope.
+	 * @param {HTMLSelectElement|null} changed Select that initiated the update.
+	 * @return {void}
+	 */
+	function syncSliderNavigationSelects( scope, changed ) {
+		if ( ! scope || ! scope.querySelectorAll ) {
+			return;
+		}
+
+		const primarySelector = '.acf-field[data-key="mai_cyber_gallery_slider_navigation"]';
+		const secondarySelector = '.acf-field[data-key="mai_cyber_gallery_slider_navigation_secondary"]';
+		const primaryFields = Array.from( scope.querySelectorAll( primarySelector ) );
+
+		if ( scope.matches && scope.matches( primarySelector ) ) {
+			primaryFields.unshift( scope );
+		}
+
+		primaryFields.forEach( function ( primaryField ) {
+			const fields = primaryField.closest( '.acf-fields' );
+			const secondaryField = fields ? fields.querySelector( secondarySelector ) : null;
+			const primary = primaryField.querySelector( 'select' );
+			const secondary = secondaryField ? secondaryField.querySelector( 'select' ) : null;
+
+			if ( ! primary || ! secondary ) {
+				return;
+			}
+
+			if ( primary.value === secondary.value && 'none' !== primary.value ) {
+				const reset = changed === secondary ? primary : secondary;
+				reset.value = 'none';
+				reset.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+			}
+
+			[ primary, secondary ].forEach( function ( select ) {
+				select.querySelectorAll( 'option[data-cyber-duplicate-disabled]' ).forEach( function ( option ) {
+					option.disabled = false;
+					delete option.dataset.cyberDuplicateDisabled;
+				} );
+			} );
+
+			[
+				[ primary, secondary.value ],
+				[ secondary, primary.value ],
+			].forEach( function ( pair ) {
+				const select = pair[0];
+				const duplicate = pair[1];
+
+				if ( 'none' === duplicate || 'arrows-dots' === duplicate ) {
+					return;
+				}
+
+				const option = Array.from( select.options ).find( function ( candidate ) {
+					return candidate.value === duplicate && ! candidate.selected;
+				} );
+
+				if ( option ) {
+					option.disabled = true;
+					option.dataset.cyberDuplicateDisabled = 'true';
+				}
+			} );
+		} );
 	}
 
 	/**
@@ -1211,32 +1295,57 @@
 	}
 
 	/**
-	 * Update active slider state and controls.
+	 * Update the live slider status text.
 	 *
 	 * @param {Object} state Slider state.
 	 * @return {void}
 	 */
-	function updateSlider( state ) {
-		state.items = getTrackItems( state.track );
-
-		if ( ! state.items.length ) {
+	function updateSliderStatus( state ) {
+		if ( ! state.status || ! state.items[ state.index ] ) {
 			return;
 		}
 
+		state.status.textContent = formatSlideStatus(
+			state.index + 1,
+			state.items.length,
+			state.items[ state.index ].dataset.cyberSlideTitle || ''
+		);
+	}
+
+	/**
+	 * Commit active slide semantics and control state.
+	 *
+	 * @param {Object}  state        Slider state.
+	 * @param {number}  index        Zero-based slide index.
+	 * @param {boolean} updateStatus Whether to update the live status.
+	 * @return {void}
+	 */
+	function commitSliderIndex( state, index, updateStatus ) {
 		const previousIndex = state.index;
-		const index = getSliderIndex( state );
 		const total = state.items.length;
 		const focusedControl = document.activeElement;
 
-		state.index = index;
-		state.root.dataset.cyberSliderIndex = String( index + 1 );
+		state.index = Math.max( 0, Math.min( total - 1, index ) );
+
+		if ( state.navigationTarget === state.index ) {
+			state.navigationTarget = null;
+			state.intentIndex = state.index;
+		} else if (
+			null === state.navigationTarget
+			&& ! state.transitionLayer
+			&& ! state.pendingSource
+		) {
+			state.intentIndex = state.index;
+		}
+
+		state.root.dataset.cyberSliderIndex = String( state.index + 1 );
 
 		if ( state.previous ) {
-			state.previous.disabled = 0 === index;
+			state.previous.disabled = 0 === state.index;
 		}
 
 		if ( state.next ) {
-			state.next.disabled = index === total - 1;
+			state.next.disabled = state.index === total - 1;
 		}
 
 		if (
@@ -1256,15 +1365,15 @@
 		}
 
 		state.dots.forEach( function ( dot, dotIndex ) {
-			if ( dotIndex === index ) {
+			if ( dotIndex === state.index ) {
 				dot.setAttribute( 'aria-current', 'true' );
 			} else {
 				dot.removeAttribute( 'aria-current' );
 			}
 		} );
 
-		const activeDot = state.dots[ index ];
-		if ( activeDot && previousIndex !== index ) {
+		const activeDot = state.dots[ state.index ];
+		if ( activeDot && previousIndex !== state.index ) {
 			const rail = activeDot.parentElement;
 			const railBounds = rail.getBoundingClientRect();
 			const dotBounds = activeDot.getBoundingClientRect();
@@ -1277,7 +1386,7 @@
 			}
 		}
 
-		const counter = String( index + 1 );
+		const counter = String( state.index + 1 );
 		if ( state.counter && state.counter.textContent !== counter ) {
 			state.counter.textContent = counter;
 		}
@@ -1286,12 +1395,12 @@
 			return item.contains( document.activeElement );
 		} );
 
-		if ( focusedItem && focusedItem !== state.items[ index ] ) {
+		if ( focusedItem && focusedItem !== state.items[ state.index ] ) {
 			state.track.focus( { preventScroll: true } );
 		}
 
 		state.items.forEach( function ( item, itemIndex ) {
-			const active = itemIndex === index;
+			const active = itemIndex === state.index;
 
 			item.inert = ! active;
 			item.classList.toggle( 'is-cyber-slide-active', active );
@@ -1303,36 +1412,427 @@
 			}
 		} );
 
-		if ( state.status && previousIndex !== index ) {
-			state.status.textContent = formatSlideStatus(
-				index + 1,
-				total,
-				state.items[ index ].dataset.cyberSlideTitle || ''
-			);
+		if ( false !== updateStatus && previousIndex !== state.index ) {
+			updateSliderStatus( state );
 		}
 	}
 
 	/**
-	 * Move a slider to an exact slide.
+	 * Update active slider state from intrinsic scroll position.
 	 *
 	 * @param {Object} state Slider state.
-	 * @param {number} index Requested zero-based index.
 	 * @return {void}
 	 */
-	function moveSlider( state, index ) {
-		const targetIndex = Math.max( 0, Math.min( state.items.length - 1, index ) );
-		const target = state.items[ targetIndex ];
+	function updateSlider( state ) {
+		if ( state.suppressUpdate ) {
+			return;
+		}
+
+		state.items = getTrackItems( state.track );
+
+		if ( ! state.items.length ) {
+			return;
+		}
+
+		const previousIndex = state.index;
+		commitSliderIndex( state, getSliderIndex( state ), true );
+
+		if ( previousIndex !== state.index ) {
+			syncSliderAutoplay( state );
+		}
+	}
+
+	/**
+	 * Remove duplicate IDs and interaction from a visual transition clone.
+	 *
+	 * @param {HTMLElement} item  Live slide.
+	 * @param {string}      stateClass Visual state class.
+	 * @return {HTMLElement}
+	 */
+	function cloneSliderItem( item, stateClass ) {
+		const clone = item.cloneNode( true );
+
+		clone.removeAttribute( 'id' );
+		clone.querySelectorAll( '[id]' ).forEach( function ( element ) {
+			element.removeAttribute( 'id' );
+		} );
+		clone.classList.remove( 'is-cyber-slide-active' );
+		clone.classList.add( stateClass );
+		clone.setAttribute( 'aria-hidden', 'true' );
+		clone.inert = true;
+
+		return clone;
+	}
+
+	/**
+	 * Encourage target images to decode before a visual transition starts.
+	 *
+	 * @param {HTMLElement} item Target slide.
+	 * @return {Promise<void>}
+	 */
+	function prepareSliderItem( item ) {
+		const images = Array.from( item.querySelectorAll( 'img' ) );
+
+		if ( ! images.length ) {
+			return Promise.resolve();
+		}
+
+		const decoding = images.map( function ( image ) {
+			image.loading = 'eager';
+
+			if ( image.complete && image.naturalWidth ) {
+				return Promise.resolve();
+			}
+
+			if ( image.decode ) {
+				return image.decode().catch( function () {} );
+			}
+
+			return new Promise( function ( resolve ) {
+				image.addEventListener( 'load', resolve, { once: true } );
+				image.addEventListener( 'error', resolve, { once: true } );
+			} );
+		} );
+
+		return Promise.race( [
+			Promise.all( decoding ).then( function () {} ),
+			new Promise( function ( resolve ) {
+				window.setTimeout( resolve, 1200 );
+			} ),
+		] );
+	}
+
+	/**
+	 * Invalidate an asynchronous slide-image preparation request.
+	 *
+	 * @param {Object}  state         Slider state.
+	 * @param {boolean} restoreIntent Reset requested navigation to the live slide.
+	 * @return {void}
+	 */
+	function cancelSliderPreparation( state, restoreIntent ) {
+		state.preloadToken++;
+		state.pendingSource = null;
+		state.pendingTarget = null;
+		state.pendingStatus = true;
+
+		if ( restoreIntent ) {
+			state.intentIndex = Math.max( 0, state.index );
+		}
+	}
+
+	/**
+	 * Jump the intrinsic rail without exposing horizontal motion.
+	 *
+	 * @param {Object} state Slider state.
+	 * @param {number} index Target index.
+	 * @return {void}
+	 */
+	function jumpSliderTrack( state, index ) {
+		const target = state.items[ index ];
 
 		if ( ! target ) {
 			return;
 		}
 
-		const reduceMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
-		const adjacent = Math.abs( targetIndex - state.index ) <= 1;
-		const behavior = reduceMotion || ! adjacent ? 'auto' : 'smooth';
+		state.suppressUpdate = true;
+		const scrollBehavior = state.track.style.scrollBehavior;
+		state.track.style.scrollBehavior = 'auto';
+		target.scrollIntoView( {
+			behavior: 'auto',
+			block: 'nearest',
+			inline: 'start',
+		} );
+		state.track.style.scrollBehavior = scrollBehavior;
 
-		// The track's CSS enables smooth scrolling by default. Temporarily override
-		// it so distant dot jumps and reduced-motion requests are genuinely instant.
+		if ( state.unlockFrame ) {
+			window.cancelAnimationFrame( state.unlockFrame );
+		}
+		state.unlockFrame = window.requestAnimationFrame( function () {
+			state.unlockFrame = 0;
+			state.suppressUpdate = false;
+		} );
+	}
+
+	/**
+	 * Finish a control-driven visual transition.
+	 *
+	 * @param {Object}  state        Slider state.
+	 * @param {boolean} updateStatus Whether to announce the committed slide.
+	 * @return {void}
+	 */
+	function finishSliderTransition( state, updateStatus ) {
+		if ( state.transitionTimer ) {
+			window.clearTimeout( state.transitionTimer );
+			state.transitionTimer = 0;
+		}
+		if ( state.transitionWatchFrame ) {
+			window.cancelAnimationFrame( state.transitionWatchFrame );
+			state.transitionWatchFrame = 0;
+		}
+
+		if ( state.transitionLayer ) {
+			state.transitionLayer.remove();
+			state.transitionLayer = null;
+		}
+		state.root.classList.remove( 'is-cyber-slider-transitioning' );
+
+		const queuedIndex = state.queuedIndex;
+		const queuedStatus = state.queuedStatus;
+		const queuedSource = state.queuedSource;
+		state.queuedIndex = null;
+		state.queuedStatus = true;
+		state.queuedSource = 'manual';
+
+		if ( null !== queuedIndex && queuedIndex !== state.index ) {
+			moveSlider( state, queuedIndex, queuedStatus, queuedSource );
+			return;
+		}
+
+		if ( false !== updateStatus ) {
+			updateSliderStatus( state );
+		}
+		syncSliderAutoplay( state );
+	}
+
+	/**
+	 * Start a true in-place crossfade/effect between two visual slide copies.
+	 *
+	 * @param {Object}  state        Slider state.
+	 * @param {number}  targetIndex  Target slide.
+	 * @param {boolean} updateStatus Whether to announce after the effect.
+	 * @return {void}
+	 */
+	function startSliderTransition( state, targetIndex, updateStatus ) {
+		const current = state.items[ Math.max( 0, state.index ) ];
+		const target = state.items[ targetIndex ];
+
+		if ( ! current || ! target || current === target ) {
+			jumpSliderTrack( state, targetIndex );
+			commitSliderIndex( state, targetIndex, updateStatus );
+			syncSliderAutoplay( state );
+			return;
+		}
+
+		const layer = document.createElement( 'div' );
+		const outgoing = cloneSliderItem( current, 'is-cyber-slide-outgoing' );
+		const incoming = cloneSliderItem( target, 'is-cyber-slide-incoming' );
+
+		layer.className = 'mai-cyber-gallery-slider-transition-layer';
+		layer.setAttribute( 'aria-hidden', 'true' );
+		layer.inert = true;
+		layer.append( outgoing, incoming );
+
+		state.navigationTarget = null;
+		state.transitionLayer = layer;
+		state.root.classList.add( 'is-cyber-slider-transitioning' );
+		state.root.appendChild( layer );
+		jumpSliderTrack( state, targetIndex );
+		commitSliderIndex( state, targetIndex, false );
+
+		const duration = cssTimeMilliseconds(
+			window.getComputedStyle( state.root ).getPropertyValue( '--cyber-slider-transition-duration' ),
+			560
+		);
+		const complete = function () {
+			if ( state.transitionLayer === layer ) {
+				finishSliderTransition( state, updateStatus );
+			}
+		};
+
+		state.transitionWatchFrame = window.requestAnimationFrame( function () {
+			state.transitionWatchFrame = 0;
+
+			if (
+				state.transitionLayer !== layer
+				|| 'cinematic' === state.transition
+				|| ! layer.getAnimations
+			) {
+				return;
+			}
+
+			const animations = layer.getAnimations( { subtree: true } );
+			if ( animations.length ) {
+				Promise.all(
+					animations.map( function ( animation ) {
+						return animation.finished.catch( function () {} );
+					} )
+				).then( complete );
+			}
+		} );
+		state.transitionTimer = window.setTimeout( function () {
+			complete();
+		}, duration + ( 'cinematic' === state.transition ? 320 : 200 ) );
+	}
+
+	/**
+	 * Whether this slider currently may rotate automatically.
+	 *
+	 * @param {Object} state Slider state.
+	 * @return {boolean}
+	 */
+	function canSliderAutoplay( state ) {
+		const focusPauses = state.focused && document.activeElement !== state.autoplayToggle;
+
+		return 0 < state.autoplayInterval
+			&& 1 < state.items.length
+			&& ! state.autoplayPaused
+			&& ! state.transitionLayer
+			&& ! state.motionQuery.matches
+			&& ! document.hidden
+			&& state.inViewport
+			&& ! focusPauses
+			&& ! ( state.pauseOnHover && state.hovered );
+	}
+
+	/**
+	 * Clear a slider autoplay timeout.
+	 *
+	 * @param {Object} state Slider state.
+	 * @return {void}
+	 */
+	function clearSliderAutoplay( state ) {
+		if ( state.autoplayTimer ) {
+			window.clearTimeout( state.autoplayTimer );
+			state.autoplayTimer = 0;
+		}
+	}
+
+	/**
+	 * Synchronize autoplay controls, live-region behavior, and timeout.
+	 *
+	 * @param {Object} state Slider state.
+	 * @return {void}
+	 */
+	function syncSliderAutoplay( state ) {
+		const available = 0 < state.autoplayInterval && 1 < state.items.length;
+		const canPlay = canSliderAutoplay( state );
+		const rotationEnabled = available && ! state.autoplayPaused && ! state.motionQuery.matches;
+
+		if ( 'autoplay' === state.pendingSource && ! canPlay ) {
+			cancelSliderPreparation( state, true );
+		}
+
+		if ( state.autoplayToggle ) {
+			state.autoplayToggle.hidden = ! available || state.motionQuery.matches;
+			state.autoplayToggle.dataset.cyberSliderPaused = state.autoplayPaused ? 'true' : 'false';
+			state.autoplayToggle.setAttribute(
+				'aria-label',
+				state.autoplayPaused
+					? String( settings.startAutoplay || 'Start automatic slides' )
+					: String( settings.pauseAutoplay || 'Pause automatic slides' )
+			);
+		}
+
+		if ( state.status ) {
+			state.status.setAttribute( 'aria-live', rotationEnabled ? 'off' : 'polite' );
+		}
+
+		clearSliderAutoplay( state );
+		if ( ! canPlay || state.pendingSource ) {
+			return;
+		}
+
+		state.autoplayTimer = window.setTimeout( function () {
+			state.autoplayTimer = 0;
+			if ( ! canSliderAutoplay( state ) ) {
+				syncSliderAutoplay( state );
+				return;
+			}
+
+			const nextIndex = ( state.intentIndex + 1 ) % state.items.length;
+			moveSlider( state, nextIndex, true, 'autoplay' );
+		}, state.autoplayInterval );
+	}
+
+	/**
+	 * Set the user-controlled autoplay pause state.
+	 *
+	 * @param {Object}  state  Slider state.
+	 * @param {boolean} paused Whether rotation is paused.
+	 * @return {void}
+	 */
+	function setSliderAutoplayPaused( state, paused ) {
+		state.autoplayPaused = paused;
+		syncSliderAutoplay( state );
+	}
+
+	/**
+	 * Move a slider to an exact slide.
+	 *
+	 * @param {Object}  state        Slider state.
+	 * @param {number}  index        Requested zero-based index.
+	 * @param {boolean} updateStatus Whether to update the live status.
+	 * @param {string}  source       Navigation source: manual or autoplay.
+	 * @return {void}
+	 */
+	function moveSlider( state, index, updateStatus, source ) {
+		const targetIndex = Math.max( 0, Math.min( state.items.length - 1, index ) );
+		const target = state.items[ targetIndex ];
+		const moveSource = 'autoplay' === source ? 'autoplay' : 'manual';
+
+		if ( ! target ) {
+			return;
+		}
+
+		if ( state.pendingSource ) {
+			cancelSliderPreparation( state, false );
+		}
+
+		clearSliderAutoplay( state );
+		state.intentIndex = targetIndex;
+
+		if ( state.transitionLayer ) {
+			state.queuedIndex = targetIndex;
+			state.queuedStatus = false !== updateStatus;
+			state.queuedSource = moveSource;
+			return;
+		}
+
+		const useTransition = 'native' !== state.transition && ! state.motionQuery.matches;
+		if ( useTransition && targetIndex !== state.index ) {
+			const preloadToken = ++state.preloadToken;
+			state.pendingSource = moveSource;
+			state.pendingTarget = targetIndex;
+			state.pendingStatus = false !== updateStatus;
+			prepareSliderItem( target ).then( function () {
+				if (
+					preloadToken !== state.preloadToken
+					|| ! state.root.isConnected
+				) {
+					return;
+				}
+
+				if ( targetIndex !== state.intentIndex ) {
+					cancelSliderPreparation( state, true );
+					syncSliderAutoplay( state );
+					return;
+				}
+
+				state.pendingSource = null;
+				state.pendingTarget = null;
+				state.pendingStatus = true;
+
+				if ( state.motionQuery.matches ) {
+					moveSlider( state, targetIndex, updateStatus, moveSource );
+					return;
+				}
+
+				if ( 'autoplay' === moveSource && ! canSliderAutoplay( state ) ) {
+					state.intentIndex = Math.max( 0, state.index );
+					syncSliderAutoplay( state );
+					return;
+				}
+
+				startSliderTransition( state, targetIndex, false !== updateStatus );
+			} );
+			return;
+		}
+
+		state.navigationTarget = targetIndex === state.index ? null : targetIndex;
+		const adjacent = Math.abs( targetIndex - state.index ) <= 1;
+		const behavior = state.motionQuery.matches || ! adjacent || 'native' !== state.transition
+			? 'auto'
+			: 'smooth';
 		const scrollBehavior = state.track.style.scrollBehavior;
 		if ( 'auto' === behavior ) {
 			state.track.style.scrollBehavior = 'auto';
@@ -1343,6 +1843,45 @@
 			inline: 'start',
 		} );
 		state.track.style.scrollBehavior = scrollBehavior;
+
+		scheduleFrame( state, function () {
+			updateSlider( state );
+			syncSliderAutoplay( state );
+		} );
+	}
+
+	/**
+	 * Release timers, observers, and temporary slider visuals.
+	 *
+	 * @param {Object} state Slider state.
+	 * @return {void}
+	 */
+	function cleanupSliderRuntime( state ) {
+		clearSliderAutoplay( state );
+		cancelSliderPreparation( state, false );
+
+		if ( state.transitionTimer ) {
+			window.clearTimeout( state.transitionTimer );
+		}
+		if ( state.transitionWatchFrame ) {
+			window.cancelAnimationFrame( state.transitionWatchFrame );
+		}
+		if ( state.transitionLayer ) {
+			state.transitionLayer.remove();
+		}
+		if ( state.unlockFrame ) {
+			window.cancelAnimationFrame( state.unlockFrame );
+		}
+		if ( state.intersectionObserver ) {
+			state.intersectionObserver.disconnect();
+		}
+		if ( state.motionQuery && state.motionHandler ) {
+			state.motionQuery.removeEventListener( 'change', state.motionHandler );
+		}
+
+		state.root.classList.remove( 'is-cyber-slider-transitioning' );
+		state.navigationTarget = null;
+		state.suppressUpdate = false;
 	}
 
 	/**
@@ -1358,6 +1897,7 @@
 		const dots = Array.from( root.querySelectorAll( '[data-cyber-slider-dot]' ) );
 		const counter = root.querySelector( '[data-cyber-slider-current]' );
 		const status = root.querySelector( '[data-cyber-slider-status]' );
+		const autoplayToggle = root.querySelector( '[data-cyber-slider-autoplay-toggle]' );
 		const items = track ? getTrackItems( track ) : [];
 		const existing = sliderStates.get( root );
 
@@ -1368,26 +1908,47 @@
 				&& existing.next === next
 				&& existing.counter === counter
 				&& existing.status === status
+				&& existing.autoplayToggle === autoplayToggle
 				&& existing.dots.length === dots.length
 				&& existing.dots.every( function ( dot, index ) {
 					return dot === dots[ index ];
 				} )
 			) {
+				const transition = root.dataset.cyberSliderTransition || 'native';
+				const autoplayInterval = Math.max(
+					0,
+					Number.parseInt( root.dataset.cyberSliderAutoplay || '0', 10 ) || 0
+				);
+
+				if (
+					existing.pendingSource
+					&& (
+						existing.transition !== transition
+						|| existing.autoplayInterval !== autoplayInterval
+					)
+				) {
+					cancelSliderPreparation( existing, true );
+				}
+
 				existing.items = items;
+				existing.transition = transition;
+				existing.autoplayInterval = autoplayInterval;
+				existing.pauseOnHover = 'true' === root.dataset.cyberSliderPauseHover;
 				scheduleFrame( existing, function () {
 					updateSlider( existing );
+					syncSliderAutoplay( existing );
 				} );
 				return;
 			}
 
+			cleanupSliderRuntime( existing );
+
 			if ( existing.frame ) {
 				window.cancelAnimationFrame( existing.frame );
 			}
-
 			if ( existing.resizeObserver ) {
 				existing.resizeObserver.disconnect();
 			}
-
 			if ( existing.controller ) {
 				existing.controller.abort();
 			}
@@ -1414,15 +1975,44 @@
 			dots: dots,
 			counter: counter,
 			status: status,
+			autoplayToggle: autoplayToggle,
 			items: items,
 			index: -1,
+			intentIndex: 0,
+			navigationTarget: null,
 			frame: 0,
+			unlockFrame: 0,
+			suppressUpdate: false,
 			resizeObserver: null,
+			intersectionObserver: null,
 			controller: 'AbortController' in window ? new window.AbortController() : null,
+			transition: root.dataset.cyberSliderTransition || 'native',
+			transitionLayer: null,
+			transitionTimer: 0,
+			transitionWatchFrame: 0,
+			queuedIndex: null,
+			queuedStatus: true,
+			queuedSource: 'manual',
+			preloadToken: 0,
+			pendingSource: null,
+			pendingTarget: null,
+			pendingStatus: true,
+			autoplayInterval: Math.max(
+				0,
+				Number.parseInt( root.dataset.cyberSliderAutoplay || '0', 10 ) || 0
+			),
+			pauseOnHover: 'true' === root.dataset.cyberSliderPauseHover,
+			autoplayTimer: 0,
+			autoplayPaused: false,
+			hovered: false,
+			focused: false,
+			autoplayPointerFocus: false,
+			inViewport: true,
+			motionQuery: window.matchMedia( '(prefers-reduced-motion: reduce)' ),
+			motionHandler: null,
 		};
 
 		sliderStates.set( root, state );
-		root.classList.add( 'is-cyber-slider-ready' );
 
 		const scheduleUpdate = function () {
 			scheduleFrame( state, function () {
@@ -1432,29 +2022,62 @@
 		const listenerOptions = state.controller
 			? { signal: state.controller.signal }
 			: undefined;
-		const scrollOptions = state.controller
+		const passiveOptions = state.controller
 			? { passive: true, signal: state.controller.signal }
 			: { passive: true };
 
 		if ( previous ) {
 			previous.addEventListener( 'click', function () {
-				moveSlider( state, state.index - 1 );
+				setSliderAutoplayPaused( state, true );
+				moveSlider( state, state.intentIndex - 1, true );
 			}, listenerOptions );
 		}
 
 		if ( next ) {
 			next.addEventListener( 'click', function () {
-				moveSlider( state, state.index + 1 );
+				setSliderAutoplayPaused( state, true );
+				moveSlider( state, state.intentIndex + 1, true );
 			}, listenerOptions );
 		}
 
 		dots.forEach( function ( dot ) {
 			dot.addEventListener( 'click', function () {
-				moveSlider( state, Number.parseInt( dot.dataset.cyberSliderDot, 10 ) || 0 );
+				setSliderAutoplayPaused( state, true );
+				moveSlider( state, Number.parseInt( dot.dataset.cyberSliderDot, 10 ) || 0, true );
 			}, listenerOptions );
 		} );
 
-		track.addEventListener( 'scroll', scheduleUpdate, scrollOptions );
+		if ( autoplayToggle ) {
+			autoplayToggle.addEventListener( 'pointerdown', function () {
+				state.autoplayPointerFocus = true;
+				window.setTimeout( function () {
+					state.autoplayPointerFocus = false;
+				}, 0 );
+			}, listenerOptions );
+			autoplayToggle.addEventListener( 'click', function () {
+				setSliderAutoplayPaused( state, ! state.autoplayPaused );
+			}, listenerOptions );
+		}
+
+		track.addEventListener( 'scroll', scheduleUpdate, passiveOptions );
+		track.addEventListener( 'pointerdown', function () {
+			cancelSliderPreparation( state, true );
+			state.navigationTarget = null;
+			if ( state.transitionLayer ) {
+				state.queuedIndex = null;
+				finishSliderTransition( state, true );
+			}
+			setSliderAutoplayPaused( state, true );
+		}, passiveOptions );
+		track.addEventListener( 'wheel', function () {
+			cancelSliderPreparation( state, true );
+			state.navigationTarget = null;
+			if ( state.transitionLayer ) {
+				state.queuedIndex = null;
+				finishSliderTransition( state, true );
+			}
+			setSliderAutoplayPaused( state, true );
+		}, passiveOptions );
 		track.addEventListener( 'keydown', function ( event ) {
 			if ( event.target.closest( 'a, button, input, select, textarea' ) ) {
 				return;
@@ -1464,9 +2087,9 @@
 			let target = null;
 
 			if ( 'ArrowRight' === event.key ) {
-				target = state.index + ( isRtl ? -1 : 1 );
+				target = state.intentIndex + ( isRtl ? -1 : 1 );
 			} else if ( 'ArrowLeft' === event.key ) {
-				target = state.index + ( isRtl ? 1 : -1 );
+				target = state.intentIndex + ( isRtl ? 1 : -1 );
 			} else if ( 'Home' === event.key ) {
 				target = 0;
 			} else if ( 'End' === event.key ) {
@@ -1475,16 +2098,83 @@
 
 			if ( null !== target ) {
 				event.preventDefault();
-				moveSlider( state, target );
+				setSliderAutoplayPaused( state, true );
+				moveSlider( state, target, true );
 			}
 		}, listenerOptions );
+
+		root.addEventListener( 'pointerenter', function ( event ) {
+			if ( 'mouse' === event.pointerType || 'pen' === event.pointerType ) {
+				state.hovered = true;
+				syncSliderAutoplay( state );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'pointerleave', function ( event ) {
+			if ( 'mouse' === event.pointerType || 'pen' === event.pointerType ) {
+				state.hovered = false;
+				syncSliderAutoplay( state );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'pointerup', function () {
+			state.autoplayPointerFocus = false;
+		}, listenerOptions );
+		root.addEventListener( 'pointercancel', function () {
+			state.autoplayPointerFocus = false;
+		}, listenerOptions );
+		root.addEventListener( 'focusin', function ( event ) {
+			state.focused = true;
+
+			if ( event.target === autoplayToggle && state.autoplayPointerFocus ) {
+				syncSliderAutoplay( state );
+			} else {
+				setSliderAutoplayPaused( state, true );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'focusout', function ( event ) {
+			if ( ! root.contains( event.relatedTarget ) ) {
+				state.focused = false;
+				syncSliderAutoplay( state );
+			}
+		}, listenerOptions );
+		document.addEventListener( 'visibilitychange', function () {
+			syncSliderAutoplay( state );
+		}, listenerOptions );
+
+		state.motionHandler = function () {
+			if ( state.motionQuery.matches && state.pendingSource ) {
+				const pendingSource = state.pendingSource;
+				const pendingTarget = state.pendingTarget;
+				const pendingStatus = state.pendingStatus;
+
+				cancelSliderPreparation( state, 'manual' !== pendingSource );
+				if ( 'manual' === pendingSource && null !== pendingTarget ) {
+					moveSlider( state, pendingTarget, pendingStatus, pendingSource );
+				}
+			}
+			if ( state.motionQuery.matches && state.transitionLayer ) {
+				finishSliderTransition( state, true );
+			}
+			syncSliderAutoplay( state );
+		};
+		state.motionQuery.addEventListener( 'change', state.motionHandler );
 
 		if ( 'ResizeObserver' in window ) {
 			state.resizeObserver = new window.ResizeObserver( scheduleUpdate );
 			state.resizeObserver.observe( track );
 		}
 
+		if ( 'IntersectionObserver' in window ) {
+			state.intersectionObserver = new window.IntersectionObserver( function ( entries ) {
+				const entry = entries[0];
+				state.inViewport = Boolean( entry && entry.isIntersecting && 0.1 <= entry.intersectionRatio );
+				syncSliderAutoplay( state );
+			}, { threshold: [ 0, 0.1 ] } );
+			state.intersectionObserver.observe( root );
+		}
+
 		updateSlider( state );
+		root.classList.add( 'is-cyber-slider-ready' );
+		syncSliderAutoplay( state );
 	}
 
 	/**
@@ -1807,6 +2497,10 @@
 			window.cancelAnimationFrame( state.frame );
 		}
 
+		if ( sliderStates === states ) {
+			cleanupSliderRuntime( state );
+		}
+
 		if ( state.resizeObserver ) {
 			state.resizeObserver.disconnect();
 		}
@@ -1894,6 +2588,10 @@
 					window.cancelAnimationFrame( state.frame );
 				}
 
+				if ( sliderStates === states ) {
+					cleanupSliderRuntime( state );
+				}
+
 				if ( state.resizeObserver ) {
 					state.resizeObserver.disconnect();
 				}
@@ -1922,6 +2620,22 @@
 	 */
 	function boot() {
 		initializeWithin( document );
+		syncSliderNavigationSelects( document, null );
+
+		document.addEventListener( 'change', function ( event ) {
+			const select = event.target;
+
+			if (
+				select
+				&& select.matches
+				&& select.matches(
+					'.acf-field[data-key="mai_cyber_gallery_slider_navigation"] select,'
+					+ '.acf-field[data-key="mai_cyber_gallery_slider_navigation_secondary"] select'
+				)
+			) {
+				syncSliderNavigationSelects( select.closest( '.acf-fields' ) || document, select );
+			}
+		} );
 
 		document.addEventListener( 'click', function ( event ) {
 			const trigger = event.target && event.target.closest
@@ -1954,6 +2668,7 @@
 					mutation.addedNodes.forEach( function ( node ) {
 						if ( 1 === node.nodeType ) {
 							initializeWithin( node );
+							syncSliderNavigationSelects( node, null );
 						}
 					} );
 

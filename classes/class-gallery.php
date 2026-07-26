@@ -72,11 +72,15 @@ defined( 'ABSPATH' ) || die;
  *     mosaic_feature_side: 'left'|'right',
  *     mosaic_alternate: bool,
  *     slider_navigation: string,
+ *     slider_navigation_secondary: string,
  *     slider_navigation_position: 'overlay'|'below',
  *     slider_dots_position: 'top'|'bottom',
  *     slider_arrow_style: string,
  *     slider_transition: string,
  *     slider_transition_speed: string,
+ *     slider_autoplay: bool,
+ *     slider_autoplay_interval: int,
+ *     slider_pause_on_hover: bool,
  *     slider_navigation_hover: string,
  *     slider_navigation_main: string,
  *     slider_navigation_border: string,
@@ -129,6 +133,13 @@ class Mai_Cyber_Gallery {
 	 * @param array<string, mixed> $args Gallery arguments.
 	 */
 	public function __construct( $args = [] ) {
+		$navigation_was_provided = is_array( $args )
+			&& array_key_exists( 'slider_navigation', $args );
+		$secondary_was_provided = is_array( $args )
+			&& array_key_exists( 'slider_navigation_secondary', $args );
+		$provided_navigation = $navigation_was_provided && is_scalar( $args['slider_navigation'] )
+			? sanitize_key( (string) $args['slider_navigation'] )
+			: '';
 		$column_defaults = mai_get_columns_defaults();
 		$slider_width    = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
 
@@ -155,12 +166,16 @@ class Mai_Cyber_Gallery {
 				'justified_row_height'       => 240,
 				'mosaic_feature_side'        => 'left',
 				'mosaic_alternate'           => false,
-				'slider_navigation'            => 'arrows-dots',
+				'slider_navigation'            => 'arrows',
+				'slider_navigation_secondary'  => 'dots',
 				'slider_navigation_position'   => 'overlay',
 				'slider_dots_position'         => 'top',
 				'slider_arrow_style'           => 'circle',
 				'slider_transition'            => 'native',
 				'slider_transition_speed'      => 'normal',
+				'slider_autoplay'              => false,
+				'slider_autoplay_interval'     => 5,
+				'slider_pause_on_hover'        => true,
 				'slider_navigation_hover'      => 'color',
 				'slider_navigation_main'       => '',
 				'slider_navigation_border'     => '',
@@ -189,6 +204,22 @@ class Mai_Cyber_Gallery {
 		 * @param array<string, mixed> $args Gallery arguments.
 		 */
 		$args = (array) apply_filters( 'mai_cyber_gallery_args', $args );
+
+		// Before 0.6.0, an explicitly supplied atomic navigation value was the
+		// complete navigation choice. Preserve those PHP API calls when the new
+		// secondary argument is absent. A filter that supplies a non-default
+		// secondary value still takes precedence.
+		if (
+			$navigation_was_provided
+			&& ! $secondary_was_provided
+			&& in_array( $provided_navigation, [ 'arrows', 'dots', 'counter', 'none' ], true )
+			&& (
+				! isset( $args['slider_navigation_secondary'] )
+				|| $defaults['slider_navigation_secondary'] === $args['slider_navigation_secondary']
+			)
+		) {
+			$args['slider_navigation_secondary'] = 'none';
+		}
 
 		$this->args       = $this->sanitize_args( $args, $defaults );
 		$this->image_size = $this->get_image_size();
@@ -263,7 +294,18 @@ class Mai_Cyber_Gallery {
 				$root_classes[] = 'has-slider-content';
 			}
 
-			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation'];
+			$navigation = array_unique(
+				[
+					$this->args['slider_navigation'],
+					$this->args['slider_navigation_secondary'],
+				]
+			);
+			foreach ( array_diff( $navigation, [ 'none' ] ) as $navigation_type ) {
+				$root_classes[] = 'has-slider-navigation-' . $navigation_type;
+			}
+			if ( in_array( 'arrows', $navigation, true ) && in_array( 'dots', $navigation, true ) ) {
+				$root_classes[] = 'has-slider-navigation-arrows-dots';
+			}
 			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation_position'];
 			$root_classes[] = 'has-slider-dots-' . $this->args['slider_dots_position'];
 			$root_classes[] = 'has-slider-arrows-' . $this->args['slider_arrow_style'];
@@ -273,6 +315,15 @@ class Mai_Cyber_Gallery {
 			$root_classes[] = 'has-slider-overlay-' . $this->args['slider_overlay_style'];
 			$root_classes[] = 'has-slider-width-' . $this->args['slider_width_mode'];
 			$root_classes[] = 'has-slider-fit-' . $this->args['slider_image_fit'];
+			$root_atts['data-cyber-slider-transition'] = $this->args['slider_transition'];
+
+			if ( $this->args['slider_autoplay'] && 1 < count( $items ) && ! $this->args['preview'] ) {
+				$root_classes[] = 'has-slider-autoplay';
+				$root_atts['data-cyber-slider-autoplay'] = (string) ( $this->args['slider_autoplay_interval'] * 1000 );
+				$root_atts['data-cyber-slider-pause-hover'] = $this->args['slider_pause_on_hover']
+					? 'true'
+					: 'false';
+			}
 		}
 
 		$root_atts['class'] = mai_add_classes( $root_classes, $root_atts['class'] );
@@ -479,6 +530,7 @@ class Mai_Cyber_Gallery {
 		$args['hover']                      = sanitize_key( (string) $args['hover'] );
 		$args['mosaic_feature_side']        = sanitize_key( (string) $args['mosaic_feature_side'] );
 		$args['slider_navigation']          = sanitize_key( (string) $args['slider_navigation'] );
+		$args['slider_navigation_secondary'] = sanitize_key( (string) $args['slider_navigation_secondary'] );
 		$args['slider_navigation_position'] = sanitize_key( (string) $args['slider_navigation_position'] );
 		$args['slider_dots_position']       = sanitize_key( (string) $args['slider_dots_position'] );
 		$args['slider_arrow_style']         = sanitize_key( (string) $args['slider_arrow_style'] );
@@ -519,8 +571,24 @@ class Mai_Cyber_Gallery {
 
 		$args['mosaic_alternate'] = mai_sanitize_bool( $args['mosaic_alternate'] );
 
+		$legacy_navigation = 'arrows-dots' === $args['slider_navigation'];
+		if ( $legacy_navigation ) {
+			$args['slider_navigation']           = 'arrows';
+			$args['slider_navigation_secondary'] = 'dots';
+		}
+
 		if ( ! in_array( $args['slider_navigation'], $slider_navigation, true ) ) {
-			$args['slider_navigation'] = $defaults['slider_navigation'];
+			$args['slider_navigation'] = $legacy_navigation
+				? 'arrows'
+				: $defaults['slider_navigation'];
+		}
+
+		if ( ! in_array( $args['slider_navigation_secondary'], $slider_navigation, true ) ) {
+			$args['slider_navigation_secondary'] = $defaults['slider_navigation_secondary'];
+		}
+
+		if ( $args['slider_navigation'] === $args['slider_navigation_secondary'] ) {
+			$args['slider_navigation_secondary'] = 'none';
 		}
 
 		if ( ! in_array( $args['slider_navigation_position'], [ 'overlay', 'below' ], true ) ) {
@@ -542,6 +610,14 @@ class Mai_Cyber_Gallery {
 		if ( ! in_array( $args['slider_transition_speed'], $slider_speeds, true ) ) {
 			$args['slider_transition_speed'] = $defaults['slider_transition_speed'];
 		}
+
+		$args['slider_autoplay']       = mai_sanitize_bool( $args['slider_autoplay'] );
+		$args['slider_pause_on_hover'] = mai_sanitize_bool( $args['slider_pause_on_hover'] );
+
+		if ( ! is_numeric( $args['slider_autoplay_interval'] ) ) {
+			$args['slider_autoplay_interval'] = $defaults['slider_autoplay_interval'];
+		}
+		$args['slider_autoplay_interval'] = max( 3, min( 30, (int) $args['slider_autoplay_interval'] ) );
 
 		if ( ! in_array( $args['slider_navigation_hover'], $slider_hovers, true ) ) {
 			$args['slider_navigation_hover'] = $defaults['slider_navigation_hover'];
@@ -1426,12 +1502,45 @@ class Mai_Cyber_Gallery {
 	 * @return string
 	 */
 	protected function get_slider_controls( $gallery_id, $items ) {
-		$navigation = $this->args['slider_navigation'];
-		$has_arrows = in_array( $navigation, [ 'arrows', 'arrows-dots' ], true );
-		$has_dots   = in_array( $navigation, [ 'dots', 'arrows-dots' ], true );
-		$track_id   = $gallery_id . '-items';
-		$total      = count( $items );
-		$controls   = '';
+		$navigation = array_unique(
+			[
+				$this->args['slider_navigation'],
+				$this->args['slider_navigation_secondary'],
+			]
+		);
+		$has_arrows   = in_array( 'arrows', $navigation, true );
+		$has_dots     = in_array( 'dots', $navigation, true );
+		$has_counter  = in_array( 'counter', $navigation, true );
+		$has_autoplay = $this->args['slider_autoplay'] && ! $this->args['preview'];
+		$track_id     = $gallery_id . '-items';
+		$total        = count( $items );
+		$controls     = '';
+
+		if ( $has_autoplay ) {
+			$icon_atts = [
+				'aria-hidden' => 'true',
+				'focusable'   => 'false',
+			];
+			$pause_icon = mai_get_svg_icon( 'pause', 'solid', $icon_atts );
+			$play_icon  = mai_get_svg_icon( 'play', 'solid', $icon_atts );
+			$pause_icon = $pause_icon
+				? $pause_icon
+				: '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M6 4h4v16H6zm8 0h4v16h-4z"></path></svg>';
+			$play_icon = $play_icon
+				? $play_icon
+				: '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="m7 4 13 8L7 20z"></path></svg>';
+
+			$controls .= sprintf(
+				'<button class="button mai-cyber-gallery-slider-autoplay" type="button" data-cyber-slider-autoplay-toggle data-cyber-slider-paused="false" aria-controls="%1$s" aria-label="%2$s">'
+				. '<span class="mai-cyber-gallery-slider-autoplay-pause" aria-hidden="true">%3$s</span>'
+				. '<span class="mai-cyber-gallery-slider-autoplay-play" aria-hidden="true">%4$s</span>'
+				. '</button>',
+				esc_attr( $track_id ),
+				esc_attr__( 'Pause automatic slides', 'mai-cyber-gallery' ),
+				$pause_icon,
+				$play_icon
+			);
+		}
 
 		if ( $has_arrows ) {
 			$icon_atts = [
@@ -1492,7 +1601,7 @@ class Mai_Cyber_Gallery {
 			$controls .= '</div>';
 		}
 
-		if ( 'counter' === $navigation ) {
+		if ( $has_counter ) {
 			$controls .= sprintf(
 				'<p class="mai-cyber-gallery-slider-counter" aria-hidden="true"><span data-cyber-slider-current>1</span><span class="mai-cyber-gallery-slider-counter-separator">/</span><span>%d</span></p>',
 				$total
@@ -1516,17 +1625,18 @@ class Mai_Cyber_Gallery {
 			);
 
 		$status_markup = sprintf(
-			'<p class="mai-cyber-gallery-slider-status screen-reader-text" data-cyber-slider-status aria-live="polite" aria-atomic="true">%s</p>',
+			'<p class="mai-cyber-gallery-slider-status screen-reader-text" data-cyber-slider-status aria-live="%1$s" aria-atomic="true">%2$s</p>',
+			$has_autoplay ? 'off' : 'polite',
 			esc_html( $status )
 		);
 
-		if ( 'none' === $navigation ) {
+		if ( ! $has_autoplay && ! $has_arrows && ! $has_dots && ! $has_counter ) {
 			return $status_markup;
 		}
 
 		return sprintf(
 			'<div class="mai-cyber-gallery-slider-controls" role="group" aria-label="%1$s">%2$s%3$s</div>',
-			esc_attr__( 'Slider navigation', 'mai-cyber-gallery' ),
+			esc_attr__( 'Slider controls', 'mai-cyber-gallery' ),
 			$controls,
 			$status_markup
 		);

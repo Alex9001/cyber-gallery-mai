@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.0
+
+- Reworked Fade and every animated Slider preset into an in-place compositor transition for control-driven and autoplay navigation, eliminating the underlying horizontal slide and background flash.
+- Retained native direct touch, pointer, and trackpad scrolling, with instant reduced-motion behavior.
+- Sharpened Slider circle navigation by replacing fractional parent scaling and blurred shadows with integer-sized inner marks.
+- Added independent Primary and Secondary Slider navigation selectors so arrows, circles, and the slide counter can be combined; duplicate choices are prevented in the editor and normalized at render time.
+- Preserved the legacy `arrows-dots` setting by mapping it to Primary Arrows plus Secondary Circles.
+- Added `slider_autoplay`, `slider_autoplay_interval`, and `slider_pause_on_hover`, plus a visible Pause/Start control and lifecycle handling for visibility, viewport, focus, and manual navigation.
+
 ## 0.5.1
 
 - Completed a source-level Mai Engine integration audit and documented the deliberate boundary between framework-owned behavior and gallery-specific code.

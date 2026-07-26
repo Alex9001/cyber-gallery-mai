@@ -34,6 +34,66 @@ foreach (
 }
 unset( $mai_cyber_gallery_color_field_key );
 
+add_filter(
+	'acf/prepare_field/key=mai_cyber_gallery_slider_navigation',
+	'mai_cyber_gallery_prepare_slider_navigation_field'
+);
+add_filter(
+	'acf/load_value/key=mai_cyber_gallery_slider_navigation_secondary',
+	'mai_cyber_gallery_load_slider_navigation_secondary',
+	10,
+	3
+);
+
+/**
+ * Preserve intentionally atomic navigation saved before the second selector.
+ *
+ * A missing primary value means the block used the former Arrows + Circles
+ * default. A stored atomic primary means its single-control choice was
+ * intentional, while the former aggregate maps to canonical Circles here.
+ *
+ * @since 0.6.0
+ *
+ * @param mixed               $value   Loaded/default field value.
+ * @param int|string          $post_id ACF post or block ID.
+ * @param array<string,mixed> $field   ACF field.
+ *
+ * @return mixed
+ */
+function mai_cyber_gallery_load_slider_navigation_secondary( $value, $post_id, $field ) {
+	$meta = acf_get_meta( $post_id );
+
+	if (
+		is_array( $meta )
+		&& ! array_key_exists( 'slider_navigation_secondary', $meta )
+		&& array_key_exists( 'slider_navigation', $meta )
+	) {
+		return 'arrows-dots' === $meta['slider_navigation'] ? 'dots' : 'none';
+	}
+
+	return $value;
+}
+
+/**
+ * Present the former combined choice as canonical Primary Arrows.
+ *
+ * Secondary Navigation defaults to Circles, so the editor shows the same
+ * combination and writes the two canonical fields when the block is resaved.
+ *
+ * @since 0.6.0
+ *
+ * @param array<string,mixed> $field ACF field.
+ *
+ * @return array<string,mixed>
+ */
+function mai_cyber_gallery_prepare_slider_navigation_field( $field ): array {
+	if ( isset( $field['value'] ) && 'arrows-dots' === $field['value'] ) {
+		$field['value'] = 'arrows';
+	}
+
+	return $field;
+}
+
 /**
  * Register the block from metadata.
  *
@@ -60,6 +120,22 @@ function mai_cyber_gallery_register_block(): void {
 function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = false, $post_id = 0 ): void {
 	$instance = mai_get_index( 'mai-cyber-gallery-block' ) + 1;
 	$block_id = isset( $block['id'] ) ? sanitize_html_class( $block['id'] ) : 'block';
+	$block_data = isset( $block['data'] ) && is_array( $block['data'] )
+		? $block['data']
+		: [];
+	$slider_navigation           = get_field( 'slider_navigation' );
+	$slider_navigation_secondary = get_field( 'slider_navigation_secondary' );
+
+	// Preserve explicit pre-0.6.0 single-navigation choices. A block with no
+	// stored primary value used the former Arrows + Circles default, while an
+	// explicitly stored atomic primary was intentionally a single control.
+	if (
+		! array_key_exists( 'slider_navigation_secondary', $block_data )
+		&& array_key_exists( 'slider_navigation', $block_data )
+		&& 'arrows-dots' !== $slider_navigation
+	) {
+		$slider_navigation_secondary = 'none';
+	}
 
 	// Identical ACF blocks can share a content-derived block ID. Keep front-end
 	// output deterministic by occurrence, and editor AJAX previews globally unique.
@@ -88,12 +164,16 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'justified_row_height'   => get_field( 'justified_row_height' ),
 		'mosaic_feature_side'    => get_field( 'mosaic_feature_side' ),
 		'mosaic_alternate'       => get_field( 'mosaic_alternate' ),
-		'slider_navigation'      => get_field( 'slider_navigation' ),
+		'slider_navigation'           => $slider_navigation,
+		'slider_navigation_secondary' => $slider_navigation_secondary,
 		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
 		'slider_dots_position'        => get_field( 'slider_dots_position' ),
 		'slider_arrow_style'          => get_field( 'slider_arrow_style' ),
 		'slider_transition'           => get_field( 'slider_transition' ),
 		'slider_transition_speed' => get_field( 'slider_transition_speed' ),
+		'slider_autoplay'         => get_field( 'slider_autoplay' ),
+		'slider_autoplay_interval' => get_field( 'slider_autoplay_interval' ),
+		'slider_pause_on_hover'    => get_field( 'slider_pause_on_hover' ),
 		'slider_navigation_hover' => get_field( 'slider_navigation_hover' ),
 		'slider_navigation_main'  => get_field( 'slider_navigation_main' ),
 		'slider_navigation_border' => get_field( 'slider_navigation_border' ),
@@ -201,7 +281,7 @@ function mai_cyber_gallery_register_field_group(): void {
 			],
 		],
 	];
-	$slider_navigation_condition = [
+	$slider_autoplay_condition = [
 		[
 			[
 				'field'    => 'mai_cyber_gallery_layout',
@@ -209,27 +289,133 @@ function mai_cyber_gallery_register_field_group(): void {
 				'value'    => 'slider',
 			],
 			[
-				'field'    => 'mai_cyber_gallery_slider_navigation',
-				'operator' => '!=',
-				'value'    => 'none',
+				'field'    => 'mai_cyber_gallery_slider_autoplay',
+				'operator' => '==',
+				'value'    => '1',
 			],
 		],
 	];
+	$slider_navigation_fields = [
+		'mai_cyber_gallery_slider_navigation',
+		'mai_cyber_gallery_slider_navigation_secondary',
+	];
+	$slider_navigation_condition             = [];
 	$slider_navigation_interactive_condition = [];
-	foreach ( [ 'arrows-dots', 'arrows', 'dots' ] as $navigation ) {
-		$slider_navigation_interactive_condition[] = [
+	$slider_arrows_condition                 = [];
+	$slider_dots_overlay_condition           = [];
+
+	foreach ( $slider_navigation_fields as $navigation_field ) {
+		$slider_navigation_condition[] = [
 			[
 				'field'    => 'mai_cyber_gallery_layout',
 				'operator' => '==',
 				'value'    => 'slider',
 			],
 			[
-				'field'    => 'mai_cyber_gallery_slider_navigation',
+				'field'    => $navigation_field,
+				'operator' => '!=',
+				'value'    => 'none',
+			],
+		];
+
+		foreach ( [ 'arrows', 'dots' ] as $navigation ) {
+			$slider_navigation_interactive_condition[] = [
+				[
+					'field'    => 'mai_cyber_gallery_layout',
+					'operator' => '==',
+					'value'    => 'slider',
+				],
+				[
+					'field'    => $navigation_field,
+					'operator' => '==',
+					'value'    => $navigation,
+				],
+			];
+		}
+
+		$slider_arrows_condition[] = [
+			[
+				'field'    => 'mai_cyber_gallery_layout',
 				'operator' => '==',
-				'value'    => $navigation,
+				'value'    => 'slider',
+			],
+			[
+				'field'    => $navigation_field,
+				'operator' => '==',
+				'value'    => 'arrows',
+			],
+		];
+		$slider_dots_overlay_condition[] = [
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+			[
+				'field'    => $navigation_field,
+				'operator' => '==',
+				'value'    => 'dots',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_slider_navigation_position',
+				'operator' => '==',
+				'value'    => 'overlay',
 			],
 		];
 	}
+	$slider_navigation_interactive_condition[] = [
+		[
+			'field'    => 'mai_cyber_gallery_layout',
+			'operator' => '==',
+			'value'    => 'slider',
+		],
+		[
+			'field'    => 'mai_cyber_gallery_slider_navigation',
+			'operator' => '==',
+			'value'    => 'arrows-dots',
+		],
+	];
+	$slider_arrows_condition[] = [
+		[
+			'field'    => 'mai_cyber_gallery_layout',
+			'operator' => '==',
+			'value'    => 'slider',
+		],
+		[
+			'field'    => 'mai_cyber_gallery_slider_navigation',
+			'operator' => '==',
+			'value'    => 'arrows-dots',
+		],
+	];
+	$slider_dots_overlay_condition[] = [
+		[
+			'field'    => 'mai_cyber_gallery_layout',
+			'operator' => '==',
+			'value'    => 'slider',
+		],
+		[
+			'field'    => 'mai_cyber_gallery_slider_navigation',
+			'operator' => '==',
+			'value'    => 'arrows-dots',
+		],
+		[
+			'field'    => 'mai_cyber_gallery_slider_navigation_position',
+			'operator' => '==',
+			'value'    => 'overlay',
+		],
+	];
+	$slider_navigation_condition[] = [
+		[
+			'field'    => 'mai_cyber_gallery_layout',
+			'operator' => '==',
+			'value'    => 'slider',
+		],
+		[
+			'field'    => 'mai_cyber_gallery_slider_autoplay',
+			'operator' => '==',
+			'value'    => '1',
+		],
+	];
 	$slider_overlay_condition = [
 		[
 			[
@@ -736,10 +922,30 @@ function mai_cyber_gallery_register_field_group(): void {
 				],
 				[
 					'key'           => 'mai_cyber_gallery_slider_navigation',
-					'label'         => esc_html__( 'Slider Navigation', 'mai-cyber-gallery' ),
+					'label'         => esc_html__( 'Primary Navigation', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Choose the first navigation type.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_navigation',
 					'type'          => 'select',
-					'default_value' => 'arrows-dots',
+					'default_value' => 'arrows',
+					'choices'       => mai_cyber_gallery_get_slider_navigation_choices(),
+					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_navigation_secondary',
+					'label'         => esc_html__( 'Secondary Navigation', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Optionally add another navigation type. Duplicate selections render only once.', 'mai-cyber-gallery' ),
+					'name'          => 'slider_navigation_secondary',
+					'type'          => 'select',
+					'default_value' => 'dots',
 					'choices'       => mai_cyber_gallery_get_slider_navigation_choices(),
 					'ui'            => 1,
 					'conditional_logic' => [
@@ -765,20 +971,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'wrapper'       => [
 						'class' => 'mai-acf-button-group',
 					],
-					'conditional_logic' => [
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '==',
-								'value'    => 'slider',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation',
-								'operator' => '!=',
-								'value'    => 'none',
-							],
-						],
-					],
+					'conditional_logic' => $slider_navigation_condition,
 				],
 				[
 					'key'           => 'mai_cyber_gallery_slider_arrow_style',
@@ -788,32 +981,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'default_value' => 'circle',
 					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
 					'ui'            => 1,
-					'conditional_logic' => [
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '==',
-								'value'    => 'slider',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation',
-								'operator' => '==',
-								'value'    => 'arrows',
-							],
-						],
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '==',
-								'value'    => 'slider',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation',
-								'operator' => '==',
-								'value'    => 'arrows-dots',
-							],
-						],
-					],
+					'conditional_logic' => $slider_arrows_condition,
 				],
 				[
 					'key'           => 'mai_cyber_gallery_slider_dots_position',
@@ -829,42 +997,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'wrapper'       => [
 						'class' => 'mai-acf-button-group',
 					],
-					'conditional_logic' => [
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '==',
-								'value'    => 'slider',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation',
-								'operator' => '==',
-								'value'    => 'arrows-dots',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation_position',
-								'operator' => '==',
-								'value'    => 'overlay',
-							],
-						],
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '==',
-								'value'    => 'slider',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation',
-								'operator' => '==',
-								'value'    => 'dots',
-							],
-							[
-								'field'    => 'mai_cyber_gallery_slider_navigation_position',
-								'operator' => '==',
-								'value'    => 'overlay',
-							],
-						],
-					],
+					'conditional_logic' => $slider_dots_overlay_condition,
 				],
 				[
 					'key'               => 'mai_cyber_gallery_slider_transition',
@@ -887,6 +1020,41 @@ function mai_cyber_gallery_register_field_group(): void {
 						'class' => 'mai-acf-button-group',
 					],
 					'conditional_logic' => $slider_transition_effect_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_autoplay',
+					'label'             => esc_html__( 'Auto Slide', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Automatically advance slides on the front end. Reduced-motion preferences disable autoplay.', 'mai-cyber-gallery' ),
+					'name'              => 'slider_autoplay',
+					'type'              => 'true_false',
+					'default_value'     => 0,
+					'ui'                => 1,
+					'conditional_logic' => $slider_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_autoplay_interval',
+					'label'             => esc_html__( 'Time Between Slides', 'mai-cyber-gallery' ),
+					'name'              => 'slider_autoplay_interval',
+					'type'              => 'number',
+					'default_value'     => 5,
+					'min'               => 3,
+					'max'               => 30,
+					'step'              => 1,
+					'append'            => esc_html__( 'seconds', 'mai-cyber-gallery' ),
+					'wrapper'           => [
+						'class' => 'mai-cyber-gallery-number-no-spinner',
+					],
+					'conditional_logic' => $slider_autoplay_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_pause_on_hover',
+					'label'             => esc_html__( 'Pause on Mouse Over', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Pause while a pointer is over the slider. Keyboard focus and hidden tabs always pause autoplay.', 'mai-cyber-gallery' ),
+					'name'              => 'slider_pause_on_hover',
+					'type'              => 'true_false',
+					'default_value'     => 1,
+					'ui'                => 1,
+					'conditional_logic' => $slider_autoplay_condition,
 				],
 				[
 					'key'               => 'mai_cyber_gallery_slider_navigation_hover',
