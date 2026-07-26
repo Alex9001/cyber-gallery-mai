@@ -3,7 +3,7 @@ Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
 Requires Plugins: mai-engine
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,9 +31,11 @@ Editorial Mosaic can start its feature image on the left or right and optionally
 
 Masonry places each image in the current shortest column to reduce unnecessary gaps. Tiled Mosaic uses source image ratios to create mixed full-height and stacked tiles while preserving image order, with the responsive column setting capped at four visual groups.
 
-Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it. Slider settings include the shared arrow designs, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting.
+Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include the shared arrow designs, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Irrelevant column, alignment, and gap controls are hidden for Slider.
 
 The Image Quality / Source Size setting chooses the WordPress image source. A larger source can look sharper at large display dimensions, but uses more bandwidth.
+
+Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Installation ==
 
@@ -69,6 +71,12 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.2.1 =
+
+* Added Top and Bottom placement for overlay Slider circles.
+* Hid column, alignment, and gap controls for Slider while preserving block margins.
+* Added Square and Rounded image-corner choices.
 
 = 0.2.0 =
 

@@ -24,7 +24,7 @@ Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column co
 - **Filmstrip** — touch-friendly horizontal scroll snap with accessible controls.
 - **Slider** — a single-slide viewport with selectable navigation, placement, dimensions, and image fit.
 
-Every layout uses Mai's column/row gaps and margin controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups.
+Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups. Every layout retains top and bottom block margins.
 
 ## Editor usage
 
@@ -41,9 +41,11 @@ Editorial Mosaic adds a **First Feature Side** control plus an option to alterna
 
 When the click action is Lightbox, choose Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab navigation arrows. The controls keep a stable hit target across hover, focus, and active states.
 
-Slider adds navigation choices for Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them. Slider controls also set the arrow design, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide.
+Slider adds navigation choices for Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, alignment, and gap controls are hidden because a Slider always displays one full-width slide.
 
 **Image Quality / Source Size** selects the WordPress image source used in the responsive image markup. Choose a source at least as large as the displayed image: larger sources can look sharper but use more bandwidth. Slider dimensions control the display box independently.
+
+**Image Corners** switches gallery images between Square and Rounded corners. Circle Tiles remain circular.
 
 ## PHP API
 
@@ -79,22 +81,24 @@ echo mai_get_cyber_gallery(
 | `images_links` | empty array | Image/link rows used when `click_action` is `custom`; schema shown below. |
 | `image_orientation` | `landscape` | A Mai image-orientation slug or `custom`; used by Grid and Filmstrip. |
 | `image_size` | `large` | Any registered WordPress image-size slug. This controls source dimensions and quality, not the rendered display box. |
+| `image_radius` | `rounded` | `square` or `rounded`. Circle Tiles always remain circular. |
 | `captions` | `below` | `none`, `below`, or `overlay`. Captions come from Media Library attachments. |
 | `shadow` | `false` | Boolean value sanitized by Mai Engine. |
 | `hover` | `zoom` | `none`, `zoom`, `lift`, or `fade`. |
 | `justified_row_height` | `240` | Target pixel height from 100 through 600. |
 | `slider_navigation` | `arrows-dots` | `arrows-dots`, `arrows`, `dots`, `counter`, or `none`. |
 | `slider_navigation_position` | `overlay` | `overlay` or `below`. |
+| `slider_dots_position` | `top` | `top` or `bottom`; applies to circle navigation when it overlays the image. |
 | `slider_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by navigation modes that include arrows. |
 | `slider_width` | `1200` | Maximum slider width in pixels from 0 through 2400; `0` fills the available block width. |
 | `slider_height` | `560` | Desktop slider height in pixels from 180 through 1200. |
 | `slider_height_mobile` | `320` | Mobile slider height in pixels from 120 through 800. |
 | `slider_image_fit` | `cover` | `cover` crops to fill the slide; `contain` shows the complete image. |
-| `columns` | Mai default (`3`) | Main column count from 1 through 8. |
-| `columns_responsive` | Mai default (`false`) | Use explicit breakpoint counts when true; otherwise Mai calculates them. |
-| `columns_md`, `columns_sm`, `columns_xs` | Mai defaults | Explicit counts from 1 through 8 when responsive columns are enabled. |
-| `align_columns`, `align_columns_vertical` | Mai defaults | Mai column-alignment values. |
-| `column_gap`, `row_gap` | Mai defaults | Mai spacing-size slugs or empty for no gap. |
+| `columns` | Mai default (`3`) | Main column count from 1 through 8; ignored by Slider. |
+| `columns_responsive` | Mai default (`false`) | Use explicit breakpoint counts when true; ignored by Slider. |
+| `columns_md`, `columns_sm`, `columns_xs` | Mai defaults | Explicit breakpoint counts; ignored by Slider. |
+| `align_columns`, `align_columns_vertical` | Mai defaults | Mai column-alignment values; ignored by Slider. |
+| `column_gap`, `row_gap` | Mai defaults | Mai spacing-size slugs or empty for no gap; ignored by Slider. |
 | `margin_top`, `margin_bottom` | Mai defaults | Mai spacing-size slugs or empty. |
 
 Custom links use the same array shape returned by ACF's Link field:

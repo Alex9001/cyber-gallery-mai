@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+- Added Top and Bottom placement for Slider circle navigation when controls overlay the image.
+- Hid column, alignment, and gap controls for Slider while retaining separate block margin controls.
+- Added Square and Rounded image-corner choices; Circle Tiles remain circular.
+
 ## 0.2.0
 
 - Added Tiled Mosaic, a ratio-aware layout that combines mixed full-height and stacked tiles in source order.

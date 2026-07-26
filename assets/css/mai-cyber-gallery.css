@@ -7,7 +7,17 @@
 
 .mai-cyber-gallery-wrap {
 	--cyber-control-size: 2.75rem;
+	--cyber-rounded-image-radius: max(0.5rem, var(--image-border-radius, var(--border-radius, 0.5rem)));
+	--cyber-image-radius: var(--cyber-rounded-image-radius);
 	line-height: 1.5;
+}
+
+.mai-cyber-gallery-wrap.has-image-radius-square {
+	--cyber-image-radius: 0;
+}
+
+.mai-cyber-gallery-wrap.has-image-radius-rounded {
+	--cyber-image-radius: var(--cyber-rounded-image-radius);
 }
 
 .mai-cyber-gallery {
@@ -41,7 +51,7 @@
 	display: block;
 	width: 100%;
 	overflow: hidden;
-	border-radius: var(--image-border-radius, var(--border-radius));
+	border-radius: var(--cyber-image-radius);
 }
 
 .mai-cyber-gallery-image-link:focus-visible {
@@ -68,7 +78,7 @@
 
 .has-captions-overlay .mai-cyber-gallery-media {
 	overflow: hidden;
-	border-radius: var(--image-border-radius, var(--border-radius));
+	border-radius: var(--cyber-image-radius);
 }
 
 .has-captions-overlay .mai-cyber-gallery-image-caption {
@@ -343,6 +353,7 @@
 	flex: 1 1 auto;
 	min-height: 0;
 	overflow: hidden;
+	border-radius: var(--cyber-image-radius);
 }
 
 .mai-cyber-gallery-layout-slider .mai-cyber-gallery-image-frame,
@@ -534,22 +545,30 @@
 	display: flex;
 	max-width: min(75%, 32rem);
 	overflow-x: auto;
-	scrollbar-width: thin;
+	scrollbar-width: none;
 	pointer-events: auto;
+}
+
+.mai-cyber-gallery-slider-dots::-webkit-scrollbar {
+	display: none;
 }
 
 .has-slider-navigation-overlay .mai-cyber-gallery-slider-dots {
 	position: absolute;
 	inset-inline: 0;
 	bottom: var(--spacing-xs);
-	justify-content: center;
+	justify-content: safe center;
 	margin-inline: auto;
 }
 
-.has-slider-navigation-overlay.has-captions-below .mai-cyber-gallery-slider-dots,
-.has-slider-navigation-overlay.has-captions-overlay .mai-cyber-gallery-slider-dots {
+.has-slider-navigation-overlay.has-slider-dots-top .mai-cyber-gallery-slider-dots {
 	top: var(--spacing-xs);
 	bottom: auto;
+}
+
+.has-slider-navigation-overlay.has-slider-dots-bottom .mai-cyber-gallery-slider-dots {
+	top: auto;
+	bottom: var(--spacing-xs);
 }
 
 .mai-cyber-gallery-slider-dot {

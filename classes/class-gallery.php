@@ -67,6 +67,7 @@ class Mai_Cyber_Gallery {
 				'images_links'               => [],
 				'image_orientation'          => 'landscape',
 				'image_size'                 => 'large',
+				'image_radius'               => 'rounded',
 				'captions'                   => 'below',
 				'shadow'                     => false,
 				'hover'                      => 'zoom',
@@ -75,6 +76,7 @@ class Mai_Cyber_Gallery {
 				'mosaic_alternate'           => false,
 				'slider_navigation'          => 'arrows-dots',
 				'slider_navigation_position' => 'overlay',
+				'slider_dots_position'       => 'top',
 				'slider_arrow_style'         => 'circle',
 				'slider_width'               => 1200,
 				'slider_height'              => 560,
@@ -143,6 +145,7 @@ class Mai_Cyber_Gallery {
 		$root_classes = [
 			'has-captions-' . $this->args['captions'],
 			'has-hover-' . $this->args['hover'],
+			'has-image-radius-' . $this->args['image_radius'],
 		];
 
 		if ( $this->args['shadow'] ) {
@@ -160,6 +163,7 @@ class Mai_Cyber_Gallery {
 		if ( 'slider' === $this->args['layout'] ) {
 			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation'];
 			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation_position'];
+			$root_classes[] = 'has-slider-dots-' . $this->args['slider_dots_position'];
 			$root_classes[] = 'has-slider-arrows-' . $this->args['slider_arrow_style'];
 			$root_classes[] = 'has-slider-fit-' . $this->args['slider_image_fit'];
 		}
@@ -323,11 +327,13 @@ class Mai_Cyber_Gallery {
 		$args['layout']                     = sanitize_key( (string) $args['layout'] );
 		$args['click_action']               = sanitize_key( (string) $args['click_action'] );
 		$args['lightbox_arrow_style']       = sanitize_key( (string) $args['lightbox_arrow_style'] );
+		$args['image_radius']               = sanitize_key( (string) $args['image_radius'] );
 		$args['captions']                   = sanitize_key( (string) $args['captions'] );
 		$args['hover']                      = sanitize_key( (string) $args['hover'] );
 		$args['mosaic_feature_side']        = sanitize_key( (string) $args['mosaic_feature_side'] );
 		$args['slider_navigation']          = sanitize_key( (string) $args['slider_navigation'] );
 		$args['slider_navigation_position'] = sanitize_key( (string) $args['slider_navigation_position'] );
+		$args['slider_dots_position']       = sanitize_key( (string) $args['slider_dots_position'] );
 		$args['slider_arrow_style']         = sanitize_key( (string) $args['slider_arrow_style'] );
 		$args['slider_image_fit']           = sanitize_key( (string) $args['slider_image_fit'] );
 
@@ -341,6 +347,10 @@ class Mai_Cyber_Gallery {
 
 		if ( ! in_array( $args['lightbox_arrow_style'], $arrow_styles, true ) ) {
 			$args['lightbox_arrow_style'] = $defaults['lightbox_arrow_style'];
+		}
+
+		if ( ! in_array( $args['image_radius'], [ 'square', 'rounded' ], true ) ) {
+			$args['image_radius'] = $defaults['image_radius'];
 		}
 
 		if ( ! in_array( $args['captions'], [ 'none', 'below', 'overlay' ], true ) ) {
@@ -363,6 +373,10 @@ class Mai_Cyber_Gallery {
 
 		if ( ! in_array( $args['slider_navigation_position'], [ 'overlay', 'below' ], true ) ) {
 			$args['slider_navigation_position'] = $defaults['slider_navigation_position'];
+		}
+
+		if ( ! in_array( $args['slider_dots_position'], [ 'top', 'bottom' ], true ) ) {
+			$args['slider_dots_position'] = $defaults['slider_dots_position'];
 		}
 
 		if ( ! in_array( $args['slider_arrow_style'], $arrow_styles, true ) ) {
@@ -422,6 +436,18 @@ class Mai_Cyber_Gallery {
 
 		foreach ( [ 'columns', 'columns_md', 'columns_sm', 'columns_xs' ] as $key ) {
 			$args[ $key ] = max( 1, min( 8, absint( $args[ $key ] ) ) );
+		}
+
+		if ( 'slider' === $args['layout'] ) {
+			$args['columns']                = 1;
+			$args['columns_responsive']     = false;
+			$args['columns_md']             = 1;
+			$args['columns_sm']             = 1;
+			$args['columns_xs']             = 1;
+			$args['align_columns']          = '';
+			$args['align_columns_vertical'] = '';
+			$args['column_gap']             = '';
+			$args['row_gap']                = '';
 		}
 
 		return $args;

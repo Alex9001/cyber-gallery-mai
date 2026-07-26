@@ -57,6 +57,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'images_links'           => get_field( 'images_links' ),
 		'image_orientation'      => get_field( 'image_orientation' ),
 		'image_size'             => get_field( 'image_size' ),
+		'image_radius'           => get_field( 'image_radius' ),
 		'captions'               => get_field( 'captions' ),
 		'shadow'                 => get_field( 'shadow' ),
 		'hover'                  => get_field( 'hover' ),
@@ -65,6 +66,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'mosaic_alternate'       => get_field( 'mosaic_alternate' ),
 		'slider_navigation'      => get_field( 'slider_navigation' ),
 		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
+		'slider_dots_position'   => get_field( 'slider_dots_position' ),
 		'slider_arrow_style'     => get_field( 'slider_arrow_style' ),
 		'slider_width'           => get_field( 'slider_width' ),
 		'slider_height'          => get_field( 'slider_height' ),
@@ -297,6 +299,26 @@ function mai_cyber_gallery_register_field_group() {
 					],
 				],
 				[
+					'key'           => 'mai_cyber_gallery_image_radius',
+					'label'         => esc_html__( 'Image Corners', 'mai-cyber-gallery' ),
+					'name'          => 'image_radius',
+					'type'          => 'button_group',
+					'default_value' => 'rounded',
+					'choices'       => [
+						'square'  => esc_html__( 'Square', 'mai-cyber-gallery' ),
+						'rounded' => esc_html__( 'Rounded', 'mai-cyber-gallery' ),
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'circle',
+							],
+						],
+					],
+				],
+				[
 					'key'           => 'mai_cyber_gallery_shadow',
 					'name'          => 'shadow',
 					'type'          => 'true_false',
@@ -392,6 +414,54 @@ function mai_cyber_gallery_register_field_group() {
 								'field'    => 'mai_cyber_gallery_slider_navigation',
 								'operator' => '==',
 								'value'    => 'arrows-dots',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_dots_position',
+					'label'         => esc_html__( 'Circle Position', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Top is recommended when captions are displayed.', 'mai-cyber-gallery' ),
+					'name'          => 'slider_dots_position',
+					'type'          => 'button_group',
+					'default_value' => 'top',
+					'choices'       => [
+						'top'    => esc_html__( 'Top', 'mai-cyber-gallery' ),
+						'bottom' => esc_html__( 'Bottom', 'mai-cyber-gallery' ),
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation',
+								'operator' => '==',
+								'value'    => 'arrows-dots',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation_position',
+								'operator' => '==',
+								'value'    => 'overlay',
+							],
+						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation',
+								'operator' => '==',
+								'value'    => 'dots',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation_position',
+								'operator' => '==',
+								'value'    => 'overlay',
 							],
 						],
 					],
@@ -553,8 +623,8 @@ function mai_cyber_gallery_register_field_group() {
 				],
 				[
 					'key'          => 'mai_cyber_gallery_columns_clone',
-					'label'        => esc_html__( 'Responsive Columns & Spacing', 'mai-cyber-gallery' ),
-					'instructions' => esc_html__( 'Column counts apply to grid, masonry, square, circle, and filmstrip layouts. Tiled Mosaic uses them as a visual-group limit capped at four. Gaps and margins apply to every layout.', 'mai-cyber-gallery' ),
+					'label'        => esc_html__( 'Responsive Columns & Gaps', 'mai-cyber-gallery' ),
+					'instructions' => esc_html__( 'Available for non-Slider layouts. Tiled Mosaic uses the column count as a visual-group limit capped at four.', 'mai-cyber-gallery' ),
 					'name'         => 'columns_clone',
 					'type'         => 'clone',
 					'display'      => 'group',
@@ -568,6 +638,25 @@ function mai_cyber_gallery_register_field_group() {
 						'mai_align_columns_vertical',
 						'mai_column_gap',
 						'mai_row_gap',
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'          => 'mai_cyber_gallery_margins_clone',
+					'label'        => esc_html__( 'Block Spacing', 'mai-cyber-gallery' ),
+					'instructions' => esc_html__( 'Top and bottom margin around the complete gallery.', 'mai-cyber-gallery' ),
+					'name'         => 'margins_clone',
+					'type'         => 'clone',
+					'display'      => 'group',
+					'clone'        => [
 						'mai_margin_top',
 						'mai_margin_bottom',
 					],
