@@ -22,7 +22,7 @@ Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column co
 - **Square Tiles** — responsive 1:1 cropped tiles.
 - **Circle Tiles** — responsive circular 1:1 tiles.
 - **Filmstrip** — touch-friendly horizontal scroll snap with accessible controls.
-- **Slider** — a responsive content slider with per-slide titles, subtext, CTA buttons, alignment, selectable navigation, dimensions, and image fit.
+- **Slider** — a responsive content slider with per-slide titles, subtext, CTA buttons, horizontal and vertical content alignment, selectable navigation, dimensions, and image fit.
 
 Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups. Every layout retains top and bottom block margins.
 
@@ -41,7 +41,7 @@ Editorial Mosaic adds a **First Feature Side** control plus an option to alterna
 
 When the click action is Lightbox, choose Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab navigation arrows. The controls keep a stable hit target across hover, focus, and active states.
 
-Slider uses a dedicated **Slides** repeater. Every row has a required image plus optional title, plain-text subtext, Start/Center/End content alignment, and up to two CTA links. CTA styles reuse Mai Engine's Primary Button, Secondary Button, Outline Button, and Link Button styles. Slide images are intentionally non-interactive so CTAs remain the only destinations; Media Library captions and hover effects are not displayed in Slider.
+Slider uses a dedicated **Slides** repeater. Every row has a required image plus optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary Button, Secondary Button, Outline Button, and Link Button styles. Slide images are intentionally non-interactive so CTAs remain the only destinations; Media Library captions and hover effects are not displayed in Slider.
 
 Slider does not fall back to the legacy `images` array. Slider blocks created before 0.3.0 must be repopulated through the **Slides** repeater.
 
@@ -76,11 +76,12 @@ echo mai_get_cyber_gallery(
 		'layout' => 'slider',
 		'slides' => [
 			[
-				'image'   => 123,
-				'title'   => 'Build something memorable',
-				'subtext' => 'A concise supporting message that remains readable at every breakpoint.',
-				'align'   => 'start',
-				'buttons' => [
+				'image'          => 123,
+				'title'          => 'Build something memorable',
+				'subtext'        => 'A concise supporting message that remains readable at every breakpoint.',
+				'align'          => 'start',
+				'align_vertical' => 'bottom',
+				'buttons'        => [
 					[
 						'link'  => [
 							'url'    => 'https://example.com/',
@@ -111,7 +112,7 @@ echo mai_get_cyber_gallery(
 | `lightbox_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by non-Slider lightboxes. |
 | `images` | empty array | Ordered attachment ID array for non-Slider, non-custom click actions. |
 | `images_links` | empty array | Non-Slider image/link rows used when `click_action` is `custom`; schema shown below. |
-| `slides` | empty array | Canonical Slider rows. Each accepts `image`, `title`, `subtext`, `align`, and up to two `buttons`. |
+| `slides` | empty array | Canonical Slider rows. Each accepts `image`, `title`, `subtext`, horizontal `align` (`start`, `center`, or `end`), vertical `align_vertical` (`top`, `center`, or `bottom`; default `bottom`), and up to two `buttons`. |
 | `image_orientation` | `landscape` | A Mai image-orientation slug or `custom`; used by Grid and Filmstrip. |
 | `image_size` | `large` | Any registered WordPress image-size slug. This controls source dimensions and quality, not the rendered display box. |
 | `image_radius` | `rounded` | `square` or `rounded`. Circle Tiles always remain circular. |
@@ -171,7 +172,7 @@ The helpers are available after Mai Engine has set up the theme. A gallery rende
 - `mai_cyber_gallery_item( array $item, array $args ): array` filters each normalized item.
 - `mai_cyber_gallery_items( array $items, array $args ): array` filters the complete ordered item list.
 
-An item contains `id`, rendered `image` HTML, `caption`, `alt`, attachment `title`, numeric `ratio`, `width`, `height`, and a `link` array. Slider items also contain sanitized `slide_title`, `slide_subtext`, `slide_align`, and `slide_buttons`. Entries returned by the all-items filter are normalized again; non-array entries and entries without image HTML are discarded.
+An item contains `id`, rendered `image` HTML, `caption`, `alt`, attachment `title`, numeric `ratio`, `width`, `height`, and a `link` array. Slider items also contain sanitized `slide_title`, `slide_subtext`, `slide_align`, `slide_align_vertical`, and `slide_buttons`. Entries returned by the all-items filter are normalized again; non-array entries and entries without image HTML are discarded.
 
 Genesis attribute filters are available for the `mai-cyber-gallery`, `mai-cyber-gallery-items`, `mai-cyber-gallery-item`, and `mai-cyber-gallery-image-link` contexts. The standard Genesis markup open/content/close filters are available for the first three contexts; the image link uses `genesis_attr()` only.
 

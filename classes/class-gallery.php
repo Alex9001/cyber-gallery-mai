@@ -522,16 +522,24 @@ class Mai_Cyber_Gallery {
 				$align = 'start';
 			}
 
+			$align_vertical = isset( $row['align_vertical'] ) && is_scalar( $row['align_vertical'] )
+				? sanitize_key( (string) $row['align_vertical'] )
+				: 'bottom';
+			if ( ! in_array( $align_vertical, [ 'top', 'center', 'bottom' ], true ) ) {
+				$align_vertical = 'bottom';
+			}
+
 			$slides[] = [
-				'image'   => $image_id,
-				'title'   => isset( $row['title'] ) && is_scalar( $row['title'] )
+				'image'          => $image_id,
+				'title'          => isset( $row['title'] ) && is_scalar( $row['title'] )
 					? sanitize_text_field( (string) $row['title'] )
 					: '',
-				'subtext' => isset( $row['subtext'] ) && is_scalar( $row['subtext'] )
+				'subtext'        => isset( $row['subtext'] ) && is_scalar( $row['subtext'] )
 					? sanitize_textarea_field( (string) $row['subtext'] )
 					: '',
-				'align'   => $align,
-				'buttons' => $this->sanitize_slide_buttons( $row['buttons'] ?? [], $button_styles ),
+				'align'          => $align,
+				'align_vertical' => $align_vertical,
+				'buttons'        => $this->sanitize_slide_buttons( $row['buttons'] ?? [], $button_styles ),
 			];
 		}
 
@@ -658,12 +666,13 @@ class Mai_Cyber_Gallery {
 		if ( 'slider' === $this->args['layout'] ) {
 			foreach ( $this->args['slides'] as $slide ) {
 				$rows[] = [
-					'image'         => $slide['image'],
-					'link'          => [],
-					'slide_title'   => $slide['title'],
-					'slide_subtext' => $slide['subtext'],
-					'slide_align'   => $slide['align'],
-					'slide_buttons' => $slide['buttons'],
+					'image'                => $slide['image'],
+					'link'                 => [],
+					'slide_title'          => $slide['title'],
+					'slide_subtext'        => $slide['subtext'],
+					'slide_align'          => $slide['align'],
+					'slide_align_vertical' => $slide['align_vertical'],
+					'slide_buttons'        => $slide['buttons'],
 				];
 			}
 		} elseif ( 'custom' === $this->args['click_action'] ) {
@@ -710,19 +719,20 @@ class Mai_Cyber_Gallery {
 
 			$caption = wp_get_attachment_caption( $image_id );
 			$item = [
-				'id'              => $image_id,
-				'image'           => $image,
-				'caption'         => $caption ? $caption : '',
-				'alt'             => (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
-				'title'           => get_the_title( $image_id ),
-				'ratio'           => $width && $height ? $width / $height : 1,
-				'width'           => $width,
-				'height'          => $height,
-				'link'            => isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : [],
-				'slide_title'     => isset( $row['slide_title'] ) ? $row['slide_title'] : '',
-				'slide_subtext'   => isset( $row['slide_subtext'] ) ? $row['slide_subtext'] : '',
-				'slide_align'     => isset( $row['slide_align'] ) ? $row['slide_align'] : 'start',
-				'slide_buttons'   => isset( $row['slide_buttons'] ) ? $row['slide_buttons'] : [],
+				'id'                   => $image_id,
+				'image'                => $image,
+				'caption'              => $caption ? $caption : '',
+				'alt'                  => (string) get_post_meta( $image_id, '_wp_attachment_image_alt', true ),
+				'title'                => get_the_title( $image_id ),
+				'ratio'                => $width && $height ? $width / $height : 1,
+				'width'                => $width,
+				'height'               => $height,
+				'link'                 => isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : [],
+				'slide_title'          => isset( $row['slide_title'] ) ? $row['slide_title'] : '',
+				'slide_subtext'        => isset( $row['slide_subtext'] ) ? $row['slide_subtext'] : '',
+				'slide_align'          => isset( $row['slide_align'] ) ? $row['slide_align'] : 'start',
+				'slide_align_vertical' => isset( $row['slide_align_vertical'] ) ? $row['slide_align_vertical'] : 'bottom',
+				'slide_buttons'        => isset( $row['slide_buttons'] ) ? $row['slide_buttons'] : [],
 			];
 
 			/**
@@ -762,18 +772,19 @@ class Mai_Cyber_Gallery {
 			$item = wp_parse_args(
 				$item,
 				[
-					'id'              => 0,
-					'caption'         => '',
-					'alt'             => '',
-					'title'           => '',
-					'ratio'           => 1,
-					'width'           => 0,
-					'height'          => 0,
-					'link'            => [],
-					'slide_title'     => '',
-					'slide_subtext'   => '',
-					'slide_align'     => 'start',
-					'slide_buttons'   => [],
+					'id'                   => 0,
+					'caption'              => '',
+					'alt'                  => '',
+					'title'                => '',
+					'ratio'                => 1,
+					'width'                => 0,
+					'height'               => 0,
+					'link'                 => [],
+					'slide_title'          => '',
+					'slide_subtext'        => '',
+					'slide_align'          => 'start',
+					'slide_align_vertical' => 'bottom',
+					'slide_buttons'        => [],
 				]
 			);
 
@@ -797,6 +808,12 @@ class Mai_Cyber_Gallery {
 				: 'start';
 			if ( ! in_array( $item['slide_align'], [ 'start', 'center', 'end' ], true ) ) {
 				$item['slide_align'] = 'start';
+			}
+			$item['slide_align_vertical'] = is_scalar( $item['slide_align_vertical'] )
+				? sanitize_key( (string) $item['slide_align_vertical'] )
+				: 'bottom';
+			if ( ! in_array( $item['slide_align_vertical'], [ 'top', 'center', 'bottom' ], true ) ) {
+				$item['slide_align_vertical'] = 'bottom';
 			}
 			$item['slide_buttons'] = $this->sanitize_slide_buttons( $item['slide_buttons'] );
 			$normalized[]          = $item;
@@ -838,6 +855,7 @@ class Mai_Cyber_Gallery {
 				[
 					'has-slide-content',
 					'has-slide-align-' . $item['slide_align'],
+					'has-slide-align-vertical-' . $item['slide_align_vertical'],
 				],
 				$item_atts['class']
 			);

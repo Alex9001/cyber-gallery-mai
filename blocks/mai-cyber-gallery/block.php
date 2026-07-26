@@ -216,7 +216,7 @@ function mai_cyber_gallery_register_field_group() {
 						],
 						[
 							'key'             => 'mai_cyber_gallery_slide_align',
-							'label'           => esc_html__( 'Content Alignment', 'mai-cyber-gallery' ),
+							'label'           => esc_html__( 'Horizontal Alignment', 'mai-cyber-gallery' ),
 							'name'            => 'align',
 							'type'            => 'button_group',
 							'default_value'   => 'start',
@@ -224,6 +224,19 @@ function mai_cyber_gallery_register_field_group() {
 								'start'  => esc_html__( 'Start', 'mai-cyber-gallery' ),
 								'center' => esc_html__( 'Center', 'mai-cyber-gallery' ),
 								'end'    => esc_html__( 'End', 'mai-cyber-gallery' ),
+							],
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_slide_align_vertical',
+							'label'           => esc_html__( 'Vertical Alignment', 'mai-cyber-gallery' ),
+							'name'            => 'align_vertical',
+							'type'            => 'button_group',
+							'default_value'   => 'bottom',
+							'choices'         => [
+								'top'    => esc_html__( 'Top', 'mai-cyber-gallery' ),
+								'center' => esc_html__( 'Center', 'mai-cyber-gallery' ),
+								'bottom' => esc_html__( 'Bottom', 'mai-cyber-gallery' ),
 							],
 							'parent_repeater' => 'mai_cyber_gallery_slides',
 						],

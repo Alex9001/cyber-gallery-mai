@@ -3,7 +3,7 @@ Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
 Requires Plugins: mai-engine
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -31,7 +31,7 @@ Editorial Mosaic can start its feature image on the left or right and optionally
 
 Masonry places each image in the current shortest column to reduce unnecessary gaps. Tiled Mosaic uses source image ratios to create mixed full-height and stacked tiles while preserving image order, with the responsive column setting capped at four visual groups.
 
-Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End alignment, and up to two CTA links. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
+Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
 
 Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
 
@@ -40,6 +40,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.3.1 =
+
+Slider content can now be positioned at the Top, Center, or Bottom of each slide. Existing slides remain Bottom-aligned by default.
 
 = 0.3.0 =
 
@@ -80,9 +84,15 @@ No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
 
+= 0.3.1 =
+
+* Added per-slide Top, Center, and Bottom vertical content alignment, defaulting to Bottom.
+* Added position-aware contrast scrims for Top and Center slide content.
+* Added the `align_vertical` Slider row value and normalized `slide_align_vertical` item key to the PHP API.
+
 = 0.3.0 =
 
-* Added canonical Slider rows with per-slide titles, plain-text subtext, alignment, and up to two CTA buttons.
+* Added canonical Slider rows with per-slide titles, plain-text subtext, horizontal alignment, and up to two CTA buttons.
 * Reused Mai Engine Primary, Secondary, Outline, and Link Button styles.
 * Enabled field validation for required slide images, CTA URLs, and visible button labels.
 * Added a responsive contrast scrim, navigation-safe content spacing, titled accessibility labels, and print behavior.

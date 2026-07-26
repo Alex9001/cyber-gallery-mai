@@ -1,10 +1,16 @@
 # Changelog
 
+## 0.3.1
+
+- Added per-slide Top, Center, and Bottom vertical content alignment, defaulting to Bottom.
+- Added position-aware contrast scrims for Top and Center slide content.
+- Added the `align_vertical` Slider row value and normalized `slide_align_vertical` item key to the PHP API.
+
 ## 0.3.0
 
-- Replaced Slider's image-only source with canonical slide rows containing a required image plus optional title, plain-text subtext, and Start/Center/End alignment.
+- Replaced Slider's image-only source with canonical slide rows containing a required image plus optional title, plain-text subtext, and Start/Center/End horizontal alignment.
 - Added up to two CTA links per slide using Mai Engine's Primary, Secondary, Outline, and Link Button styles.
-- Enabled ACF block validation and require every CTA to have both a URL and visible button label.
+- Enabled ACF block validation and required every CTA to have both a URL and visible button label.
 - Added responsive overlay typography, a contrast scrim, navigation-safe spacing, mobile wrapping, long-copy fallback, and print styling.
 - Made Slider images non-interactive and suppressed irrelevant click-action, caption, hover, column, gallery-alignment, and gap controls.
 - Added titled slide, circle, and live-region labels plus focus handoff when a swipe deactivates a focused CTA.
