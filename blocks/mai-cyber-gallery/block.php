@@ -52,6 +52,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'class'                  => isset( $block['className'] ) ? $block['className'] : '',
 		'layout'                 => get_field( 'layout' ),
 		'click_action'           => get_field( 'click_action' ),
+		'lightbox_arrow_style'   => get_field( 'lightbox_arrow_style' ),
 		'images'                 => get_field( 'images' ),
 		'images_links'           => get_field( 'images_links' ),
 		'image_orientation'      => get_field( 'image_orientation' ),
@@ -62,6 +63,13 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'justified_row_height'   => get_field( 'justified_row_height' ),
 		'mosaic_feature_side'    => get_field( 'mosaic_feature_side' ),
 		'mosaic_alternate'       => get_field( 'mosaic_alternate' ),
+		'slider_navigation'      => get_field( 'slider_navigation' ),
+		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
+		'slider_arrow_style'     => get_field( 'slider_arrow_style' ),
+		'slider_width'           => get_field( 'slider_width' ),
+		'slider_height'          => get_field( 'slider_height' ),
+		'slider_height_mobile'   => get_field( 'slider_height_mobile' ),
+		'slider_image_fit'       => get_field( 'slider_image_fit' ),
 		'columns'                => get_field( 'columns' ),
 		'columns_responsive'     => get_field( 'columns_responsive' ),
 		'columns_md'             => get_field( 'columns_md' ),
@@ -95,6 +103,10 @@ function mai_cyber_gallery_register_field_group() {
 	$orientations = (array) mai_get_image_orientation_choices();
 	$image_sizes  = (array) mai_get_image_size_choices();
 
+	if ( ! isset( $image_sizes['full'] ) ) {
+		$image_sizes = [ 'full' => esc_html__( 'Full Size', 'mai-cyber-gallery' ) ] + $image_sizes;
+	}
+
 	acf_add_local_field_group(
 		[
 			'key'    => 'mai_cyber_gallery_field_group',
@@ -120,6 +132,24 @@ function mai_cyber_gallery_register_field_group() {
 						'custom'     => esc_html__( 'Custom Links', 'mai-cyber-gallery' ),
 					],
 					'ui'            => 1,
+				],
+				[
+					'key'           => 'mai_cyber_gallery_lightbox_arrow_style',
+					'label'         => esc_html__( 'Lightbox Arrow Design', 'mai-cyber-gallery' ),
+					'name'          => 'lightbox_arrow_style',
+					'type'          => 'select',
+					'default_value' => 'circle',
+					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
+					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_click_action',
+								'operator' => '==',
+								'value'    => 'lightbox',
+							],
+						],
+					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_images',
@@ -207,8 +237,8 @@ function mai_cyber_gallery_register_field_group() {
 				],
 				[
 					'key'           => 'mai_cyber_gallery_image_size',
-					'label'         => esc_html__( 'Image Size', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Use an uncropped size such as large for masonry and justified layouts.', 'mai-cyber-gallery' ),
+					'label'         => esc_html__( 'Image Quality / Source Size', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Choose a source at least as large as its display dimensions. Larger sources look sharper but use more bandwidth; use an uncropped size for natural-ratio layouts.', 'mai-cyber-gallery' ),
 					'name'          => 'image_size',
 					'type'          => 'select',
 					'default_value' => 'large',
@@ -289,6 +319,168 @@ function mai_cyber_gallery_register_field_group() {
 					'ui'            => 1,
 				],
 				[
+					'key'           => 'mai_cyber_gallery_slider_navigation',
+					'label'         => esc_html__( 'Slider Navigation', 'mai-cyber-gallery' ),
+					'name'          => 'slider_navigation',
+					'type'          => 'select',
+					'default_value' => 'arrows-dots',
+					'choices'       => mai_cyber_gallery_get_slider_navigation_choices(),
+					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_navigation_position',
+					'label'         => esc_html__( 'Navigation Position', 'mai-cyber-gallery' ),
+					'name'          => 'slider_navigation_position',
+					'type'          => 'button_group',
+					'default_value' => 'overlay',
+					'choices'       => [
+						'overlay' => esc_html__( 'Overlay', 'mai-cyber-gallery' ),
+						'below'   => esc_html__( 'Below', 'mai-cyber-gallery' ),
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation',
+								'operator' => '!=',
+								'value'    => 'none',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_arrow_style',
+					'label'         => esc_html__( 'Slider Arrow Design', 'mai-cyber-gallery' ),
+					'name'          => 'slider_arrow_style',
+					'type'          => 'select',
+					'default_value' => 'circle',
+					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
+					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation',
+								'operator' => '==',
+								'value'    => 'arrows',
+							],
+						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_navigation',
+								'operator' => '==',
+								'value'    => 'arrows-dots',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_width',
+					'label'         => esc_html__( 'Maximum Slider Width', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Use 0 to fill the available block width.', 'mai-cyber-gallery' ),
+					'name'          => 'slider_width',
+					'type'          => 'number',
+					'default_value' => 1200,
+					'min'           => 0,
+					'max'           => 2400,
+					'step'          => 20,
+					'append'        => 'px',
+					'wrapper'       => [ 'width' => 33 ],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_height',
+					'label'         => esc_html__( 'Desktop Height', 'mai-cyber-gallery' ),
+					'name'          => 'slider_height',
+					'type'          => 'number',
+					'default_value' => 560,
+					'min'           => 180,
+					'max'           => 1200,
+					'step'          => 10,
+					'append'        => 'px',
+					'wrapper'       => [ 'width' => 33 ],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_height_mobile',
+					'label'         => esc_html__( 'Mobile Height', 'mai-cyber-gallery' ),
+					'name'          => 'slider_height_mobile',
+					'type'          => 'number',
+					'default_value' => 320,
+					'min'           => 120,
+					'max'           => 800,
+					'step'          => 10,
+					'append'        => 'px',
+					'wrapper'       => [ 'width' => 33 ],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'           => 'mai_cyber_gallery_slider_image_fit',
+					'label'         => esc_html__( 'Slider Image Fit', 'mai-cyber-gallery' ),
+					'name'          => 'slider_image_fit',
+					'type'          => 'button_group',
+					'default_value' => 'cover',
+					'choices'       => [
+						'cover'   => esc_html__( 'Crop to Fill', 'mai-cyber-gallery' ),
+						'contain' => esc_html__( 'Show Full Image', 'mai-cyber-gallery' ),
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
 					'key'           => 'mai_cyber_gallery_justified_row_height',
 					'label'         => esc_html__( 'Target Row Height', 'mai-cyber-gallery' ),
 					'instructions'  => esc_html__( 'The layout balances each row around this height.', 'mai-cyber-gallery' ),
@@ -362,7 +554,7 @@ function mai_cyber_gallery_register_field_group() {
 				[
 					'key'          => 'mai_cyber_gallery_columns_clone',
 					'label'        => esc_html__( 'Responsive Columns & Spacing', 'mai-cyber-gallery' ),
-					'instructions' => esc_html__( 'Column counts apply to grid, masonry, square, circle, and filmstrip layouts. Gaps and margins apply to every layout.', 'mai-cyber-gallery' ),
+					'instructions' => esc_html__( 'Column counts apply to grid, masonry, square, circle, and filmstrip layouts. Tiled Mosaic uses them as a visual-group limit capped at four. Gaps and margins apply to every layout.', 'mai-cyber-gallery' ),
 					'name'         => 'columns_clone',
 					'type'         => 'clone',
 					'display'      => 'group',

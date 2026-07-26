@@ -101,10 +101,9 @@
 	opacity: 0.72;
 }
 
-/* Masonry columns.
- *
- * Mai's responsive column counts are converted to integer --cyber-columns-*
- * properties in PHP. Natural document order flows down each column.
+/* Masonry uses CSS columns as a resilient fallback. JavaScript upgrades it to
+ * source-ordered shortest-column packing, so indivisible figures cannot leave
+ * the large balancing holes created by multi-column fragmentation.
  */
 
 .mai-cyber-gallery-layout-masonry .mai-cyber-gallery.has-columns {
@@ -120,6 +119,24 @@
 	vertical-align: top;
 	break-inside: avoid;
 	page-break-inside: avoid;
+}
+
+.mai-cyber-gallery-layout-masonry.is-cyber-masonry-ready .mai-cyber-gallery.has-columns {
+	position: relative;
+	display: block;
+	height: var(--cyber-masonry-height, auto);
+	column-count: auto;
+	column-gap: var(--column-gap);
+}
+
+.mai-cyber-gallery-layout-masonry.is-cyber-masonry-ready .mai-cyber-gallery > .mai-cyber-gallery-item {
+	position: absolute;
+	inset-block-start: var(--cyber-masonry-y, 0);
+	inset-inline-start: var(--cyber-masonry-x, 0);
+	display: flex;
+	width: var(--cyber-masonry-width, 100%);
+	margin: 0;
+	transform: none;
 }
 
 /* Justified rows use Mai's regular responsive grid as a no-JS fallback. */
@@ -144,6 +161,43 @@
 .mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-image {
 	width: 100%;
 	height: 100%;
+	object-fit: cover;
+}
+
+/* Tiled Mosaic progressively enhances the regular Mai grid into ratio-aware
+ * rows containing a mix of full-height and vertically stacked image groups.
+ */
+
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery.has-columns {
+	position: relative;
+	display: block;
+	height: var(--cyber-tiled-height, auto);
+}
+
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-item {
+	position: absolute;
+	inset-block-start: var(--cyber-tiled-y, 0);
+	inset-inline-start: var(--cyber-tiled-x, 0);
+	display: flex;
+	width: var(--cyber-tiled-width, 100%);
+	margin: 0;
+	transform: none;
+}
+
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-media {
+	flex: 0 0 var(--cyber-tiled-media-height, auto);
+	height: var(--cyber-tiled-media-height, auto);
+	min-height: 0;
+}
+
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image-link,
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image {
+	width: 100%;
+	height: 100%;
+}
+
+.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image {
 	object-fit: cover;
 }
 
@@ -241,6 +295,350 @@
 	outline-offset: var(--focus-outline-offset, 3px);
 }
 
+/* Slider uses one native scroll-snap slide at a time. JavaScript adds exact
+ * controls and active state, while touch/trackpad scrolling remains functional
+ * without enhancement.
+ */
+
+.mai-cyber-gallery-layout-slider {
+	--cyber-slider-current-height: var(--cyber-slider-height-mobile, 320px);
+	position: relative;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery.has-columns {
+	display: flex;
+	flex-wrap: nowrap;
+	gap: 0;
+	align-items: stretch;
+	justify-content: flex-start;
+	width: 100%;
+	max-width: var(--cyber-slider-max-width, 1200px);
+	height: var(--cyber-slider-current-height);
+	margin-inline: auto;
+	padding: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: none;
+	overscroll-behavior-inline: contain;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery::-webkit-scrollbar {
+	display: none;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-item {
+	flex: 0 0 100%;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	min-width: 100%;
+	overflow: hidden;
+	scroll-snap-align: start;
+	scroll-snap-stop: always;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-media {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-image-link,
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-image {
+	width: 100%;
+	height: 100%;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery-image {
+	object-fit: cover;
+}
+
+.mai-cyber-gallery-layout-slider.has-slider-fit-contain .mai-cyber-gallery-media {
+	background: var(--color-alt, rgb(0 0 0 / 5%));
+}
+
+.mai-cyber-gallery-layout-slider.has-slider-fit-contain .mai-cyber-gallery-image {
+	object-fit: contain;
+}
+
+.mai-cyber-gallery-layout-slider .mai-cyber-gallery:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+.mai-cyber-gallery-slider-controls {
+	z-index: 5;
+	display: none;
+	width: 100%;
+	max-width: var(--cyber-slider-max-width, 1200px);
+	margin-inline: auto;
+	pointer-events: none;
+}
+
+.mai-cyber-gallery-layout-slider.is-cyber-slider-ready .mai-cyber-gallery-slider-controls {
+	display: block;
+}
+
+.mai-cyber-gallery-layout-slider.has-slider-navigation-none .mai-cyber-gallery-slider-controls {
+	display: none;
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-controls {
+	position: absolute;
+	inset-block-start: 0;
+	inset-inline: 0;
+	height: var(--cyber-slider-current-height);
+}
+
+.mai-cyber-gallery-layout-slider.is-cyber-slider-ready.has-slider-navigation-below .mai-cyber-gallery-slider-controls {
+	display: flex;
+	gap: var(--spacing-xs);
+	align-items: center;
+	justify-content: center;
+	min-height: var(--cyber-control-size);
+	margin-top: var(--spacing-xs);
+	pointer-events: auto;
+}
+
+.mai-cyber-gallery-slider-arrow,
+.mai-cyber-gallery-slider-dot {
+	--button-margin: 0;
+	--button-padding: 0;
+	--button-filter: none;
+	--button-filter-hover: none;
+	--button-box-shadow: none;
+	--button-box-shadow-hover: none;
+	--button-transform: none;
+	--button-transform-hover: none;
+}
+
+.mai-cyber-gallery-slider-arrow {
+	--button-width: var(--cyber-control-size);
+	--button-color: var(--color-white);
+	--button-color-hover: var(--color-white);
+	--button-background: rgb(0 0 0 / 55%);
+	--button-background-hover: rgb(0 0 0 / 78%);
+	--button-border: 1px solid rgb(255 255 255 / 45%);
+	--button-border-hover: 1px solid rgb(255 255 255 / 80%);
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cyber-control-size);
+	height: var(--cyber-control-size);
+	margin: 0;
+	padding: 0;
+	color: var(--button-color);
+	background: var(--button-background);
+	border: var(--button-border);
+	border-radius: 50%;
+	cursor: pointer;
+	pointer-events: auto;
+	transform: none;
+	transition:
+		color var(--transition-duration) var(--transition-timing-function),
+		background var(--transition-duration) var(--transition-timing-function),
+		border-color var(--transition-duration) var(--transition-timing-function),
+		opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-slider-arrow:hover,
+.mai-cyber-gallery-slider-arrow:active,
+.mai-cyber-gallery-slider-arrow:focus-visible {
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+	transform: none;
+}
+
+.mai-cyber-gallery-slider-arrow:focus-visible {
+	outline: 2px solid var(--color-white);
+	outline-offset: 3px;
+}
+
+.mai-cyber-gallery-slider-arrow:disabled {
+	visibility: hidden;
+}
+
+.mai-cyber-gallery-slider-arrow svg {
+	display: block;
+	width: 1.25rem;
+	height: 1.25rem;
+	fill: currentColor;
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-arrow {
+	position: absolute;
+	inset-block-start: calc((var(--cyber-slider-current-height) - var(--cyber-control-size)) / 2);
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-previous {
+	inset-inline-start: var(--spacing-sm);
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-next {
+	inset-inline-end: var(--spacing-sm);
+}
+
+.has-slider-navigation-below .mai-cyber-gallery-slider-previous {
+	order: 1;
+}
+
+.has-slider-navigation-below .mai-cyber-gallery-slider-next {
+	order: 3;
+}
+
+.has-slider-navigation-below .mai-cyber-gallery-slider-dots,
+.has-slider-navigation-below .mai-cyber-gallery-slider-counter {
+	order: 2;
+}
+
+.has-slider-arrows-square .mai-cyber-gallery-slider-arrow {
+	border-radius: var(--border-radius, 0.4rem);
+}
+
+.has-slider-arrows-minimal .mai-cyber-gallery-slider-arrow {
+	--button-background: transparent;
+	--button-background-hover: rgb(0 0 0 / 34%);
+	--button-border: 1px solid transparent;
+	--button-border-hover: 1px solid transparent;
+	filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+}
+
+.has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-arrow {
+	width: calc(var(--cyber-control-size) + var(--spacing-xs));
+	border-radius: 0;
+}
+
+.has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-previous {
+	inset-inline-start: 0;
+	border-start-end-radius: 999px;
+	border-end-end-radius: 999px;
+}
+
+.has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-next {
+	inset-inline-end: 0;
+	border-start-start-radius: 999px;
+	border-end-start-radius: 999px;
+}
+
+.has-slider-arrows-edge.has-slider-navigation-below .mai-cyber-gallery-slider-arrow {
+	width: calc(var(--cyber-control-size) + var(--spacing-md));
+	border-radius: 999px;
+}
+
+.mai-cyber-gallery-slider-dots {
+	display: flex;
+	max-width: min(75%, 32rem);
+	overflow-x: auto;
+	scrollbar-width: thin;
+	pointer-events: auto;
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-dots {
+	position: absolute;
+	inset-inline: 0;
+	bottom: var(--spacing-xs);
+	justify-content: center;
+	margin-inline: auto;
+}
+
+.has-slider-navigation-overlay.has-captions-below .mai-cyber-gallery-slider-dots,
+.has-slider-navigation-overlay.has-captions-overlay .mai-cyber-gallery-slider-dots {
+	top: var(--spacing-xs);
+	bottom: auto;
+}
+
+.mai-cyber-gallery-slider-dot {
+	--button-width: var(--cyber-control-size);
+	--button-color: var(--color-white);
+	--button-color-hover: var(--color-white);
+	--button-background: transparent;
+	--button-background-hover: transparent;
+	--button-border: 0;
+	--button-border-hover: 0;
+	display: inline-flex;
+	flex: 0 0 var(--cyber-control-size);
+	align-items: center;
+	justify-content: center;
+	width: var(--cyber-control-size);
+	height: var(--cyber-control-size);
+	margin: 0;
+	padding: 0;
+	color: var(--button-color);
+	background: transparent;
+	border: 0;
+	border-radius: 50%;
+	cursor: pointer;
+	pointer-events: auto;
+	transform: none;
+}
+
+.mai-cyber-gallery-slider-dot:hover,
+.mai-cyber-gallery-slider-dot:active,
+.mai-cyber-gallery-slider-dot:focus-visible {
+	background: transparent;
+	border: 0;
+	transform: none;
+}
+
+.mai-cyber-gallery-slider-dot:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -3px;
+}
+
+.mai-cyber-gallery-slider-dot > span {
+	display: block;
+	width: 0.65rem;
+	height: 0.65rem;
+	background: currentColor;
+	border: 1px solid rgb(0 0 0 / 35%);
+	border-radius: 50%;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 45%);
+	opacity: 0.55;
+	transition:
+		transform var(--transition-duration) var(--transition-timing-function),
+		opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-slider-dot[aria-current="true"] > span {
+	transform: scale(1.3);
+	opacity: 1;
+}
+
+.mai-cyber-gallery-slider-counter {
+	min-width: 4rem;
+	margin: 0;
+	padding: var(--spacing-xxs) var(--spacing-sm);
+	color: var(--color-white);
+	line-height: 1;
+	text-align: center;
+	background: rgb(0 0 0 / 58%);
+	border: 1px solid rgb(255 255 255 / 38%);
+	border-radius: 999px;
+	pointer-events: none;
+}
+
+.has-slider-navigation-overlay .mai-cyber-gallery-slider-counter {
+	position: absolute;
+	inset-inline-end: var(--spacing-sm);
+	bottom: var(--spacing-sm);
+}
+
+.has-slider-navigation-overlay.has-captions-below .mai-cyber-gallery-slider-counter,
+.has-slider-navigation-overlay.has-captions-overlay .mai-cyber-gallery-slider-counter {
+	top: var(--spacing-sm);
+	bottom: auto;
+}
+
+.mai-cyber-gallery-slider-counter-separator {
+	margin-inline: 0.35em;
+	opacity: 0.65;
+}
+
 .mai-cyber-gallery-controls {
 	display: none;
 	gap: var(--spacing-xs);
@@ -253,6 +651,14 @@
 }
 
 .mai-cyber-gallery-control {
+	--button-margin: 0;
+	--button-padding: 0;
+	--button-filter: none;
+	--button-filter-hover: none;
+	--button-box-shadow: none;
+	--button-box-shadow-hover: none;
+	--button-transform: none;
+	--button-transform-hover: none;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -269,10 +675,12 @@
 }
 
 .mai-cyber-gallery-control:hover,
+.mai-cyber-gallery-control:active,
 .mai-cyber-gallery-control:focus-visible {
 	color: var(--color-white);
 	background: var(--color-primary-dark, var(--color-primary));
 	border-color: var(--color-primary-dark, var(--color-primary));
+	transform: none;
 }
 
 .mai-cyber-gallery-control:focus-visible {
@@ -317,6 +725,7 @@ body.mai-cyber-gallery-lightbox-open {
 }
 
 .mai-cyber-gallery-dialog {
+	isolation: isolate;
 	width: 100vw;
 	max-width: none;
 	height: 100dvh;
@@ -335,6 +744,8 @@ body.mai-cyber-gallery-lightbox-open {
 }
 
 .mai-cyber-gallery-dialog-inner {
+	position: relative;
+	z-index: 1;
 	display: grid;
 	grid-template-rows: minmax(0, 1fr) auto;
 	align-items: stretch;
@@ -387,8 +798,23 @@ body.mai-cyber-gallery-lightbox-open {
 }
 
 .mai-cyber-gallery-dialog-button {
+	--button-width: var(--cyber-control-size, 2.75rem);
+	--button-margin: 0;
+	--button-padding: 0;
+	--button-color: var(--color-white);
+	--button-color-hover: var(--color-black);
+	--button-background: rgb(255 255 255 / 10%);
+	--button-background-hover: var(--color-white);
+	--button-border: 1px solid rgb(255 255 255 / 38%);
+	--button-border-hover: 1px solid var(--color-white);
+	--button-filter: none;
+	--button-filter-hover: none;
+	--button-box-shadow: none;
+	--button-box-shadow-hover: none;
+	--button-transform: none;
+	--button-transform-hover: none;
 	position: fixed;
-	z-index: 2;
+	z-index: 10;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -396,18 +822,28 @@ body.mai-cyber-gallery-lightbox-open {
 	height: var(--cyber-control-size, 2.75rem);
 	margin: 0;
 	padding: 0;
-	color: var(--color-white);
-	background: rgb(255 255 255 / 10%);
-	border: 1px solid rgb(255 255 255 / 38%);
+	color: var(--button-color);
+	background: var(--button-background);
+	border: var(--button-border);
 	border-radius: 50%;
 	cursor: pointer;
-	transition: opacity var(--transition-duration) var(--transition-timing-function);
+	pointer-events: auto;
+	transform: none;
+	transition:
+		color var(--transition-duration) var(--transition-timing-function),
+		background var(--transition-duration) var(--transition-timing-function),
+		border-color var(--transition-duration) var(--transition-timing-function),
+		opacity var(--transition-duration) var(--transition-timing-function);
 }
 
 .mai-cyber-gallery-dialog-button:hover,
+.mai-cyber-gallery-dialog-button:active,
 .mai-cyber-gallery-dialog-button:focus-visible {
-	color: var(--color-black);
-	background: var(--color-white);
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+	filter: var(--button-filter-hover);
+	transform: none;
 }
 
 .mai-cyber-gallery-dialog-button:focus-visible {
@@ -432,18 +868,52 @@ body.mai-cyber-gallery-lightbox-open {
 }
 
 .mai-cyber-gallery-dialog-previous {
-	inset-block-start: 50%;
+	inset-block: 0;
 	inset-inline-start: var(--spacing-md);
-	transform: translateY(-50%);
+	margin-block: auto;
 }
 
 .mai-cyber-gallery-dialog-next {
-	inset-block-start: 50%;
+	inset-block: 0;
 	inset-inline-end: var(--spacing-md);
-	transform: translateY(-50%);
+	margin-block: auto;
+}
+
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="square"] .mai-cyber-gallery-dialog-previous,
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="square"] .mai-cyber-gallery-dialog-next {
+	border-radius: var(--border-radius, 0.4rem);
+}
+
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="minimal"] .mai-cyber-gallery-dialog-previous,
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="minimal"] .mai-cyber-gallery-dialog-next {
+	--button-background: transparent;
+	--button-background-hover: rgb(255 255 255 / 14%);
+	--button-border: 1px solid transparent;
+	--button-border-hover: 1px solid transparent;
+	--button-filter: drop-shadow(0 1px 2px rgb(0 0 0 / 90%));
+	--button-filter-hover: drop-shadow(0 1px 2px rgb(0 0 0 / 90%));
+}
+
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous,
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-next {
+	width: calc(var(--cyber-control-size, 2.75rem) + var(--spacing-xs));
+	border-radius: 0;
+}
+
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous {
+	inset-inline-start: 0;
+	border-start-end-radius: 999px;
+	border-end-end-radius: 999px;
+}
+
+.mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-next {
+	inset-inline-end: 0;
+	border-start-start-radius: 999px;
+	border-end-start-radius: 999px;
 }
 
 html[dir="rtl"] .mai-cyber-gallery-control svg,
+html[dir="rtl"] .mai-cyber-gallery-slider-arrow svg,
 html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 	transform: scaleX(-1);
 }
@@ -453,6 +923,10 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 @media only screen and (min-width: 600px) {
 	.mai-cyber-gallery {
 		--cyber-columns: var(--cyber-columns-sm, var(--cyber-columns-xs, 1));
+	}
+
+	.mai-cyber-gallery-layout-slider {
+		--cyber-slider-current-height: var(--cyber-slider-height, 560px);
 	}
 
 	.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery.has-columns {
@@ -527,6 +1001,7 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 		inset-block-start: auto;
 		inset-block-end: var(--spacing-md);
 		inset-inline-start: var(--spacing-md);
+		margin-block: 0;
 		transform: none;
 	}
 
@@ -534,6 +1009,7 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 		inset-block-start: auto;
 		inset-block-end: var(--spacing-md);
 		inset-inline-end: var(--spacing-md);
+		margin-block: 0;
 		transform: none;
 	}
 }
@@ -542,6 +1018,8 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 	.mai-cyber-gallery,
 	.mai-cyber-gallery *,
 	.mai-cyber-gallery-control,
+	.mai-cyber-gallery-slider-arrow,
+	.mai-cyber-gallery-slider-dot,
 	.mai-cyber-gallery-dialog-button {
 		scroll-behavior: auto !important;
 		transition-duration: 0.01ms !important;
@@ -556,11 +1034,39 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 }
 
 .editor-styles-wrapper .mai-cyber-gallery a,
-.editor-styles-wrapper .mai-cyber-gallery-controls {
+.editor-styles-wrapper .mai-cyber-gallery-controls,
+.editor-styles-wrapper .mai-cyber-gallery-slider-controls {
 	pointer-events: none;
 }
 
 @media print {
+	.mai-cyber-gallery-layout-masonry.is-cyber-masonry-ready .mai-cyber-gallery.has-columns,
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery.has-columns {
+		display: flex;
+		height: auto !important;
+		flex-wrap: wrap;
+		column-count: auto;
+	}
+
+	.mai-cyber-gallery-layout-masonry.is-cyber-masonry-ready .mai-cyber-gallery > .mai-cyber-gallery-item,
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery > .mai-cyber-gallery-item {
+		position: static;
+		width: var(--flex-basis);
+		margin: 0;
+		transform: none;
+	}
+
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-media {
+		flex-basis: auto;
+		height: auto;
+	}
+
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image-frame,
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image-link,
+	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery-image {
+		height: auto;
+	}
+
 	.mai-cyber-gallery-layout-filmstrip.is-cyber-filmstrip-ready .mai-cyber-gallery-controls {
 		display: none;
 	}
@@ -568,5 +1074,21 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 	.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery.has-columns {
 		flex-wrap: wrap;
 		overflow: visible;
+	}
+
+	.mai-cyber-gallery-slider-controls {
+		display: none !important;
+	}
+
+	.mai-cyber-gallery-layout-slider .mai-cyber-gallery.has-columns {
+		height: auto;
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+
+	.mai-cyber-gallery-layout-slider .mai-cyber-gallery-item {
+		flex-basis: 50%;
+		height: auto;
+		min-width: 0;
 	}
 }

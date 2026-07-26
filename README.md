@@ -1,6 +1,6 @@
 # Mai Cyber Gallery
 
-Mai Cyber Gallery is a Mai Engine add-on for advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
+Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
 
 ## Requirements
 
@@ -15,14 +15,16 @@ Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column co
 ## Layouts
 
 - **Mai Grid** — the familiar responsive Mai flex-column gallery.
-- **Masonry Columns** — a natural-ratio waterfall with responsive column counts.
+- **Masonry Columns** — a natural-ratio waterfall that places each image in the current shortest column to avoid unnecessary empty space.
 - **Justified Rows** — upload-order rows balanced around a configurable target height.
+- **Tiled Mosaic** — a ratio-aware, source-order mosaic of mixed full-height and stacked tiles.
 - **Editorial Mosaic** — a responsive five-image bento pattern with a selectable starting side and optional side alternation.
 - **Square Tiles** — responsive 1:1 cropped tiles.
 - **Circle Tiles** — responsive circular 1:1 tiles.
 - **Filmstrip** — touch-friendly horizontal scroll snap with accessible controls.
+- **Slider** — a single-slide viewport with selectable navigation, placement, dimensions, and image fit.
 
-Every layout uses Mai's column/row gaps and margin controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts.
+Every layout uses Mai's column/row gaps and margin controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups.
 
 ## Editor usage
 
@@ -33,9 +35,15 @@ Every layout uses Mai's column/row gaps and margin controls. Grid, Masonry, Squa
 
 Click actions include no link, the built-in dialog lightbox, the original media file, the attachment page, and per-image custom links.
 
-For Masonry and Justified layouts, choose an uncropped image size such as `large`. Mai Grid and Filmstrip use Mai's selected image orientation when an oriented size exists.
+For Masonry, Justified, and Tiled Mosaic, choose an uncropped image size such as `large`. Mai Grid and Filmstrip use Mai's selected image orientation when an oriented size exists.
 
 Editorial Mosaic adds a **First Feature Side** control plus an option to alternate that side after every five images.
+
+When the click action is Lightbox, choose Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab navigation arrows. The controls keep a stable hit target across hover, focus, and active states.
+
+Slider adds navigation choices for Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them. Slider controls also set the arrow design, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide.
+
+**Image Quality / Source Size** selects the WordPress image source used in the responsive image markup. Choose a source at least as large as the displayed image: larger sources can look sharper but use more bandwidth. Slider dimensions control the display box independently.
 
 ## PHP API
 
@@ -62,18 +70,26 @@ echo mai_get_cyber_gallery(
 | `anchor` | empty | Block/API anchor ID. |
 | `class` | empty | Space-separated additional classes. |
 | `align` | empty | Empty, `wide`, or `full`. |
-| `layout` | `masonry` | `grid`, `masonry`, `justified`, `mosaic`, `square`, `circle`, or `filmstrip`. |
+| `layout` | `masonry` | `grid`, `masonry`, `justified`, `tiled`, `mosaic`, `square`, `circle`, `filmstrip`, or `slider`. |
 | `mosaic_feature_side` | `left` | `left` or `right`; positions the first feature tile and sets the starting side. |
 | `mosaic_alternate` | `false` | Boolean; swaps the feature side every five images. |
 | `click_action` | `lightbox` | `none`, `lightbox`, `media`, `attachment`, or `custom`. |
+| `lightbox_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used when `click_action` is `lightbox`. |
 | `images` | empty array | Ordered attachment ID array for every non-custom click action. |
 | `images_links` | empty array | Image/link rows used when `click_action` is `custom`; schema shown below. |
 | `image_orientation` | `landscape` | A Mai image-orientation slug or `custom`; used by Grid and Filmstrip. |
-| `image_size` | `large` | Any registered WordPress image-size slug. |
+| `image_size` | `large` | Any registered WordPress image-size slug. This controls source dimensions and quality, not the rendered display box. |
 | `captions` | `below` | `none`, `below`, or `overlay`. Captions come from Media Library attachments. |
 | `shadow` | `false` | Boolean value sanitized by Mai Engine. |
 | `hover` | `zoom` | `none`, `zoom`, `lift`, or `fade`. |
 | `justified_row_height` | `240` | Target pixel height from 100 through 600. |
+| `slider_navigation` | `arrows-dots` | `arrows-dots`, `arrows`, `dots`, `counter`, or `none`. |
+| `slider_navigation_position` | `overlay` | `overlay` or `below`. |
+| `slider_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by navigation modes that include arrows. |
+| `slider_width` | `1200` | Maximum slider width in pixels from 0 through 2400; `0` fills the available block width. |
+| `slider_height` | `560` | Desktop slider height in pixels from 180 through 1200. |
+| `slider_height_mobile` | `320` | Mobile slider height in pixels from 120 through 800. |
+| `slider_image_fit` | `cover` | `cover` crops to fill the slide; `contain` shows the complete image. |
 | `columns` | Mai default (`3`) | Main column count from 1 through 8. |
 | `columns_responsive` | Mai default (`false`) | Use explicit breakpoint counts when true; otherwise Mai calculates them. |
 | `columns_md`, `columns_sm`, `columns_xs` | Mai defaults | Explicit counts from 1 through 8 when responsive columns are enabled. |
@@ -102,11 +118,13 @@ echo mai_get_cyber_gallery(
 );
 ```
 
-The helpers are available after Mai Engine has set up the theme. A gallery rendered through the block is detected early and gets its critical assets in the document head. If a theme template will render a Justified gallery through the PHP API after `wp_head`, enqueue the registered `mai-cyber-gallery` style and script handles from `wp_enqueue_scripts` so the first layout is ready before paint.
+The helpers are available after Mai Engine has set up the theme. A gallery rendered through the block is detected early and gets its critical assets in the document head. If a theme template will render a Masonry, Justified, Tiled Mosaic, Filmstrip, Slider, or lightbox gallery through the PHP API after `wp_head`, enqueue the registered `mai-cyber-gallery` style and script handles from `wp_enqueue_scripts` so the first layout is ready before paint.
 
 ## Extension points
 
 - `mai_cyber_gallery_layouts( array $layouts ): array` filters layout slug/label pairs. A custom layout must supply its own CSS and behavior.
+- `mai_cyber_gallery_arrow_styles( array $styles ): array` filters the arrow design slug/label pairs shared by the lightbox and Slider.
+- `mai_cyber_gallery_slider_navigation_choices( array $choices ): array` filters Slider navigation slug/label pairs.
 - `mai_cyber_gallery_args( array $args ): array` filters parsed arguments before sanitization.
 - `mai_cyber_gallery_image_size( string $image_size, array $args ): string` filters the thumbnail size.
 - `mai_cyber_gallery_item( array $item, array $args ): array` filters each normalized item.
@@ -121,10 +139,12 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 ## Design notes
 
 - Thumbnail markup comes from `wp_get_attachment_image()` so WordPress controls intrinsic dimensions, responsive sources, lazy loading, decoding, and fetch priority.
-- Masonry is CSS multi-column and remains fully functional without JavaScript.
+- Masonry progressively enhances its CSS multi-column fallback with a shortest-column layout that preserves source order and removes avoidable holes.
 - Justified Rows progressively enhances the normal Mai grid and recalculates through `ResizeObserver`.
+- Tiled Mosaic uses image ratios to build mixed, close-packed groups while preserving source order.
 - Filmstrip uses native scrolling and never autoplays.
-- The lightbox uses the browser's modal `<dialog>` behavior, supports Escape/arrow/Home/End keys, and returns focus to its trigger.
+- Slider uses native scroll snap, never autoplays, and supports buttons, keyboard navigation, counters, and accessible status updates.
+- The lightbox uses the browser's modal `<dialog>` behavior, supports Escape/arrow/Home/End keys, offers four arrow designs, and returns focus to its trigger.
 - Motion effects honor `prefers-reduced-motion`.
 - No updater is bundled until this fork has its own release repository. It will never use the upstream Mai Galleries update channel.
 

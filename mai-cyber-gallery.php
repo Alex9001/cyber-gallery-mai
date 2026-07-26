@@ -3,8 +3,8 @@
  * Mai Cyber Gallery.
  *
  * Plugin Name:       Mai Cyber Gallery
- * Description:       Advanced masonry, tiled, mosaic, and filmstrip galleries powered by Mai Engine.
- * Version:           0.1.1
+ * Description:       Advanced masonry, tiled mosaic, slider, and lightbox galleries powered by Mai Engine.
+ * Version:           0.2.0
  * Requires at least: 6.4
  * Tested up to:      7.0
  * Requires PHP:      8.1
@@ -79,7 +79,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return void
 	 */
 	private function setup_constants() {
-		define( 'MAI_CYBER_GALLERY_VERSION', '0.1.1' );
+		define( 'MAI_CYBER_GALLERY_VERSION', '0.2.0' );
 		define( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION', '2.39.0' );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -211,6 +211,7 @@ final class Mai_Cyber_Gallery_Plugin {
 				'previous'    => __( 'Previous image', 'mai-cyber-gallery' ),
 				'position'    => __( '%1$d of %2$d', 'mai-cyber-gallery' ),
 				'status'      => __( '%1$s, %2$s', 'mai-cyber-gallery' ),
+				'slide'       => __( 'Slide %1$d of %2$d', 'mai-cyber-gallery' ),
 			]
 		);
 	}
@@ -218,8 +219,8 @@ final class Mai_Cyber_Gallery_Plugin {
 	/**
 	 * Load block assets in the document head when queried content uses the block.
 	 *
-	 * Justified Rows must initialize before their CSS fallback can paint. The
-	 * renderer still enqueues on demand for galleries created through the PHP API.
+	 * Script-driven layouts should initialize before their CSS fallback can paint.
+	 * The renderer still enqueues on demand for galleries created through the PHP API.
 	 *
 	 * @since 0.1.0
 	 *
@@ -291,7 +292,10 @@ final class Mai_Cyber_Gallery_Plugin {
 					? sanitize_key( (string) $data['click_action'] )
 					: 'lightbox';
 
-				if ( 'lightbox' === $click || in_array( $layout, [ 'justified', 'filmstrip' ], true ) ) {
+				if (
+					'lightbox' === $click
+					|| in_array( $layout, [ 'masonry', 'justified', 'tiled', 'filmstrip', 'slider' ], true )
+				) {
 					return true;
 				}
 			}

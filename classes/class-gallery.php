@@ -55,23 +55,31 @@ class Mai_Cyber_Gallery {
 		$defaults = array_merge(
 			$column_defaults,
 			[
-				'preview'              => false,
-				'id'                   => '',
-				'align'                => '',
-				'anchor'               => '',
-				'class'                => '',
-				'layout'               => 'masonry',
-				'click_action'         => 'lightbox',
-				'images'               => [],
-				'images_links'         => [],
-				'image_orientation'    => 'landscape',
-				'image_size'           => 'large',
-				'captions'             => 'below',
-				'shadow'               => false,
-				'hover'                => 'zoom',
-				'justified_row_height' => 240,
-				'mosaic_feature_side'  => 'left',
-				'mosaic_alternate'     => false,
+				'preview'                    => false,
+				'id'                         => '',
+				'align'                      => '',
+				'anchor'                     => '',
+				'class'                      => '',
+				'layout'                     => 'masonry',
+				'click_action'               => 'lightbox',
+				'lightbox_arrow_style'       => 'circle',
+				'images'                     => [],
+				'images_links'               => [],
+				'image_orientation'          => 'landscape',
+				'image_size'                 => 'large',
+				'captions'                   => 'below',
+				'shadow'                     => false,
+				'hover'                      => 'zoom',
+				'justified_row_height'       => 240,
+				'mosaic_feature_side'        => 'left',
+				'mosaic_alternate'           => false,
+				'slider_navigation'          => 'arrows-dots',
+				'slider_navigation_position' => 'overlay',
+				'slider_arrow_style'         => 'circle',
+				'slider_width'               => 1200,
+				'slider_height'              => 560,
+				'slider_height_mobile'       => 320,
+				'slider_image_fit'           => 'cover',
 			]
 		);
 
@@ -149,6 +157,13 @@ class Mai_Cyber_Gallery {
 			}
 		}
 
+		if ( 'slider' === $this->args['layout'] ) {
+			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation'];
+			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation_position'];
+			$root_classes[] = 'has-slider-arrows-' . $this->args['slider_arrow_style'];
+			$root_classes[] = 'has-slider-fit-' . $this->args['slider_image_fit'];
+		}
+
 		$root_atts['class'] = mai_add_classes( $root_classes, $root_atts['class'] );
 
 		if ( $this->args['align'] ) {
@@ -170,11 +185,30 @@ class Mai_Cyber_Gallery {
 			}
 		}
 
+		$root_style = '';
+
 		if ( $this->args['shadow'] ) {
-			$root_atts['style'] = '--image-filter:var(--drop-shadow);';
+			$root_style .= '--image-filter:var(--drop-shadow);';
 		}
 
-		if ( 'filmstrip' === $this->args['layout'] ) {
+		if ( 'slider' === $this->args['layout'] ) {
+			$slider_width = $this->args['slider_width']
+				? $this->args['slider_width'] . 'px'
+				: '100%';
+
+			$root_style .= sprintf(
+				'--cyber-slider-max-width:%1$s;--cyber-slider-height:%2$dpx;--cyber-slider-height-mobile:%3$dpx;',
+				$slider_width,
+				$this->args['slider_height'],
+				$this->args['slider_height_mobile']
+			);
+		}
+
+		if ( $root_style ) {
+			$root_atts['style'] = $root_style;
+		}
+
+		if ( in_array( $this->args['layout'], [ 'filmstrip', 'slider' ], true ) ) {
 			$root_atts['role']                  = 'region';
 			$root_atts['aria-label']            = esc_html__( 'Image gallery', 'mai-cyber-gallery' );
 			$root_atts['aria-roledescription']  = esc_html__( 'carousel', 'mai-cyber-gallery' );
@@ -213,11 +247,13 @@ class Mai_Cyber_Gallery {
 			$items_atts['data-cyber-row-height'] = $this->args['justified_row_height'];
 		}
 
-		if ( 'filmstrip' === $this->args['layout'] ) {
+		if ( in_array( $this->args['layout'], [ 'filmstrip', 'slider' ], true ) ) {
 			// Genesis omits the exact string "0" as a falsey attribute value.
 			// "00" is an equivalent valid integer which preserves keyboard focus.
-			$items_atts['tabindex']   = '00';
-			$items_atts['aria-label'] = esc_html__( 'Gallery filmstrip', 'mai-cyber-gallery' );
+			$items_atts['tabindex'] = '00';
+			$items_atts['aria-label'] = 'filmstrip' === $this->args['layout']
+				? esc_html__( 'Gallery filmstrip', 'mai-cyber-gallery' )
+				: esc_html__( 'Gallery slider', 'mai-cyber-gallery' );
 		}
 
 		$html .= genesis_markup(
@@ -248,6 +284,10 @@ class Mai_Cyber_Gallery {
 			$html .= $this->get_filmstrip_controls( $gallery_id );
 		}
 
+		if ( 'slider' === $this->args['layout'] && 1 < $total ) {
+			$html .= $this->get_slider_controls( $gallery_id, $total );
+		}
+
 		$html .= genesis_markup(
 			[
 				'close'   => '</div>',
@@ -271,18 +311,25 @@ class Mai_Cyber_Gallery {
 	 * @return array
 	 */
 	protected function sanitize_args( $args, $defaults ) {
-		$layouts = array_keys( mai_cyber_gallery_get_layout_choices() );
+		$layouts           = array_keys( mai_cyber_gallery_get_layout_choices() );
+		$arrow_styles      = array_keys( mai_cyber_gallery_get_arrow_style_choices() );
+		$slider_navigation = array_keys( mai_cyber_gallery_get_slider_navigation_choices() );
 
-		$args['preview']             = mai_sanitize_bool( $args['preview'] );
-		$args['id']                  = sanitize_title( (string) $args['id'] );
-		$args['align']               = sanitize_html_class( (string) $args['align'] );
-		$args['anchor']              = sanitize_title( (string) $args['anchor'] );
-		$args['class']               = $this->sanitize_classes( $args['class'] );
-		$args['layout']              = sanitize_key( (string) $args['layout'] );
-		$args['click_action']        = sanitize_key( (string) $args['click_action'] );
-		$args['captions']            = sanitize_key( (string) $args['captions'] );
-		$args['hover']               = sanitize_key( (string) $args['hover'] );
-		$args['mosaic_feature_side'] = sanitize_key( (string) $args['mosaic_feature_side'] );
+		$args['preview']                    = mai_sanitize_bool( $args['preview'] );
+		$args['id']                         = sanitize_title( (string) $args['id'] );
+		$args['align']                      = sanitize_html_class( (string) $args['align'] );
+		$args['anchor']                     = sanitize_title( (string) $args['anchor'] );
+		$args['class']                      = $this->sanitize_classes( $args['class'] );
+		$args['layout']                     = sanitize_key( (string) $args['layout'] );
+		$args['click_action']               = sanitize_key( (string) $args['click_action'] );
+		$args['lightbox_arrow_style']       = sanitize_key( (string) $args['lightbox_arrow_style'] );
+		$args['captions']                   = sanitize_key( (string) $args['captions'] );
+		$args['hover']                      = sanitize_key( (string) $args['hover'] );
+		$args['mosaic_feature_side']        = sanitize_key( (string) $args['mosaic_feature_side'] );
+		$args['slider_navigation']          = sanitize_key( (string) $args['slider_navigation'] );
+		$args['slider_navigation_position'] = sanitize_key( (string) $args['slider_navigation_position'] );
+		$args['slider_arrow_style']         = sanitize_key( (string) $args['slider_arrow_style'] );
+		$args['slider_image_fit']           = sanitize_key( (string) $args['slider_image_fit'] );
 
 		if ( ! in_array( $args['layout'], $layouts, true ) ) {
 			$args['layout'] = $defaults['layout'];
@@ -290,6 +337,10 @@ class Mai_Cyber_Gallery {
 
 		if ( ! in_array( $args['click_action'], [ 'none', 'lightbox', 'media', 'attachment', 'custom' ], true ) ) {
 			$args['click_action'] = $defaults['click_action'];
+		}
+
+		if ( ! in_array( $args['lightbox_arrow_style'], $arrow_styles, true ) ) {
+			$args['lightbox_arrow_style'] = $defaults['lightbox_arrow_style'];
 		}
 
 		if ( ! in_array( $args['captions'], [ 'none', 'below', 'overlay' ], true ) ) {
@@ -305,6 +356,36 @@ class Mai_Cyber_Gallery {
 		}
 
 		$args['mosaic_alternate'] = mai_sanitize_bool( $args['mosaic_alternate'] );
+
+		if ( ! in_array( $args['slider_navigation'], $slider_navigation, true ) ) {
+			$args['slider_navigation'] = $defaults['slider_navigation'];
+		}
+
+		if ( ! in_array( $args['slider_navigation_position'], [ 'overlay', 'below' ], true ) ) {
+			$args['slider_navigation_position'] = $defaults['slider_navigation_position'];
+		}
+
+		if ( ! in_array( $args['slider_arrow_style'], $arrow_styles, true ) ) {
+			$args['slider_arrow_style'] = $defaults['slider_arrow_style'];
+		}
+
+		if ( ! in_array( $args['slider_image_fit'], [ 'cover', 'contain' ], true ) ) {
+			$args['slider_image_fit'] = $defaults['slider_image_fit'];
+		}
+
+		foreach (
+			[
+				'slider_width'         => [ 0, 2400 ],
+				'slider_height'        => [ 180, 1200 ],
+				'slider_height_mobile' => [ 120, 800 ],
+			] as $key => $range
+		) {
+			if ( ! is_numeric( $args[ $key ] ) ) {
+				$args[ $key ] = $defaults[ $key ];
+			}
+
+			$args[ $key ] = max( $range[0], min( $range[1], (int) $args[ $key ] ) );
+		}
 
 		$args['images']       = array_values( array_filter( array_map( 'absint', (array) $args['images'] ) ) );
 		$args['images_links'] = $this->sanitize_linked_images( $args['images_links'] );
@@ -559,7 +640,7 @@ class Mai_Cyber_Gallery {
 			'style'            => sprintf( '--cyber-ratio:%s;', number_format( $ratio, 6, '.', '' ) ),
 		];
 
-		if ( 'filmstrip' === $this->args['layout'] ) {
+		if ( in_array( $this->args['layout'], [ 'filmstrip', 'slider' ], true ) ) {
 			$item_atts['aria-roledescription'] = esc_html__( 'slide', 'mai-cyber-gallery' );
 			$item_atts['aria-label'] = sprintf(
 				/* translators: 1: Current slide number. 2: Total slides. */
@@ -714,6 +795,7 @@ class Mai_Cyber_Gallery {
 		$atts['data-cyber-sizes']       = wp_get_attachment_image_sizes( $item['id'], 'full' );
 		$atts['data-cyber-width']       = absint( $full[1] );
 		$atts['data-cyber-height']      = absint( $full[2] );
+		$atts['data-cyber-arrow-style'] = $this->args['lightbox_arrow_style'];
 		$atts['aria-haspopup']          = 'dialog';
 		$atts['aria-label']             = sprintf(
 			/* translators: 1: Current image number. 2: Total images. 3: Image description. */
@@ -768,7 +850,7 @@ class Mai_Cyber_Gallery {
 
 		if (
 			'lightbox' === $this->args['click_action']
-			|| in_array( $this->args['layout'], [ 'justified', 'filmstrip' ], true )
+			|| in_array( $this->args['layout'], [ 'masonry', 'justified', 'tiled', 'filmstrip', 'slider' ], true )
 		) {
 			wp_enqueue_script( 'mai-cyber-gallery' );
 		}
@@ -820,6 +902,86 @@ class Mai_Cyber_Gallery {
 			$previous_icon ? $previous_icon : '&larr;',
 			esc_attr__( 'Next images', 'mai-cyber-gallery' ),
 			$next_icon ? $next_icon : '&rarr;'
+		);
+	}
+
+	/**
+	 * Get slider navigation controls.
+	 *
+	 * @since 0.2.0
+	 *
+	 * @param string $gallery_id Gallery ID.
+	 * @param int    $total      Total slides.
+	 *
+	 * @return string
+	 */
+	protected function get_slider_controls( $gallery_id, $total ) {
+		$navigation = $this->args['slider_navigation'];
+		$has_arrows = in_array( $navigation, [ 'arrows', 'arrows-dots' ], true );
+		$has_dots   = in_array( $navigation, [ 'dots', 'arrows-dots' ], true );
+		$track_id   = $gallery_id . '-items';
+		$controls   = '';
+
+		if ( $has_arrows ) {
+			$previous_icon = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M15.5 4 7.5 12l8 8 1.5-1.5-6.5-6.5L17 5.5z"></path></svg>';
+			$next_icon     = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="m8.5 20 8-8-8-8L7 5.5l6.5 6.5L7 18.5z"></path></svg>';
+
+			$controls .= sprintf(
+				'<button class="mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-previous" type="button" data-cyber-slider-previous aria-controls="%1$s" aria-label="%2$s" disabled>%3$s</button>'
+				. '<button class="mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-next" type="button" data-cyber-slider-next aria-controls="%1$s" aria-label="%4$s">%5$s</button>',
+				esc_attr( $track_id ),
+				esc_attr__( 'Previous slide', 'mai-cyber-gallery' ),
+				$previous_icon,
+				esc_attr__( 'Next slide', 'mai-cyber-gallery' ),
+				$next_icon
+			);
+		}
+
+		if ( $has_dots ) {
+			$controls .= sprintf(
+				'<div class="mai-cyber-gallery-slider-dots" role="group" aria-label="%s">',
+				esc_attr__( 'Choose a slide', 'mai-cyber-gallery' )
+			);
+
+			for ( $index = 0; $index < $total; $index++ ) {
+				$current = 0 === $index ? ' aria-current="true"' : '';
+				$controls .= sprintf(
+					'<button class="mai-cyber-gallery-slider-dot" type="button" data-cyber-slider-dot="%1$d" aria-controls="%2$s" aria-label="%3$s"%4$s><span aria-hidden="true"></span></button>',
+					$index,
+					esc_attr( $track_id ),
+					esc_attr(
+						sprintf(
+							/* translators: %d: Slide number. */
+							__( 'Go to slide %d', 'mai-cyber-gallery' ),
+							$index + 1
+						)
+					),
+					$current
+				);
+			}
+
+			$controls .= '</div>';
+		}
+
+		if ( 'counter' === $navigation ) {
+			$controls .= sprintf(
+				'<p class="mai-cyber-gallery-slider-counter" aria-hidden="true"><span data-cyber-slider-current>1</span><span class="mai-cyber-gallery-slider-counter-separator">/</span><span>%d</span></p>',
+				$total
+			);
+		}
+
+		$status = sprintf(
+			/* translators: 1: Current slide number. 2: Total slides. */
+			esc_html__( 'Slide %1$d of %2$d', 'mai-cyber-gallery' ),
+			1,
+			$total
+		);
+
+		return sprintf(
+			'<div class="mai-cyber-gallery-slider-controls" role="group" aria-label="%1$s">%2$s<p class="mai-cyber-gallery-slider-status screen-reader-text" data-cyber-slider-status aria-live="polite" aria-atomic="true">%3$s</p></div>',
+			esc_attr__( 'Slider navigation', 'mai-cyber-gallery' ),
+			$controls,
+			esc_html( $status )
 		);
 	}
 }
