@@ -1,0 +1,572 @@
+/**
+ * Mai Cyber Gallery.
+ *
+ * Layout is intentionally built on Mai Engine's responsive column variables,
+ * spacing scale, image radius, shadow, colors, and transitions.
+ */
+
+.mai-cyber-gallery-wrap {
+	--cyber-control-size: 2.75rem;
+	line-height: 1.5;
+}
+
+.mai-cyber-gallery {
+	--cyber-columns: var(--cyber-columns-xs, 1);
+	width: 100%;
+}
+
+.mai-cyber-gallery-item {
+	display: flex;
+	flex-direction: column;
+	align-content: center;
+	justify-content: flex-start;
+	margin: 0;
+	line-height: 1;
+	text-align: center;
+}
+
+.mai-cyber-gallery-media {
+	position: relative;
+	width: 100%;
+	min-width: 0;
+	line-height: 0;
+	filter: var(--image-filter, none);
+	transition:
+		transform var(--transition-duration) var(--transition-timing-function),
+		filter var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-image-link {
+	display: block;
+	width: 100%;
+	overflow: hidden;
+	border-radius: var(--image-border-radius, var(--border-radius));
+}
+
+.mai-cyber-gallery-image-link:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+.mai-cyber-gallery-image {
+	display: block;
+	width: 100%;
+	max-width: none;
+	height: auto;
+	margin: 0;
+	transition:
+		transform var(--transition-duration) var(--transition-timing-function),
+		opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-image-caption {
+	margin: var(--spacing-xxs) 0 0;
+	line-height: var(--line-height-sm, 1.4);
+	text-align: center;
+}
+
+.has-captions-overlay .mai-cyber-gallery-media {
+	overflow: hidden;
+	border-radius: var(--image-border-radius, var(--border-radius));
+}
+
+.has-captions-overlay .mai-cyber-gallery-image-caption {
+	position: absolute;
+	z-index: 2;
+	bottom: 0;
+	inset-inline: 0;
+	margin: 0;
+	padding: var(--spacing-lg) var(--spacing-sm) var(--spacing-sm);
+	color: var(--color-white);
+	font-size: var(--font-size-sm);
+	line-height: var(--line-height-sm, 1.4);
+	text-align: start;
+	background: linear-gradient(to top, rgb(0 0 0 / 78%), transparent);
+	pointer-events: none;
+}
+
+.has-hover-zoom .mai-cyber-gallery-image-link:hover .mai-cyber-gallery-image,
+.has-hover-zoom .mai-cyber-gallery-image-link:focus-visible .mai-cyber-gallery-image {
+	transform: scale(1.05);
+}
+
+.has-hover-lift .mai-cyber-gallery-item:hover .mai-cyber-gallery-media,
+.has-hover-lift .mai-cyber-gallery-item:focus-within .mai-cyber-gallery-media {
+	transform: translateY(-0.25rem);
+}
+
+.has-hover-fade .mai-cyber-gallery-image-link:hover .mai-cyber-gallery-image,
+.has-hover-fade .mai-cyber-gallery-image-link:focus-visible .mai-cyber-gallery-image {
+	opacity: 0.72;
+}
+
+/* Masonry columns.
+ *
+ * Mai's responsive column counts are converted to integer --cyber-columns-*
+ * properties in PHP. Natural document order flows down each column.
+ */
+
+.mai-cyber-gallery-layout-masonry .mai-cyber-gallery.has-columns {
+	display: block;
+	column-count: var(--cyber-columns);
+	column-gap: var(--column-gap);
+}
+
+.mai-cyber-gallery-layout-masonry .mai-cyber-gallery > .mai-cyber-gallery-item {
+	display: inline-flex;
+	width: 100%;
+	margin: 0 0 var(--row-gap);
+	vertical-align: top;
+	break-inside: avoid;
+	page-break-inside: avoid;
+}
+
+/* Justified rows use Mai's regular responsive grid as a no-JS fallback. */
+
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery.has-columns {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: flex-start;
+}
+
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-item {
+	flex: 0 0 var(--cyber-item-width, 100%);
+	width: var(--cyber-item-width, 100%);
+}
+
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-media,
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-image-link {
+	height: var(--cyber-item-height, auto);
+}
+
+.mai-cyber-gallery-layout-justified.is-cyber-justified-ready .mai-cyber-gallery-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Editorial mosaic: five-item cycles produce one feature tile and four tiles. */
+
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery.has-columns {
+	--cyber-mosaic-row-height: clamp(7rem, 28vw, 12rem);
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	grid-auto-rows: minmax(var(--cyber-mosaic-row-height), auto);
+	grid-auto-flow: row;
+	gap: var(--row-gap) var(--column-gap);
+}
+
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-item {
+	width: 100%;
+	height: 100%;
+	min-height: var(--cyber-mosaic-row-height);
+}
+
+.mai-cyber-gallery-layout-mosaic > .mai-cyber-gallery > .mai-cyber-gallery-item:nth-child(5n + 1) {
+	grid-column: 1 / -1;
+	grid-row: span 2;
+}
+
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-media {
+	flex: 1 0 var(--cyber-mosaic-row-height);
+	min-height: var(--cyber-mosaic-row-height);
+}
+
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-image-link,
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-image {
+	width: 100%;
+	height: 100%;
+}
+
+.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery-image {
+	object-fit: cover;
+}
+
+/* Jetpack-familiar square and circle tiles, still using Mai columns. */
+
+.mai-cyber-gallery-layout-square .mai-cyber-gallery-media,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-media {
+	flex: 0 0 auto;
+	min-height: 0;
+	overflow: hidden;
+	aspect-ratio: 1;
+}
+
+.mai-cyber-gallery-layout-square .mai-cyber-gallery-image,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-image {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.mai-cyber-gallery-layout-square .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-square .mai-cyber-gallery-image-link,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-image-link {
+	height: 100%;
+}
+
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-media,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-image-frame,
+.mai-cyber-gallery-layout-circle .mai-cyber-gallery-image-link {
+	border-radius: 50%;
+}
+
+/* Filmstrip uses Mai's flex-basis at every responsive breakpoint. */
+
+.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery.has-columns {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: flex-start;
+	justify-content: flex-start;
+	padding: max(2px, var(--spacing-xxs)) 2px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	scroll-behavior: smooth;
+	scroll-snap-type: x mandatory;
+	scrollbar-width: thin;
+	overscroll-behavior-inline: contain;
+}
+
+.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery-item {
+	scroll-snap-align: start;
+	scroll-snap-stop: normal;
+}
+
+.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+.mai-cyber-gallery-controls {
+	display: none;
+	gap: var(--spacing-xs);
+	justify-content: flex-end;
+	margin-top: var(--spacing-xs);
+}
+
+.mai-cyber-gallery-layout-filmstrip.is-cyber-filmstrip-ready .mai-cyber-gallery-controls {
+	display: flex;
+}
+
+.mai-cyber-gallery-control {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cyber-control-size);
+	height: var(--cyber-control-size);
+	margin: 0;
+	padding: 0;
+	color: var(--color-body);
+	background: var(--color-alt);
+	border: var(--border);
+	border-radius: 50%;
+	cursor: pointer;
+	transition: opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-control:hover,
+.mai-cyber-gallery-control:focus-visible {
+	color: var(--color-white);
+	background: var(--color-primary-dark, var(--color-primary));
+	border-color: var(--color-primary-dark, var(--color-primary));
+}
+
+.mai-cyber-gallery-control:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+.mai-cyber-gallery-control:disabled {
+	opacity: 0.38;
+	cursor: not-allowed;
+}
+
+.mai-cyber-gallery-control svg {
+	display: block;
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+/* Empty ACF preview. */
+
+.mai-cyber-gallery-placeholder {
+	display: flex;
+	gap: var(--spacing-xs);
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: var(--spacing-xl);
+	color: var(--body-color);
+	font-family: var(--body-font-family);
+	font-size: var(--body-font-size);
+	font-weight: var(--body-font-weight);
+	border: 1px dashed currentColor;
+	border-radius: var(--border-radius);
+	opacity: 0.62;
+}
+
+/* Native dialog lightbox. */
+
+body.mai-cyber-gallery-lightbox-open {
+	overflow: hidden;
+}
+
+.mai-cyber-gallery-dialog {
+	width: 100vw;
+	max-width: none;
+	height: 100dvh;
+	max-height: none;
+	margin: 0;
+	padding: clamp(3.5rem, 7vw, 6rem);
+	overflow: hidden;
+	color: var(--color-white);
+	background: transparent;
+	border: 0;
+}
+
+.mai-cyber-gallery-dialog::backdrop {
+	background: rgb(0 0 0 / 92%);
+	backdrop-filter: blur(4px);
+}
+
+.mai-cyber-gallery-dialog-inner {
+	display: grid;
+	grid-template-rows: minmax(0, 1fr) auto;
+	align-items: stretch;
+	width: 100%;
+	height: 100%;
+}
+
+.mai-cyber-gallery-dialog-stage {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.mai-cyber-gallery-dialog-image {
+	display: block;
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	filter: drop-shadow(0 1rem 2rem rgb(0 0 0 / 35%));
+}
+
+.mai-cyber-gallery-dialog-meta {
+	display: flex;
+	gap: var(--spacing-md);
+	align-items: baseline;
+	justify-content: center;
+	min-height: 2.5rem;
+	max-height: min(40dvh, 18rem);
+	padding-top: var(--spacing-sm);
+	overflow: auto;
+	line-height: var(--line-height-sm, 1.4);
+	text-align: center;
+}
+
+.mai-cyber-gallery-dialog-caption,
+.mai-cyber-gallery-dialog-position {
+	margin: 0;
+	color: inherit;
+}
+
+.mai-cyber-gallery-dialog-position {
+	flex: 0 0 auto;
+	font-size: var(--font-size-sm);
+	opacity: 0.72;
+}
+
+.mai-cyber-gallery-dialog-button {
+	position: fixed;
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cyber-control-size, 2.75rem);
+	height: var(--cyber-control-size, 2.75rem);
+	margin: 0;
+	padding: 0;
+	color: var(--color-white);
+	background: rgb(255 255 255 / 10%);
+	border: 1px solid rgb(255 255 255 / 38%);
+	border-radius: 50%;
+	cursor: pointer;
+	transition: opacity var(--transition-duration) var(--transition-timing-function);
+}
+
+.mai-cyber-gallery-dialog-button:hover,
+.mai-cyber-gallery-dialog-button:focus-visible {
+	color: var(--color-black);
+	background: var(--color-white);
+}
+
+.mai-cyber-gallery-dialog-button:focus-visible {
+	outline: 2px solid var(--color-white);
+	outline-offset: 3px;
+}
+
+.mai-cyber-gallery-dialog-button:disabled {
+	visibility: hidden;
+}
+
+.mai-cyber-gallery-dialog-button svg {
+	display: block;
+	width: 1.1rem;
+	height: 1.1rem;
+	fill: currentColor;
+}
+
+.mai-cyber-gallery-dialog-close {
+	inset-block-start: var(--spacing-md);
+	inset-inline-end: var(--spacing-md);
+}
+
+.mai-cyber-gallery-dialog-previous {
+	inset-block-start: 50%;
+	inset-inline-start: var(--spacing-md);
+	transform: translateY(-50%);
+}
+
+.mai-cyber-gallery-dialog-next {
+	inset-block-start: 50%;
+	inset-inline-end: var(--spacing-md);
+	transform: translateY(-50%);
+}
+
+html[dir="rtl"] .mai-cyber-gallery-control svg,
+html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
+	transform: scaleX(-1);
+}
+
+/* Mai's standard responsive breakpoint mapping. */
+
+@media only screen and (min-width: 600px) {
+	.mai-cyber-gallery {
+		--cyber-columns: var(--cyber-columns-sm, var(--cyber-columns-xs, 1));
+	}
+
+	.mai-cyber-gallery-layout-mosaic .mai-cyber-gallery.has-columns {
+		--cyber-mosaic-row-height: clamp(7rem, 15vw, 13rem);
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		grid-auto-flow: row dense;
+	}
+
+	.mai-cyber-gallery-layout-mosaic.has-mosaic-feature-left {
+		--cyber-mosaic-feature-odd-column: 1;
+		--cyber-mosaic-feature-even-column: 1;
+	}
+
+	.mai-cyber-gallery-layout-mosaic.has-mosaic-feature-right {
+		--cyber-mosaic-feature-odd-column: 3;
+		--cyber-mosaic-feature-even-column: 3;
+	}
+
+	.mai-cyber-gallery-layout-mosaic.has-mosaic-feature-left.has-mosaic-alternating {
+		--cyber-mosaic-feature-even-column: 3;
+	}
+
+	.mai-cyber-gallery-layout-mosaic.has-mosaic-feature-right.has-mosaic-alternating {
+		--cyber-mosaic-feature-even-column: 1;
+	}
+
+	.mai-cyber-gallery-layout-mosaic > .mai-cyber-gallery > .mai-cyber-gallery-item:nth-child(10n + 1) {
+		grid-column: var(--cyber-mosaic-feature-odd-column) / span 2;
+	}
+
+	.mai-cyber-gallery-layout-mosaic > .mai-cyber-gallery > .mai-cyber-gallery-item:nth-child(10n + 6) {
+		grid-column: var(--cyber-mosaic-feature-even-column) / span 2;
+	}
+
+	html[dir="rtl"] .mai-cyber-gallery-layout-mosaic.has-mosaic-feature-left {
+		--cyber-mosaic-feature-odd-column: 3;
+		--cyber-mosaic-feature-even-column: 3;
+	}
+
+	html[dir="rtl"] .mai-cyber-gallery-layout-mosaic.has-mosaic-feature-right {
+		--cyber-mosaic-feature-odd-column: 1;
+		--cyber-mosaic-feature-even-column: 1;
+	}
+
+	html[dir="rtl"] .mai-cyber-gallery-layout-mosaic.has-mosaic-feature-left.has-mosaic-alternating {
+		--cyber-mosaic-feature-even-column: 1;
+	}
+
+	html[dir="rtl"] .mai-cyber-gallery-layout-mosaic.has-mosaic-feature-right.has-mosaic-alternating {
+		--cyber-mosaic-feature-even-column: 3;
+	}
+}
+
+@media only screen and (min-width: 800px) {
+	.mai-cyber-gallery {
+		--cyber-columns: var(--cyber-columns-md, var(--cyber-columns-sm, 1));
+	}
+}
+
+@media only screen and (min-width: 1000px) {
+	.mai-cyber-gallery {
+		--cyber-columns: var(--cyber-columns-lg, var(--cyber-columns-md, 1));
+	}
+}
+
+@media only screen and (max-width: 599px) {
+	.mai-cyber-gallery-dialog {
+		padding: 4rem var(--spacing-sm) 5rem;
+	}
+
+	.mai-cyber-gallery-dialog-previous {
+		inset-block-start: auto;
+		inset-block-end: var(--spacing-md);
+		inset-inline-start: var(--spacing-md);
+		transform: none;
+	}
+
+	.mai-cyber-gallery-dialog-next {
+		inset-block-start: auto;
+		inset-block-end: var(--spacing-md);
+		inset-inline-end: var(--spacing-md);
+		transform: none;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.mai-cyber-gallery,
+	.mai-cyber-gallery *,
+	.mai-cyber-gallery-control,
+	.mai-cyber-gallery-dialog-button {
+		scroll-behavior: auto !important;
+		transition-duration: 0.01ms !important;
+	}
+
+	.has-hover-zoom .mai-cyber-gallery-image-link:hover .mai-cyber-gallery-image,
+	.has-hover-zoom .mai-cyber-gallery-image-link:focus-visible .mai-cyber-gallery-image,
+	.has-hover-lift .mai-cyber-gallery-item:hover .mai-cyber-gallery-media,
+	.has-hover-lift .mai-cyber-gallery-item:focus-within .mai-cyber-gallery-media {
+		transform: none;
+	}
+}
+
+.editor-styles-wrapper .mai-cyber-gallery a,
+.editor-styles-wrapper .mai-cyber-gallery-controls {
+	pointer-events: none;
+}
+
+@media print {
+	.mai-cyber-gallery-layout-filmstrip.is-cyber-filmstrip-ready .mai-cyber-gallery-controls {
+		display: none;
+	}
+
+	.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery.has-columns {
+		flex-wrap: wrap;
+		overflow: visible;
+	}
+}

@@ -1,0 +1,22 @@
+{
+	"name": "acf/mai-cyber-gallery",
+	"title": "Mai Cyber Gallery",
+	"description": "Advanced masonry, tiled, mosaic, and filmstrip image galleries powered by Mai Engine.",
+	"category": "widgets",
+	"keywords": ["gallery", "masonry", "tiled", "mosaic", "images"],
+	"icon": "format-gallery",
+	"textdomain": "mai-cyber-gallery",
+	"editorStyle": "mai-cyber-gallery",
+	"editorScript": "mai-cyber-gallery",
+	"acf": {
+		"blockVersion": 3,
+		"mode": "preview",
+		"renderCallback": "mai_cyber_gallery_render_block",
+		"validate": false
+	},
+	"supports": {
+		"align": ["wide", "full"],
+		"anchor": true,
+		"customClassName": true
+	}
+}
