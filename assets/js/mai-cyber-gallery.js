@@ -145,6 +145,55 @@
 	}
 
 	/**
+	 * Keep one conditionally hidden Cyber field enabled for ACF block v3
+	 * serialization without changing its visible conditional-logic state.
+	 *
+	 * @param {Object} field ACF Field instance.
+	 * @return {void}
+	 */
+	function preserveCyberField( field ) {
+		if ( ! window.acf || ! field || ! field.$el ) {
+			return;
+		}
+
+		const key = 'function' === typeof field.get
+			? String( field.get( 'key' ) || '' )
+			: String( field.$el.data ? field.$el.data( 'key' ) || '' : '' );
+		const conditions = field.conditions || null;
+		const hidden = 'function' === typeof field.prop
+			? Boolean( field.prop( 'hidden' ) )
+			: field.$el.hasClass( 'acf-hidden' );
+
+		if ( ! key.startsWith( 'mai_cyber_gallery_' ) || ! conditions || ! hidden ) {
+			return;
+		}
+
+		window.acf.enable( field.$el, conditions.cid );
+		if ( 'function' === typeof field.prop ) {
+			field.prop( 'disabled', false );
+		}
+	}
+
+	/**
+	 * Preserve every currently condition-hidden Cyber field known to ACF.
+	 *
+	 * @return {void}
+	 */
+	function preserveCyberFields() {
+		if ( ! window.acf || 'function' !== typeof window.acf.getFields ) {
+			return;
+		}
+
+		const fields = window.acf.getFields();
+
+		if ( ! fields || 'function' !== typeof fields.forEach ) {
+			return;
+		}
+
+		fields.forEach( preserveCyberField );
+	}
+
+	/**
 	 * Read Mai's current responsive column count.
 	 *
 	 * @param {CSSStyleDeclaration} computed Track styles.
@@ -1065,43 +1114,12 @@
 	}
 
 	/**
-	 * Update filmstrip control states.
+	 * Get the indexes which occupy most of their visible filmstrip cell.
 	 *
 	 * @param {Object} state Filmstrip state.
-	 * @return {void}
+	 * @return {number[]}
 	 */
-	function updateFilmstrip( state ) {
-		state.items = Array.from(
-			state.track.querySelectorAll( ':scope > .mai-cyber-gallery-item' )
-		);
-
-		if ( ! state.items.length ) {
-			state.previous.disabled = true;
-			state.next.disabled = true;
-			return;
-		}
-
-		const bounds = state.track.getBoundingClientRect();
-		state.previous.disabled = isFullyVisible( state.items[ 0 ], bounds );
-		state.next.disabled = isFullyVisible( state.items[ state.items.length - 1 ], bounds );
-	}
-
-	/**
-	 * Move a filmstrip by its currently visible group.
-	 *
-	 * @param {Object} state     Filmstrip state.
-	 * @param {number} direction -1 or 1.
-	 * @return {void}
-	 */
-	function moveFilmstrip( state, direction ) {
-		state.items = Array.from(
-			state.track.querySelectorAll( ':scope > .mai-cyber-gallery-item' )
-		);
-
-		if ( ! state.items.length ) {
-			return;
-		}
-
+	function getFilmstripVisibleIndexes( state ) {
 		const bounds = state.track.getBoundingClientRect();
 		const visible = [];
 
@@ -1114,18 +1132,232 @@
 			}
 		} );
 
-		const first = visible.length ? visible[ 0 ] : 0;
-		const last = visible.length ? visible[ visible.length - 1 ] : first;
-		const targetIndex = 0 < direction
-			? Math.min( state.items.length - 1, last + 1 )
-			: Math.max( 0, first - Math.max( 1, visible.length ) );
-		const reduceMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+		return visible;
+	}
 
-		state.items[ targetIndex ].scrollIntoView( {
-			behavior: reduceMotion ? 'auto' : 'smooth',
+	/**
+	 * Format the currently visible Filmstrip range.
+	 *
+	 * @param {number} current First visible item number.
+	 * @param {number} total   Total item count.
+	 * @return {string}
+	 */
+	function formatFilmstripPosition( current, total ) {
+		const template = String(
+			settings.filmstripPosition || 'Image %1$d of %2$d'
+		);
+
+		return template
+			.replace( /%1\$d/g, String( current ) )
+			.replace( /%2\$d/g, String( total ) );
+	}
+
+	/**
+	 * Update filmstrip control states.
+	 *
+	 * @param {Object} state Filmstrip state.
+	 * @return {void}
+	 */
+	function updateFilmstrip( state ) {
+		state.items = getTrackItems( state.track );
+
+		if ( ! state.items.length ) {
+			state.canMove = false;
+			state.root.classList.remove( 'is-cyber-filmstrip-scrollable' );
+			if ( state.previous ) {
+				state.previous.disabled = true;
+			}
+			if ( state.next ) {
+				state.next.disabled = true;
+			}
+			return;
+		}
+
+		const bounds = state.track.getBoundingClientRect();
+		const atStart = isFullyVisible( state.items[ 0 ], bounds );
+		const atEnd = isFullyVisible( state.items[ state.items.length - 1 ], bounds );
+		const visible = getFilmstripVisibleIndexes( state );
+		const firstVisible = visible.length ? visible[ 0 ] : 0;
+
+		state.canMove = ! ( atStart && atEnd );
+		state.root.classList.toggle( 'is-cyber-filmstrip-scrollable', state.canMove );
+		if ( state.previous ) {
+			state.previous.disabled = atStart;
+		}
+		if ( state.next ) {
+			state.next.disabled = atEnd;
+		}
+		if ( state.status ) {
+			state.status.textContent = formatFilmstripPosition(
+				firstVisible + 1,
+				state.items.length
+			);
+		}
+	}
+
+	/**
+	 * Scroll a filmstrip item into the leading edge of its track.
+	 *
+	 * @param {Object}  state       Filmstrip state.
+	 * @param {number}  targetIndex Item index.
+	 * @param {boolean} wrapped     Whether this move wrapped to the beginning.
+	 * @return {void}
+	 */
+	function scrollFilmstripTo( state, targetIndex, wrapped ) {
+		const target = state.items[ targetIndex ];
+
+		if ( ! target ) {
+			return;
+		}
+
+		target.scrollIntoView( {
+			behavior: state.motionQuery.matches || wrapped ? 'auto' : 'smooth',
 			block: 'nearest',
 			inline: 'start',
 		} );
+	}
+
+	/**
+	 * Move a filmstrip by its currently visible group.
+	 *
+	 * @param {Object} state     Filmstrip state.
+	 * @param {number} direction -1 or 1.
+	 * @param {boolean} wrap      Whether a forward boundary wraps to the start.
+	 * @return {void}
+	 */
+	function moveFilmstrip( state, direction, wrap ) {
+		state.items = getTrackItems( state.track );
+
+		if ( ! state.items.length ) {
+			return;
+		}
+
+		const visible = getFilmstripVisibleIndexes( state );
+		const first = visible.length ? visible[ 0 ] : 0;
+		const last = visible.length ? visible[ visible.length - 1 ] : first;
+		const lastIndex = state.items.length - 1;
+		const wrapped = Boolean( wrap && 0 < direction && last >= lastIndex );
+		const targetIndex = wrapped
+			? 0
+			: (
+				0 < direction
+					? Math.min( lastIndex, last + 1 )
+					: Math.max( 0, first - Math.max( 1, visible.length ) )
+			);
+
+		scrollFilmstripTo( state, targetIndex, wrapped );
+		scheduleFrame( state, function () {
+			updateFilmstrip( state );
+			syncFilmstripAutoplay( state );
+		} );
+	}
+
+	/**
+	 * Whether this filmstrip may currently rotate automatically.
+	 *
+	 * @param {Object} state Filmstrip state.
+	 * @return {boolean}
+	 */
+	function canFilmstripAutoplay( state ) {
+		const focusPauses = state.focused && document.activeElement !== state.autoplayToggle;
+
+		return 0 < state.autoplayInterval
+			&& Boolean( state.autoplayToggle )
+			&& 1 < state.items.length
+			&& state.canMove
+			&& ! state.autoplayPaused
+			&& ! state.motionQuery.matches
+			&& ! document.hidden
+			&& state.inViewport
+			&& ! focusPauses
+			&& ! ( state.pauseOnHover && state.hovered );
+	}
+
+	/**
+	 * Clear one filmstrip autoplay timeout.
+	 *
+	 * @param {Object} state Filmstrip state.
+	 * @return {void}
+	 */
+	function clearFilmstripAutoplay( state ) {
+		if ( state.autoplayTimer ) {
+			window.clearTimeout( state.autoplayTimer );
+			state.autoplayTimer = 0;
+		}
+	}
+
+	/**
+	 * Synchronize Filmstrip autoplay state and its accessible toggle.
+	 *
+	 * @param {Object} state Filmstrip state.
+	 * @return {void}
+	 */
+	function syncFilmstripAutoplay( state ) {
+		const available = 0 < state.autoplayInterval
+			&& Boolean( state.autoplayToggle )
+			&& 1 < state.items.length
+			&& state.canMove;
+		const rotationEnabled = available && ! state.autoplayPaused && ! state.motionQuery.matches;
+
+		if ( state.autoplayToggle ) {
+			state.autoplayToggle.hidden = ! available || state.motionQuery.matches;
+			state.autoplayToggle.dataset.cyberFilmstripPaused = state.autoplayPaused ? 'true' : 'false';
+			state.autoplayToggle.setAttribute(
+				'aria-label',
+				state.autoplayPaused
+					? String( settings.startFilmstrip || 'Start automatic filmstrip' )
+					: String( settings.pauseFilmstrip || 'Pause automatic filmstrip' )
+			);
+		}
+
+		if ( state.status ) {
+			state.status.setAttribute( 'aria-live', rotationEnabled ? 'off' : 'polite' );
+		}
+		clearFilmstripAutoplay( state );
+		if ( ! canFilmstripAutoplay( state ) ) {
+			return;
+		}
+
+		state.autoplayTimer = window.setTimeout( function () {
+			state.autoplayTimer = 0;
+			if ( ! canFilmstripAutoplay( state ) ) {
+				syncFilmstripAutoplay( state );
+				return;
+			}
+
+			moveFilmstrip( state, 1, true );
+		}, state.autoplayInterval );
+	}
+
+	/**
+	 * Set the user-controlled Filmstrip pause state.
+	 *
+	 * @param {Object}  state  Filmstrip state.
+	 * @param {boolean} paused Whether rotation is paused.
+	 * @return {void}
+	 */
+	function setFilmstripAutoplayPaused( state, paused ) {
+		state.autoplayPaused = paused;
+		syncFilmstripAutoplay( state );
+	}
+
+	/**
+	 * Release timers and observers owned only by Filmstrip.
+	 *
+	 * @param {Object} state Filmstrip state.
+	 * @return {void}
+	 */
+	function cleanupFilmstripRuntime( state ) {
+		clearFilmstripAutoplay( state );
+
+		if ( state.intersectionObserver ) {
+			state.intersectionObserver.disconnect();
+		}
+		if ( state.motionQuery && state.motionHandler ) {
+			state.motionQuery.removeEventListener( 'change', state.motionHandler );
+		}
+
+		state.root.classList.remove( 'is-cyber-filmstrip-scrollable' );
 	}
 
 	/**
@@ -1138,9 +1370,9 @@
 		const track = root.querySelector( '.mai-cyber-gallery' );
 		const previous = root.querySelector( '[data-cyber-filmstrip-previous]' );
 		const next = root.querySelector( '[data-cyber-filmstrip-next]' );
-		const items = track
-			? Array.from( track.querySelectorAll( ':scope > .mai-cyber-gallery-item' ) )
-			: [];
+		const autoplayToggle = root.querySelector( '[data-cyber-filmstrip-autoplay-toggle]' );
+		const status = root.querySelector( '[data-cyber-filmstrip-status]' );
+		const items = track ? getTrackItems( track ) : [];
 		const existing = filmstripStates.get( root );
 
 		if ( existing ) {
@@ -1148,14 +1380,24 @@
 				existing.track === track
 				&& existing.previous === previous
 				&& existing.next === next
+				&& existing.autoplayToggle === autoplayToggle
+				&& existing.status === status
 				&& 2 <= items.length
 			) {
+				existing.items = items;
+				existing.autoplayInterval = Math.max(
+					0,
+					Number.parseInt( root.dataset.cyberFilmstripAutoplay || '0', 10 ) || 0
+				);
+				existing.pauseOnHover = 'true' === root.dataset.cyberFilmstripPauseHover;
 				scheduleFrame( existing, function () {
 					updateFilmstrip( existing );
+					syncFilmstripAutoplay( existing );
 				} );
 				return;
 			}
 
+			cleanupFilmstripRuntime( existing );
 			if ( existing.frame ) {
 				window.cancelAnimationFrame( existing.frame );
 			}
@@ -1163,42 +1405,95 @@
 			if ( existing.resizeObserver ) {
 				existing.resizeObserver.disconnect();
 			}
+			if ( existing.controller ) {
+				existing.controller.abort();
+			}
 
 			filmstripStates.delete( root );
 			root.classList.remove( 'is-cyber-filmstrip-ready' );
 		}
 
-		if ( ! track || ! previous || ! next || 2 > items.length ) {
+		if ( ! track || 2 > items.length ) {
 			return;
 		}
 
+		const rootBounds = root.getBoundingClientRect();
 		const state = {
+			root: root,
 			track: track,
 			previous: previous,
 			next: next,
+			autoplayToggle: autoplayToggle,
+			status: status,
 			items: items,
 			frame: 0,
 			resizeObserver: null,
+			intersectionObserver: null,
+			controller: 'AbortController' in window ? new window.AbortController() : null,
+			autoplayInterval: Math.max(
+				0,
+				Number.parseInt( root.dataset.cyberFilmstripAutoplay || '0', 10 ) || 0
+			),
+			pauseOnHover: 'true' === root.dataset.cyberFilmstripPauseHover,
+			autoplayTimer: 0,
+			autoplayPaused: false,
+			autoplayPointerFocus: false,
+			hovered: false,
+			focused: false,
+			inViewport: 0 < rootBounds.bottom && rootBounds.top < window.innerHeight,
+			canMove: true,
+			motionQuery: window.matchMedia( '(prefers-reduced-motion: reduce)' ),
+			motionHandler: null,
 		};
 
 		filmstripStates.set( root, state );
-		root.classList.add( 'is-cyber-filmstrip-ready' );
 
 		const scheduleUpdate = function () {
 			scheduleFrame( state, function () {
 				updateFilmstrip( state );
+				syncFilmstripAutoplay( state );
 			} );
 		};
+		const listenerOptions = state.controller
+			? { signal: state.controller.signal }
+			: undefined;
+		const passiveOptions = state.controller
+			? { passive: true, signal: state.controller.signal }
+			: { passive: true };
 
-		previous.addEventListener( 'click', function () {
-			moveFilmstrip( state, -1 );
-		} );
+		if ( previous ) {
+			previous.addEventListener( 'click', function () {
+				setFilmstripAutoplayPaused( state, true );
+				moveFilmstrip( state, -1, false );
+			}, listenerOptions );
+		}
 
-		next.addEventListener( 'click', function () {
-			moveFilmstrip( state, 1 );
-		} );
+		if ( next ) {
+			next.addEventListener( 'click', function () {
+				setFilmstripAutoplayPaused( state, true );
+				moveFilmstrip( state, 1, false );
+			}, listenerOptions );
+		}
 
-		track.addEventListener( 'scroll', scheduleUpdate, { passive: true } );
+		if ( autoplayToggle ) {
+			autoplayToggle.addEventListener( 'pointerdown', function () {
+				state.autoplayPointerFocus = true;
+				window.setTimeout( function () {
+					state.autoplayPointerFocus = false;
+				}, 0 );
+			}, listenerOptions );
+			autoplayToggle.addEventListener( 'click', function () {
+				setFilmstripAutoplayPaused( state, ! state.autoplayPaused );
+			}, listenerOptions );
+		}
+
+		track.addEventListener( 'scroll', scheduleUpdate, passiveOptions );
+		track.addEventListener( 'pointerdown', function () {
+			setFilmstripAutoplayPaused( state, true );
+		}, passiveOptions );
+		track.addEventListener( 'wheel', function () {
+			setFilmstripAutoplayPaused( state, true );
+		}, passiveOptions );
 		track.addEventListener( 'keydown', function ( event ) {
 			if ( event.target.closest( 'a, button, input, select, textarea' ) ) {
 				return;
@@ -1212,27 +1507,83 @@
 			} else if ( 'ArrowLeft' === event.key ) {
 				direction = isRtl ? 1 : -1;
 			} else if ( 'Home' === event.key ) {
-				state.items[ 0 ].scrollIntoView( { block: 'nearest', inline: 'start' } );
+				setFilmstripAutoplayPaused( state, true );
+				scrollFilmstripTo( state, 0, false );
 				event.preventDefault();
 				return;
 			} else if ( 'End' === event.key ) {
-				state.items[ state.items.length - 1 ].scrollIntoView( { block: 'nearest', inline: 'start' } );
+				setFilmstripAutoplayPaused( state, true );
+				scrollFilmstripTo( state, state.items.length - 1, false );
 				event.preventDefault();
 				return;
 			}
 
 			if ( direction ) {
 				event.preventDefault();
-				moveFilmstrip( state, direction );
+				setFilmstripAutoplayPaused( state, true );
+				moveFilmstrip( state, direction, false );
 			}
-		} );
+		}, listenerOptions );
+
+		root.addEventListener( 'pointerenter', function ( event ) {
+			if ( 'mouse' === event.pointerType || 'pen' === event.pointerType ) {
+				state.hovered = true;
+				syncFilmstripAutoplay( state );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'pointerleave', function ( event ) {
+			if ( 'mouse' === event.pointerType || 'pen' === event.pointerType ) {
+				state.hovered = false;
+				syncFilmstripAutoplay( state );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'pointerup', function () {
+			state.autoplayPointerFocus = false;
+		}, listenerOptions );
+		root.addEventListener( 'pointercancel', function () {
+			state.autoplayPointerFocus = false;
+		}, listenerOptions );
+		root.addEventListener( 'focusin', function ( event ) {
+			state.focused = true;
+
+			if ( event.target === autoplayToggle && state.autoplayPointerFocus ) {
+				syncFilmstripAutoplay( state );
+			} else {
+				setFilmstripAutoplayPaused( state, true );
+			}
+		}, listenerOptions );
+		root.addEventListener( 'focusout', function ( event ) {
+			if ( ! root.contains( event.relatedTarget ) ) {
+				state.focused = false;
+				syncFilmstripAutoplay( state );
+			}
+		}, listenerOptions );
+		document.addEventListener( 'visibilitychange', function () {
+			syncFilmstripAutoplay( state );
+		}, listenerOptions );
+
+		state.motionHandler = function () {
+			syncFilmstripAutoplay( state );
+		};
+		state.motionQuery.addEventListener( 'change', state.motionHandler );
 
 		if ( 'ResizeObserver' in window ) {
 			state.resizeObserver = new window.ResizeObserver( scheduleUpdate );
 			state.resizeObserver.observe( track );
 		}
 
-		scheduleUpdate();
+		if ( 'IntersectionObserver' in window ) {
+			state.intersectionObserver = new window.IntersectionObserver( function ( entries ) {
+				const entry = entries[0];
+				state.inViewport = Boolean( entry && entry.isIntersecting && 0.1 <= entry.intersectionRatio );
+				syncFilmstripAutoplay( state );
+			}, { threshold: [ 0, 0.1 ] } );
+			state.intersectionObserver.observe( root );
+		}
+
+		updateFilmstrip( state );
+		root.classList.add( 'is-cyber-filmstrip-ready' );
+		syncFilmstripAutoplay( state );
 	}
 
 	/**
@@ -2497,6 +2848,10 @@
 			window.cancelAnimationFrame( state.frame );
 		}
 
+		if ( filmstripStates === states ) {
+			cleanupFilmstripRuntime( state );
+		}
+
 		if ( sliderStates === states ) {
 			cleanupSliderRuntime( state );
 		}
@@ -2588,6 +2943,10 @@
 					window.cancelAnimationFrame( state.frame );
 				}
 
+				if ( filmstripStates === states ) {
+					cleanupFilmstripRuntime( state );
+				}
+
 				if ( sliderStates === states ) {
 					cleanupSliderRuntime( state );
 				}
@@ -2621,6 +2980,47 @@
 	function boot() {
 		initializeWithin( document );
 		syncSliderNavigationSelects( document, null );
+
+		/**
+		 * Register the ACF integrations once ACF becomes available.
+		 *
+		 * @return {void}
+		 */
+		function initializeAcf() {
+			if (
+				! window.acf
+				|| 'function' !== typeof window.acf.addAction
+				|| boot.acfInitialized
+			) {
+				return;
+			}
+
+			boot.acfInitialized = true;
+			window.acf.addAction(
+				'hide_field',
+				function ( field, context ) {
+					if ( 'conditional_logic' !== context ) {
+						return;
+					}
+
+					// ACF block v3 serializes enabled controls only. Conditional
+					// fields should stay visually hidden without erasing their
+					// dormant Gallery values whenever another layout is chosen.
+					preserveCyberField( field );
+				}
+			);
+			window.acf.addAction( 'append', preserveCyberFields );
+			window.acf.addAction( 'ready', preserveCyberFields );
+			window.acf.addAction(
+				'render_block_preview/type=mai-cyber-gallery',
+				function ( block ) {
+					const element = block && block[ 0 ] ? block[ 0 ] : block;
+					initializeWithin( element );
+					preserveCyberFields();
+				}
+			);
+			preserveCyberFields();
+		}
 
 		document.addEventListener( 'change', function ( event ) {
 			const select = event.target;
@@ -2658,6 +3058,10 @@
 
 		if ( 'MutationObserver' in window ) {
 			const observer = new window.MutationObserver( function ( mutations ) {
+				// The editor bundle is intentionally framework-agnostic, so ACF may
+				// arrive after this script when WordPress resolves editor assets.
+				initializeAcf();
+
 				mutations.forEach( function ( mutation ) {
 					mutation.removedNodes.forEach( function ( node ) {
 						if ( 1 === node.nodeType ) {
@@ -2683,23 +3087,6 @@
 				subtree: true,
 			} );
 		}
-
-		const initializeAcf = function () {
-			if (
-				window.acf
-				&& 'function' === typeof window.acf.addAction
-				&& ! boot.acfInitialized
-			) {
-				boot.acfInitialized = true;
-				window.acf.addAction(
-					'render_block_preview/type=mai-cyber-gallery',
-					function ( block ) {
-						const element = block && block[ 0 ] ? block[ 0 ] : block;
-						initializeWithin( element );
-					}
-				);
-			}
-		};
 
 		initializeAcf();
 

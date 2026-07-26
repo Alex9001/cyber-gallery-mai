@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+- Preserved ordinary Images, Linked Images, structured Slides, and dormant layout settings across editor layout changes instead of allowing ACF conditional fields to drop them from block serialization.
+- Added non-destructive image-source fallbacks so switching to an unpopulated Slider or gallery layout keeps rendering the retained attachments while structured slide content remains available when returning to Slider.
+- Shared image overlays and hover treatments across all nine layouts.
+- Added a configurable Desaturate hover treatment that removes 0–100 percent of image color at rest and restores full color on mouse-over or keyboard focus.
+- Kept existing Sliders motionless by default; Slider hover treatments activate only after one is deliberately selected.
+- Added optional Filmstrip autoplay with a 3–30 second interval, an available-when-moving Pause/Start control, mouse-over pause, reduced-motion handling, offscreen/hidden-tab suspension, and wraparound group movement.
+- Added optional Filmstrip arrows with overlay and aligned above/below positions, shared arrow designs, navigation hover treatments, and Mai palette/custom colors.
+- Added Natural, Uniform Crop, and Logo / Contain Filmstrip modes with responsive fixed heights, global logo padding, and per-attachment optical scale overrides for unusually sized or internally padded logo files.
+- Corrected Slider Edge Tab positioning by explicitly isolating the previous and next logical edges and keeping their hit targets independent in editor previews.
+
 ## 0.6.0
 
 - Reworked Fade and every animated Slider preset into an in-place compositor transition for control-driven and autoplay navigation, eliminating the underlying horizontal slide and background flash.

@@ -123,6 +123,8 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 	$block_data = isset( $block['data'] ) && is_array( $block['data'] )
 		? $block['data']
 		: [];
+	$layout                      = get_field( 'layout' );
+	$hover                       = 'slider' === $layout ? get_field( 'slider_hover' ) : get_field( 'hover' );
 	$slider_navigation           = get_field( 'slider_navigation' );
 	$slider_navigation_secondary = get_field( 'slider_navigation_secondary' );
 
@@ -149,7 +151,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'align'                  => isset( $block['align'] ) ? $block['align'] : '',
 		'anchor'                 => isset( $block['anchor'] ) ? $block['anchor'] : '',
 		'class'                  => isset( $block['className'] ) ? $block['className'] : '',
-		'layout'                 => get_field( 'layout' ),
+		'layout'                 => $layout,
 		'click_action'           => get_field( 'click_action' ),
 		'lightbox_arrow_style'   => get_field( 'lightbox_arrow_style' ),
 		'images'                 => get_field( 'images' ),
@@ -160,10 +162,22 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'image_radius'           => get_field( 'image_radius' ),
 		'captions'               => get_field( 'captions' ),
 		'shadow'                 => get_field( 'shadow' ),
-		'hover'                  => get_field( 'hover' ),
+		'hover'                  => $hover,
+		'hover_desaturate_amount' => get_field( 'hover_desaturate_amount' ),
 		'justified_row_height'   => get_field( 'justified_row_height' ),
 		'mosaic_feature_side'    => get_field( 'mosaic_feature_side' ),
 		'mosaic_alternate'       => get_field( 'mosaic_alternate' ),
+		'filmstrip_autoplay'          => get_field( 'filmstrip_autoplay' ),
+		'filmstrip_autoplay_interval' => get_field( 'filmstrip_autoplay_interval' ),
+		'filmstrip_pause_on_hover'    => get_field( 'filmstrip_pause_on_hover' ),
+		'filmstrip_arrows'            => get_field( 'filmstrip_arrows' ),
+		'filmstrip_arrow_position'    => get_field( 'filmstrip_arrow_position' ),
+		'filmstrip_arrow_style'       => get_field( 'filmstrip_arrow_style' ),
+		'filmstrip_image_mode'        => get_field( 'filmstrip_image_mode' ),
+		'filmstrip_height'            => get_field( 'filmstrip_height' ),
+		'filmstrip_height_mobile'     => get_field( 'filmstrip_height_mobile' ),
+		'filmstrip_logo_padding'      => get_field( 'filmstrip_logo_padding' ),
+		'filmstrip_logo_overrides'    => get_field( 'filmstrip_logo_overrides' ),
 		'slider_navigation'           => $slider_navigation,
 		'slider_navigation_secondary' => $slider_navigation_secondary,
 		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
@@ -253,6 +267,13 @@ function mai_cyber_gallery_register_field_group(): void {
 	$orientations = (array) mai_get_image_orientation_choices();
 	$image_sizes  = (array) mai_get_image_size_choices();
 	$slider_width = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
+	$hover_choices = [
+		'none'       => esc_html__( 'None', 'mai-cyber-gallery' ),
+		'zoom'       => esc_html__( 'Zoom', 'mai-cyber-gallery' ),
+		'lift'       => esc_html__( 'Lift', 'mai-cyber-gallery' ),
+		'fade'       => esc_html__( 'Fade', 'mai-cyber-gallery' ),
+		'desaturate' => esc_html__( 'Desaturate', 'mai-cyber-gallery' ),
+	];
 
 	if ( ! isset( $image_sizes['full'] ) ) {
 		$image_sizes = [ 'full' => esc_html__( 'Full Size', 'mai-cyber-gallery' ) ] + $image_sizes;
@@ -264,6 +285,75 @@ function mai_cyber_gallery_register_field_group(): void {
 				'field'    => 'mai_cyber_gallery_layout',
 				'operator' => '==',
 				'value'    => 'slider',
+			],
+		],
+	];
+	$filmstrip_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'filmstrip',
+			],
+		],
+	];
+	$filmstrip_autoplay_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'filmstrip',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_filmstrip_autoplay',
+				'operator' => '==',
+				'value'    => '1',
+			],
+		],
+	];
+	$filmstrip_arrows_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'filmstrip',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_filmstrip_arrows',
+				'operator' => '==',
+				'value'    => '1',
+			],
+		],
+	];
+	$filmstrip_controls_condition = array_merge(
+		$filmstrip_arrows_condition,
+		$filmstrip_autoplay_condition
+	);
+	$filmstrip_uniform_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'filmstrip',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_filmstrip_image_mode',
+				'operator' => '!=',
+				'value'    => 'natural',
+			],
+		],
+	];
+	$filmstrip_logo_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'filmstrip',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_filmstrip_image_mode',
+				'operator' => '==',
+				'value'    => 'logo-contain',
 			],
 		],
 	];
@@ -416,13 +506,14 @@ function mai_cyber_gallery_register_field_group(): void {
 			'value'    => '1',
 		],
 	];
+	$slider_navigation_interactive_condition = array_merge(
+		$slider_navigation_interactive_condition,
+		$slider_autoplay_condition
+	);
+	$navigation_color_condition       = array_merge( $slider_navigation_condition, $filmstrip_controls_condition );
+	$navigation_interactive_condition = array_merge( $slider_navigation_interactive_condition, $filmstrip_controls_condition );
 	$slider_overlay_condition = [
 		[
-			[
-				'field'    => 'mai_cyber_gallery_layout',
-				'operator' => '==',
-				'value'    => 'slider',
-			],
 			[
 				'field'    => 'mai_cyber_gallery_slider_overlay_style',
 				'operator' => '!=',
@@ -491,12 +582,12 @@ function mai_cyber_gallery_register_field_group(): void {
 	$slider_navigation_color_fields = [];
 	foreach (
 		[
-			[ 'slider_navigation_main', esc_html__( 'Main Color', 'mai-cyber-gallery' ), 'slider_navigation_main', '', $slider_navigation_condition ],
-			[ 'slider_navigation_border', esc_html__( 'Border Color', 'mai-cyber-gallery' ), 'slider_navigation_border', '', $slider_navigation_condition ],
-			[ 'slider_navigation_inner', esc_html__( 'Inner Color', 'mai-cyber-gallery' ), 'slider_navigation_inner', '', $slider_navigation_condition ],
-			[ 'slider_navigation_main_hover', esc_html__( 'Main Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_main_hover', '', $slider_navigation_interactive_condition ],
-			[ 'slider_navigation_border_hover', esc_html__( 'Border Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_border_hover', '', $slider_navigation_interactive_condition ],
-			[ 'slider_navigation_inner_hover', esc_html__( 'Inner Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_inner_hover', '', $slider_navigation_interactive_condition ],
+			[ 'slider_navigation_main', esc_html__( 'Main Color', 'mai-cyber-gallery' ), 'slider_navigation_main', '', $navigation_color_condition ],
+			[ 'slider_navigation_border', esc_html__( 'Border Color', 'mai-cyber-gallery' ), 'slider_navigation_border', '', $navigation_color_condition ],
+			[ 'slider_navigation_inner', esc_html__( 'Inner Color', 'mai-cyber-gallery' ), 'slider_navigation_inner', '', $navigation_color_condition ],
+			[ 'slider_navigation_main_hover', esc_html__( 'Main Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_main_hover', '', $navigation_interactive_condition ],
+			[ 'slider_navigation_border_hover', esc_html__( 'Border Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_border_hover', '', $navigation_interactive_condition ],
+			[ 'slider_navigation_inner_hover', esc_html__( 'Inner Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_inner_hover', '', $navigation_interactive_condition ],
 		] as $color_field
 	) {
 		$slider_navigation_color_fields = array_merge(
@@ -555,7 +646,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'name'         => 'slides',
 					'type'         => 'repeater',
 					'layout'       => 'block',
-					'min'          => 1,
+					'min'          => 0,
 					'collapsed'    => 'mai_cyber_gallery_slide_title',
 					'button_label' => esc_html__( 'Add Slide', 'mai-cyber-gallery' ),
 					'sub_fields'   => [
@@ -671,7 +762,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'preview_size'  => 'medium',
 					'insert'        => 'append',
 					'library'       => 'all',
-					'min'           => 1,
+					'min'           => 0,
 					'conditional_logic' => [
 						[
 							[
@@ -694,7 +785,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'name'         => 'images_links',
 					'type'         => 'repeater',
 					'layout'       => 'block',
-					'min'          => 1,
+					'min'          => 0,
 					'collapsed'    => 'mai_cyber_gallery_image',
 					'button_label' => esc_html__( 'Add Image', 'mai-cyber-gallery' ),
 					'sub_fields'   => [
@@ -734,7 +825,7 @@ function mai_cyber_gallery_register_field_group(): void {
 				[
 					'key'           => 'mai_cyber_gallery_image_orientation',
 					'label'         => esc_html__( 'Image Orientation', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Used by Mai Grid and Filmstrip. Natural-ratio layouts use the selected image size below.', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Used by Mai Grid and Filmstrip Natural/Uniform Crop modes. Natural-ratio layouts use the selected image size below.', 'mai-cyber-gallery' ),
 					'name'          => 'image_orientation',
 					'type'          => 'select',
 					'default_value' => 'landscape',
@@ -753,13 +844,18 @@ function mai_cyber_gallery_register_field_group(): void {
 								'operator' => '==',
 								'value'    => 'filmstrip',
 							],
+							[
+								'field'    => 'mai_cyber_gallery_filmstrip_image_mode',
+								'operator' => '!=',
+								'value'    => 'logo-contain',
+							],
 						],
 					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_image_size',
 					'label'         => esc_html__( 'Image Quality / Source Size', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Choose a source at least as large as its display dimensions. Larger sources look sharper but use more bandwidth; use an uncropped size for natural-ratio layouts.', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Choose a source at least as large as its display dimensions. Larger sources look sharper but use more bandwidth. Logo / Contain automatically replaces a cropped preset with Full Size.', 'mai-cyber-gallery' ),
 					'name'          => 'image_size',
 					'type'          => 'select',
 					'default_value' => 'large',
@@ -802,17 +898,28 @@ function mai_cyber_gallery_register_field_group(): void {
 								'value'    => 'custom',
 							],
 						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'filmstrip',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_filmstrip_image_mode',
+								'operator' => '==',
+								'value'    => 'logo-contain',
+							],
+						],
 					],
 				],
 				[
-					'key'               => 'mai_cyber_gallery_slider_overlay_style',
-					'label'             => esc_html__( 'Slider Image Overlay', 'mai-cyber-gallery' ),
-					'name'              => 'slider_overlay_style',
-					'type'              => 'select',
-					'default_value'     => 'none',
-					'choices'           => mai_cyber_gallery_get_slider_overlay_style_choices(),
-					'ui'                => 1,
-					'conditional_logic' => $slider_condition,
+					'key'           => 'mai_cyber_gallery_slider_overlay_style',
+					'label'         => esc_html__( 'Image Overlay', 'mai-cyber-gallery' ),
+					'name'          => 'slider_overlay_style',
+					'type'          => 'select',
+					'default_value' => 'none',
+					'choices'       => mai_cyber_gallery_get_slider_overlay_style_choices(),
+					'ui'            => 1,
 				],
 				...$slider_overlay_color_fields,
 				[
@@ -917,6 +1024,174 @@ function mai_cyber_gallery_register_field_group(): void {
 								'operator' => '!=',
 								'value'    => 'slider',
 							],
+						],
+					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_autoplay',
+					'label'             => esc_html__( 'Filmstrip Autoplay', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_autoplay',
+					'type'              => 'true_false',
+					'message'           => esc_html__( 'Advance the filmstrip automatically', 'mai-cyber-gallery' ),
+					'default_value'     => 0,
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_autoplay_interval',
+					'label'             => esc_html__( 'Autoplay Interval', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_autoplay_interval',
+					'type'              => 'number',
+					'default_value'     => 5,
+					'min'               => 3,
+					'max'               => 30,
+					'step'              => 1,
+					'append'            => esc_html__( 'seconds', 'mai-cyber-gallery' ),
+					'conditional_logic' => $filmstrip_autoplay_condition,
+					'wrapper'           => [
+						'class' => 'mai-cyber-gallery-number-no-spinner',
+					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_pause_on_hover',
+					'label'             => esc_html__( 'Pause on Mouse Over', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_pause_on_hover',
+					'type'              => 'true_false',
+					'message'           => esc_html__( 'Pause autoplay while the pointer is over the filmstrip', 'mai-cyber-gallery' ),
+					'default_value'     => 1,
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_autoplay_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_arrows',
+					'label'             => esc_html__( 'Filmstrip Arrows', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_arrows',
+					'type'              => 'true_false',
+					'message'           => esc_html__( 'Show previous and next controls', 'mai-cyber-gallery' ),
+					'default_value'     => 1,
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_arrow_position',
+					'label'             => esc_html__( 'Filmstrip Controls Position', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_arrow_position',
+					'type'              => 'select',
+					'default_value'     => 'below-end',
+					'choices'           => [
+						'overlay'      => esc_html__( 'Overlay', 'mai-cyber-gallery' ),
+						'above-start'  => esc_html__( 'Above — Start', 'mai-cyber-gallery' ),
+						'above-center' => esc_html__( 'Above — Center', 'mai-cyber-gallery' ),
+						'above-end'    => esc_html__( 'Above — End', 'mai-cyber-gallery' ),
+						'below-start'  => esc_html__( 'Below — Start', 'mai-cyber-gallery' ),
+						'below-center' => esc_html__( 'Below — Center', 'mai-cyber-gallery' ),
+						'below-end'    => esc_html__( 'Below — End', 'mai-cyber-gallery' ),
+					],
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_controls_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_arrow_style',
+					'label'             => esc_html__( 'Filmstrip Arrow Design', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_arrow_style',
+					'type'              => 'select',
+					'default_value'     => 'circle',
+					'choices'           => mai_cyber_gallery_get_arrow_style_choices(),
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_arrows_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_image_mode',
+					'label'             => esc_html__( 'Filmstrip Image Mode', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_image_mode',
+					'type'              => 'select',
+					'default_value'     => 'natural',
+					'choices'           => [
+						'natural'       => esc_html__( 'Natural', 'mai-cyber-gallery' ),
+						'uniform-cover' => esc_html__( 'Uniform Crop', 'mai-cyber-gallery' ),
+						'logo-contain'  => esc_html__( 'Logo / Contain', 'mai-cyber-gallery' ),
+					],
+					'ui'                => 1,
+					'conditional_logic' => $filmstrip_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_height',
+					'label'             => esc_html__( 'Filmstrip Height', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Desktop image height.', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_height',
+					'type'              => 'number',
+					'default_value'     => 320,
+					'min'               => 120,
+					'max'               => 800,
+					'step'              => 10,
+					'append'            => 'px',
+					'conditional_logic' => $filmstrip_uniform_condition,
+					'wrapper'           => [
+						'class' => 'mai-cyber-gallery-number-no-spinner',
+					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_height_mobile',
+					'label'             => esc_html__( 'Filmstrip Mobile Height', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_height_mobile',
+					'type'              => 'number',
+					'default_value'     => 220,
+					'min'               => 100,
+					'max'               => 600,
+					'step'              => 10,
+					'append'            => 'px',
+					'conditional_logic' => $filmstrip_uniform_condition,
+					'wrapper'           => [
+						'class' => 'mai-cyber-gallery-number-no-spinner',
+					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_logo_padding',
+					'label'             => esc_html__( 'Logo Padding', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Space around every contained logo.', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_logo_padding',
+					'type'              => 'range',
+					'default_value'     => 24,
+					'min'               => 0,
+					'max'               => 120,
+					'step'              => 2,
+					'append'            => 'px',
+					'conditional_logic' => $filmstrip_logo_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_filmstrip_logo_overrides',
+					'label'             => esc_html__( 'Logo Size Overrides', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Fine-tune individual logos relative to the shared logo size.', 'mai-cyber-gallery' ),
+					'name'              => 'filmstrip_logo_overrides',
+					'type'              => 'repeater',
+					'layout'            => 'table',
+					'min'               => 0,
+					'collapsed'         => 'mai_cyber_gallery_filmstrip_logo_override_image',
+					'button_label'      => esc_html__( 'Add Logo Override', 'mai-cyber-gallery' ),
+					'conditional_logic' => $filmstrip_logo_condition,
+					'sub_fields'        => [
+						[
+							'key'             => 'mai_cyber_gallery_filmstrip_logo_override_image',
+							'label'           => esc_html__( 'Image', 'mai-cyber-gallery' ),
+							'name'            => 'image',
+							'type'            => 'image',
+							'required'        => 1,
+							'return_format'   => 'id',
+							'preview_size'    => 'thumbnail',
+							'library'         => 'all',
+							'parent_repeater' => 'mai_cyber_gallery_filmstrip_logo_overrides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_filmstrip_logo_override_scale',
+							'label'           => esc_html__( 'Scale', 'mai-cyber-gallery' ),
+							'name'            => 'scale',
+							'type'            => 'range',
+							'default_value'   => 100,
+							'min'             => 50,
+							'max'             => 200,
+							'step'            => 5,
+							'append'          => '%',
+							'parent_repeater' => 'mai_cyber_gallery_filmstrip_logo_overrides',
 						],
 					],
 				],
@@ -1064,7 +1339,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'default_value'     => 'color',
 					'choices'           => mai_cyber_gallery_get_slider_navigation_hover_choices(),
 					'ui'                => 1,
-					'conditional_logic' => $slider_navigation_interactive_condition,
+					'conditional_logic' => $navigation_interactive_condition,
 				],
 				[
 					'key'               => 'mai_cyber_gallery_slider_navigation_colors_accordion',
@@ -1073,7 +1348,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'type'              => 'accordion',
 					'open'              => 0,
 					'multi_expand'      => 1,
-					'conditional_logic' => $slider_navigation_condition,
+					'conditional_logic' => $navigation_color_condition,
 				],
 				...$slider_navigation_color_fields,
 				[
@@ -1275,18 +1550,60 @@ function mai_cyber_gallery_register_field_group(): void {
 					'name'          => 'hover',
 					'type'          => 'select',
 					'default_value' => 'zoom',
-					'choices'       => [
-						'none' => esc_html__( 'None', 'mai-cyber-gallery' ),
-						'zoom' => esc_html__( 'Zoom', 'mai-cyber-gallery' ),
-						'lift' => esc_html__( 'Lift', 'mai-cyber-gallery' ),
-						'fade' => esc_html__( 'Fade', 'mai-cyber-gallery' ),
-					],
+					'choices'       => $hover_choices,
 					'conditional_logic' => [
 						[
 							[
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '!=',
 								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_hover',
+					'label'             => esc_html__( 'Hover Effect', 'mai-cyber-gallery' ),
+					'name'              => 'slider_hover',
+					'type'              => 'select',
+					'default_value'     => 'none',
+					'choices'           => $hover_choices,
+					'conditional_logic' => $slider_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_hover_desaturate_amount',
+					'label'             => esc_html__( 'Desaturate Amount', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Color removed at rest; the image returns to full color on hover.', 'mai-cyber-gallery' ),
+					'name'              => 'hover_desaturate_amount',
+					'type'              => 'range',
+					'default_value'     => 100,
+					'min'               => 0,
+					'max'               => 100,
+					'step'              => 5,
+					'append'            => '%',
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_hover',
+								'operator' => '==',
+								'value'    => 'desaturate',
+							],
+						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_hover',
+								'operator' => '==',
+								'value'    => 'desaturate',
 							],
 						],
 					],

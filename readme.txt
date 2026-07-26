@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.6.0
+Stable tag: 0.7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,15 +33,23 @@ Masonry places each image in the current shortest column to reduce unnecessary g
 
 Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
 
-Slider has independent Primary and Secondary Navigation selectors, so arrows, circles, and the slide counter can be combined or disabled. Duplicate choices render only once. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
+Slider has independent Primary and Secondary Navigation selectors, so arrows, circles, and the slide counter can be combined or disabled. Duplicate choices render only once. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, column, gallery-alignment, and gap controls are hidden for Slider.
+
+Switching layouts preserves ordinary Images, Linked Images, structured Slides, and dormant layout settings. An unpopulated destination layout falls back to retained attachments, so changing to or from Slider no longer empties the preview, while returning to Slider restores its titles, copy, CTA buttons, and alignment.
 
 Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. Smooth Slide keeps native horizontal movement. Controls and autoplay render the other presets as in-place crossfades with their selected entrance treatment; direct touch and trackpad gestures remain native. Navigation hover effects include Color Shift, Grow, Nudge, Glow, Fill, and Ring while retaining stable hit targets. Motion effects honor the visitor's reduced-motion preference.
 
-Optional Slider autoplay has a configurable 3–30 second interval, mouse-over pause, and an accessible Pause/Start control.
+Optional Slider autoplay has a configurable 3–30 second interval, mouse-over pause, and an accessible Pause/Start control whenever motion is allowed.
 
 Slider navigation background, border, and inner colors have independent normal and hover settings. Each reuses the Mai Engine palette and supports a custom color.
 
-Slider image overlays support None, Solid, four directional gradients, and Vignette styles with Mai palette/custom color and 0–100 opacity controls. The image overlay remains separate from the content-legibility scrim behind slide copy.
+Image overlays now work across every layout and support None, Solid, four directional gradients, and Vignette styles with Mai palette/custom color and 0–100 opacity controls. In Slider the image overlay remains separate from the content-legibility scrim behind slide copy.
+
+Hover treatments also work across every layout. Desaturate removes a configurable 0–100 percent of color at rest and restores full color on mouse-over or keyboard focus. Slider defaults to None so existing Sliders remain motionless until a treatment is selected.
+
+Filmstrip supports optional timed group movement with an accessible Pause/Start control whenever the strip overflows and motion is allowed, optional mouse-over pause, and arrows that can be disabled, overlaid, or aligned above or below the images. Controls hide when every item fits. Filmstrip arrow design, navigation hover effects, and Mai palette/custom colors are shared with Slider.
+
+Filmstrip also includes Natural, Uniform Crop, and Logo / Contain image modes. Logo mode centers artwork in consistent responsive cells with shared inner padding and automatically replaces a selected hard-cropped preset with the uncropped original. Per-image scale overrides compensate for unusual transparent whitespace or optically small logos without changing the source files; values above 100 percent intentionally zoom within the cell and can clip if overdone.
 
 Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row. Browser up/down spinner controls are removed from those Slider dimension inputs while their numeric validation remains.
 
@@ -50,6 +58,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.7.0 =
+
+Preserves images and settings when layouts change; adds shared overlays and desaturation, Filmstrip autoplay and positioned optional arrows, and standardized no-crop logo rows with per-image sizing.
 
 = 0.6.0 =
 
@@ -110,13 +122,24 @@ Full fills the available block or parent canvas and is the default. Contained re
 
 = Does the filmstrip autoplay? =
 
-No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/next controls.
+Optionally. It always retains native touch, mouse, trackpad, keyboard scrolling, and scroll snap. Timed movement advances visible groups and includes Pause/Start whenever movement is available, plus reduced-motion, visibility, focus, and manual-interaction safeguards.
 
 = Does the Slider autoplay? =
 
-Autoplay is optional. Set the time between slides from 3 through 30 seconds and optionally pause while the pointer is over the Slider. A Pause/Start control remains available to visitors.
+Autoplay is optional. Set the time between slides from 3 through 30 seconds and optionally pause while the pointer is over the Slider. A Pause/Start control remains available whenever motion is allowed; reduced-motion preferences disable autoplay.
 
 == Changelog ==
+
+= 0.7.0 =
+
+* Preserved Images, Linked Images, Slides, and dormant settings across layout changes instead of dropping hidden ACF fields from block data.
+* Added non-destructive retained-image fallbacks when switching to an unpopulated Slider or gallery layout.
+* Shared image overlays and hover treatments across every layout.
+* Added configurable desaturation until mouse-over or keyboard focus.
+* Preserved the motionless default for existing Sliders while making hover treatments opt-in.
+* Added Filmstrip timed movement, optional arrows, overlay and aligned above/below control positions, shared arrow designs, navigation hover effects, and colors.
+* Added Uniform Crop and Logo / Contain Filmstrip modes with responsive heights, padding, and per-logo scale overrides.
+* Corrected Slider Edge Tab placement and separated the previous/next hit targets.
 
 = 0.6.0 =
 
