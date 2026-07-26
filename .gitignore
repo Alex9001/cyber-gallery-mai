@@ -1,0 +1,7 @@
+/vendor/
+/node_modules/
+/.phpstan-cache/
+/.phpcs-cache
+/.phpunit.result.cache
+/coverage/
+/npm-debug.log*

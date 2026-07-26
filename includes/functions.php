@@ -15,7 +15,7 @@ defined( 'ABSPATH' ) || die;
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_layout_choices() {
+function mai_cyber_gallery_get_layout_choices(): array {
 	$layouts = [
 		'grid'      => esc_html__( 'Mai Grid', 'mai-cyber-gallery' ),
 		'masonry'   => esc_html__( 'Masonry Columns', 'mai-cyber-gallery' ),
@@ -47,7 +47,7 @@ function mai_cyber_gallery_get_layout_choices() {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_arrow_style_choices() {
+function mai_cyber_gallery_get_arrow_style_choices(): array {
 	$styles = [
 		'circle'  => esc_html__( 'Frosted Circle', 'mai-cyber-gallery' ),
 		'square'  => esc_html__( 'Rounded Square', 'mai-cyber-gallery' ),
@@ -72,7 +72,7 @@ function mai_cyber_gallery_get_arrow_style_choices() {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_navigation_choices() {
+function mai_cyber_gallery_get_slider_navigation_choices(): array {
 	$choices = [
 		'arrows-dots' => esc_html__( 'Arrows + Circles', 'mai-cyber-gallery' ),
 		'arrows'      => esc_html__( 'Arrows', 'mai-cyber-gallery' ),
@@ -100,7 +100,7 @@ function mai_cyber_gallery_get_slider_navigation_choices() {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_button_style_choices() {
+function mai_cyber_gallery_get_button_style_choices(): array {
 	$core_choices = [
 		'button'           => esc_html__( 'Primary Button', 'mai-cyber-gallery' ),
 		'button_secondary' => esc_html__( 'Secondary Button', 'mai-cyber-gallery' ),
@@ -158,7 +158,7 @@ function mai_cyber_gallery_get_default_button_style() {
  *
  * @return string
  */
-function mai_cyber_gallery_get_button_style_classes( $style ) {
+function mai_cyber_gallery_get_button_style_classes( $style ): string {
 	$styles = [
 		'button'           => [ 'button' ],
 		'button_secondary' => [ 'button', 'button-secondary' ],
@@ -193,11 +193,11 @@ function mai_cyber_gallery_get_button_style_classes( $style ) {
  *
  * @since 0.1.0
  *
- * @param array $args Gallery arguments.
+ * @param array<string, mixed> $args Gallery arguments.
  *
  * @return string
  */
-function mai_get_cyber_gallery( $args = [] ) {
+function mai_get_cyber_gallery( $args = [] ): string {
 	$gallery = new Mai_Cyber_Gallery( $args );
 	return $gallery->get();
 }
@@ -207,11 +207,11 @@ function mai_get_cyber_gallery( $args = [] ) {
  *
  * @since 0.1.0
  *
- * @param array $args Gallery arguments.
+ * @param array<string, mixed> $args Gallery arguments.
  *
  * @return void
  */
-function mai_do_cyber_gallery( $args = [] ) {
+function mai_do_cyber_gallery( $args = [] ): void {
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered gallery markup is escaped at its sources.
 	echo mai_get_cyber_gallery( $args );
 }

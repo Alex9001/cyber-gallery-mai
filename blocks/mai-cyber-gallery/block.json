@@ -1,4 +1,6 @@
 {
+	"$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+	"apiVersion": 3,
 	"name": "acf/mai-cyber-gallery",
 	"title": "Mai Cyber Gallery",
 	"description": "Nine responsive gallery layouts, including masonry, tiled mosaic, filmstrip, and a content slider, powered by Mai Engine.",

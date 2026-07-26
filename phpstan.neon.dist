@@ -1,0 +1,15 @@
+parameters:
+	level: 6
+	phpVersion: 80300
+	paths:
+		- mai-cyber-gallery.php
+		- blocks
+		- classes
+		- includes
+	scanFiles:
+		- vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+		- vendor/php-stubs/acf-pro-stubs/acf-pro-stubs.php
+		- stubs/plugin-constants.stub.php
+		- stubs/mai-engine.stub.php
+	tmpDir: .phpstan-cache
+	treatPhpDocTypesAsCertain: false

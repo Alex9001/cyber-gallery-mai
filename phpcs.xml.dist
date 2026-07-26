@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<ruleset name="Mai Cyber Gallery PHP compatibility">
+	<description>Verify compatibility with PHP 8.3 and later, accounting for WordPress polyfills.</description>
+
+	<file>mai-cyber-gallery.php</file>
+	<file>blocks</file>
+	<file>classes</file>
+	<file>includes</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="parallel" value="8"/>
+	<arg name="cache" value=".phpcs-cache"/>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+
+	<config name="testVersion" value="8.3-"/>
+
+	<rule ref="PHPCompatibilityWP"/>
+</ruleset>

@@ -4,10 +4,10 @@
  *
  * Plugin Name:       Mai Cyber Gallery
  * Description:       Advanced masonry, tiled mosaic, content slider, and lightbox galleries powered by Mai Engine.
- * Version:           0.3.1
- * Requires at least: 6.4
+ * Version:           0.4.0
+ * Requires at least: 6.5
  * Tested up to:      7.0
- * Requires PHP:      8.1
+ * Requires PHP:      8.3
  * Requires Plugins:  mai-engine
  * Text Domain:       mai-cyber-gallery
  * License:           GPL-2.0-or-later
@@ -30,7 +30,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @var Mai_Cyber_Gallery_Plugin|null
 	 */
-	private static $instance = null;
+	private static ?self $instance = null;
 
 	/**
 	 * Get the plugin instance.
@@ -39,7 +39,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return Mai_Cyber_Gallery_Plugin
 	 */
-	public static function instance() {
+	public static function instance(): self {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self();
 			self::$instance->setup_constants();
@@ -56,7 +56,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function __clone() {
+	public function __clone(): void {
 		_doing_it_wrong( __FUNCTION__, esc_html__( 'Cloning is not allowed.', 'mai-cyber-gallery' ), '0.1.0' );
 	}
 
@@ -67,7 +67,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function __wakeup() {
+	public function __wakeup(): void {
 		_doing_it_wrong( __FUNCTION__, esc_html__( 'Unserializing is not allowed.', 'mai-cyber-gallery' ), '0.1.0' );
 	}
 
@@ -78,8 +78,8 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	private function setup_constants() {
-		define( 'MAI_CYBER_GALLERY_VERSION', '0.3.1' );
+	private function setup_constants(): void {
+		define( 'MAI_CYBER_GALLERY_VERSION', '0.4.0' );
 		define( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION', '2.39.0' );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -94,7 +94,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	private function includes() {
+	private function includes(): void {
 		require_once MAI_CYBER_GALLERY_PLUGIN_DIR . 'classes/class-gallery.php';
 		require_once MAI_CYBER_GALLERY_PLUGIN_DIR . 'includes/functions.php';
 	}
@@ -108,7 +108,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	private function hooks() {
+	private function hooks(): void {
 		add_action( 'after_setup_theme', [ $this, 'run' ] );
 	}
 
@@ -119,7 +119,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function run() {
+	public function run(): void {
 		if ( ! $this->dependencies_met() ) {
 			add_action( 'admin_notices', [ $this, 'admin_notice' ] );
 			return;
@@ -140,7 +140,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return bool
 	 */
-	private function dependencies_met() {
+	private function dependencies_met(): bool {
 		if ( ! class_exists( 'Mai_Engine' ) || ! function_exists( 'mai_get_version' ) ) {
 			return false;
 		}
@@ -178,7 +178,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function register_assets() {
+	public function register_assets(): void {
 		$debug       = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG;
 		$suffix      = $debug ? '' : '.min';
 		$style_file  = "assets/css/mai-cyber-gallery{$suffix}.css";
@@ -227,7 +227,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function enqueue_detected_block_assets() {
+	public function enqueue_detected_block_assets(): void {
 		global $wp_query;
 
 		$posts        = [];
@@ -272,11 +272,11 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param array $blocks Parsed WordPress blocks.
+	 * @param list<array<string, mixed>> $blocks Parsed WordPress blocks.
 	 *
 	 * @return bool
 	 */
-	private function blocks_need_script( $blocks ) {
+	private function blocks_need_script( array $blocks ): bool {
 		foreach ( (array) $blocks as $block ) {
 			if ( ! is_array( $block ) ) {
 				continue;
@@ -318,7 +318,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return string
 	 */
-	private function asset_version( $path ) {
+	private function asset_version( string $path ): string {
 		$modified = file_exists( $path ) ? (string) filemtime( $path ) : '0';
 		return MAI_CYBER_GALLERY_VERSION . '.' . $modified;
 	}
@@ -330,7 +330,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function admin_notice() {
+	public function admin_notice(): void {
 		if ( ! current_user_can( 'activate_plugins' ) ) {
 			return;
 		}
@@ -352,7 +352,7 @@ final class Mai_Cyber_Gallery_Plugin {
  *
  * @return Mai_Cyber_Gallery_Plugin
  */
-function mai_cyber_gallery_plugin() {
+function mai_cyber_gallery_plugin(): Mai_Cyber_Gallery_Plugin {
 	return Mai_Cyber_Gallery_Plugin::instance();
 }
 

@@ -4,13 +4,15 @@ Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layout
 
 ## Requirements
 
-- WordPress 6.4 or later
-- PHP 8.1 or later
+- WordPress 6.5 or later
+- PHP 8.3 or later
 - Genesis Framework
 - A Genesis child theme with Mai Engine support
 - Mai Engine 2.39.0 or later
 
 Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column controls, image sizes, sanitizers, design tokens, and the Genesis/Mai runtime.
+
+Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typing and development tooling. Saved block content, gallery settings, and public PHP API behavior are unchanged, so no content migration is required.
 
 ## Layouts
 

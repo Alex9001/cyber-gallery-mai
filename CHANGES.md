@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Raised the minimum requirements to WordPress 6.5 and PHP 8.3 while retaining compatibility through WordPress 7.0.
+- Added compatibility-safe PHP typing and static-analysis tooling without changing public function inputs or runtime behavior, filters, arguments, or item data.
+- Declared Block API version 3 explicitly for predictable editor iframe behavior.
+- Added pinned, reproducible CSS and JavaScript builds with continuous integration validation.
+- Preserved all saved block content and gallery settings; no content migration is required.
+
 ## 0.3.1
 
 - Added per-slide Top, Center, and Bottom vertical content alignment, defaulting to Bottom.

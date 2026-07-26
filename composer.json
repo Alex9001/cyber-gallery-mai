@@ -1,0 +1,37 @@
+{
+  "name": "alex9001/mai-cyber-gallery",
+  "description": "Development tooling for the Mai Cyber Gallery WordPress plugin.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "php": ">=8.3"
+  },
+  "require-dev": {
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+    "php-parallel-lint/php-parallel-lint": "^1.4",
+    "php-stubs/acf-pro-stubs": "^6.6",
+    "php-stubs/wordpress-stubs": "6.5.5",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpstan/phpstan": "^2.1"
+  },
+  "config": {
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "platform": {
+      "php": "8.3.0"
+    },
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "scripts": {
+    "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
+    "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=512M",
+    "compat": "phpcs --standard=phpcs.xml.dist",
+    "test": [
+      "@lint",
+      "@phpstan",
+      "@compat"
+    ]
+  }
+}

@@ -12,12 +12,92 @@ defined( 'ABSPATH' ) || die;
  * Render a Mai Engine-powered Cyber Gallery.
  *
  * @since 0.1.0
+ *
+ * @phpstan-type CyberGalleryLink array{
+ *     url: string,
+ *     title: string,
+ *     target: ''|'_blank'
+ * }
+ * @phpstan-type CyberGalleryButton array{
+ *     link: CyberGalleryLink,
+ *     style: string
+ * }
+ * @phpstan-type CyberGallerySlide array{
+ *     image: positive-int,
+ *     title: string,
+ *     subtext: string,
+ *     align: 'start'|'center'|'end',
+ *     align_vertical: 'top'|'center'|'bottom',
+ *     buttons: list<CyberGalleryButton>
+ * }
+ * @phpstan-type CyberGalleryLinkedImage array{
+ *     image: positive-int,
+ *     link: CyberGalleryLink
+ * }
+ * @phpstan-type CyberGalleryItem array{
+ *     id: int,
+ *     image: string,
+ *     caption: string,
+ *     alt: string,
+ *     title: string,
+ *     ratio: float,
+ *     width: int,
+ *     height: int,
+ *     link: array<array-key, mixed>,
+ *     slide_title: string,
+ *     slide_subtext: string,
+ *     slide_align: 'start'|'center'|'end',
+ *     slide_align_vertical: 'top'|'center'|'bottom',
+ *     slide_buttons: list<CyberGalleryButton>
+ * }
+ * @phpstan-type CyberGalleryArgs array{
+ *     preview: bool,
+ *     id: string,
+ *     align: string,
+ *     anchor: string,
+ *     class: string,
+ *     layout: string,
+ *     click_action: 'none'|'lightbox'|'media'|'attachment'|'custom',
+ *     lightbox_arrow_style: string,
+ *     images: list<positive-int>,
+ *     images_links: list<CyberGalleryLinkedImage>,
+ *     slides: list<CyberGallerySlide>,
+ *     image_orientation: string,
+ *     image_size: string,
+ *     image_radius: 'square'|'rounded',
+ *     captions: 'none'|'below'|'overlay',
+ *     shadow: bool,
+ *     hover: 'none'|'zoom'|'lift'|'fade',
+ *     justified_row_height: int,
+ *     mosaic_feature_side: 'left'|'right',
+ *     mosaic_alternate: bool,
+ *     slider_navigation: string,
+ *     slider_navigation_position: 'overlay'|'below',
+ *     slider_dots_position: 'top'|'bottom',
+ *     slider_arrow_style: string,
+ *     slider_width: int,
+ *     slider_height: int,
+ *     slider_height_mobile: int,
+ *     slider_image_fit: 'cover'|'contain',
+ *     columns: int,
+ *     columns_responsive: bool,
+ *     columns_md: int,
+ *     columns_sm: int,
+ *     columns_xs: int,
+ *     align_columns: string,
+ *     align_columns_vertical: string,
+ *     column_gap: string,
+ *     row_gap: string,
+ *     margin_top: string,
+ *     margin_bottom: string,
+ *     ...
+ * }
  */
 class Mai_Cyber_Gallery {
 	/**
 	 * Sanitized gallery arguments.
 	 *
-	 * @var array
+	 * @var CyberGalleryArgs
 	 */
 	protected $args;
 
@@ -33,7 +113,7 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param array $args Gallery arguments.
+	 * @param array<string, mixed> $args Gallery arguments.
 	 */
 	public function __construct( $args = [] ) {
 		$column_defaults = function_exists( 'mai_get_columns_defaults' )
@@ -93,7 +173,7 @@ class Mai_Cyber_Gallery {
 		 *
 		 * @since 0.1.0
 		 *
-		 * @param array $args Gallery arguments.
+		 * @param array<string, mixed> $args Gallery arguments.
 		 */
 		$args = (array) apply_filters( 'mai_cyber_gallery_args', $args );
 
@@ -326,10 +406,10 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param array $args     Raw arguments.
-	 * @param array $defaults Defaults.
+	 * @param array<string, mixed> $args     Raw arguments.
+	 * @param array<string, mixed> $defaults Defaults.
 	 *
-	 * @return array
+	 * @return CyberGalleryArgs
 	 */
 	protected function sanitize_args( $args, $defaults ) {
 		$layouts           = array_keys( mai_cyber_gallery_get_layout_choices() );
@@ -496,9 +576,9 @@ class Mai_Cyber_Gallery {
 	 * @since 0.3.0
 	 *
 	 * @param mixed $rows          Slide repeater rows.
-	 * @param array $button_styles Allowed CTA style slugs.
+	 * @param list<string> $button_styles Allowed CTA style slugs.
 	 *
-	 * @return array
+	 * @return list<CyberGallerySlide>
 	 */
 	protected function sanitize_slides( $rows, $button_styles ) {
 		$slides = [];
@@ -552,9 +632,9 @@ class Mai_Cyber_Gallery {
 	 * @since 0.3.0
 	 *
 	 * @param mixed $rows          Button repeater rows.
-	 * @param array $button_styles Allowed CTA style slugs.
+	 * @param list<string> $button_styles Allowed CTA style slugs.
 	 *
-	 * @return array
+	 * @return list<CyberGalleryButton>
 	 */
 	protected function sanitize_slide_buttons( $rows, $button_styles = [] ) {
 		$button_styles = $button_styles
@@ -617,7 +697,7 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @param mixed $rows Repeater rows.
 	 *
-	 * @return array
+	 * @return list<CyberGalleryLinkedImage>
 	 */
 	protected function sanitize_linked_images( $rows ) {
 		$sanitized = [];
@@ -658,7 +738,7 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @return array
+	 * @return list<CyberGalleryItem>
 	 */
 	protected function get_items() {
 		$rows = [];
@@ -740,8 +820,8 @@ class Mai_Cyber_Gallery {
 			 *
 			 * @since 0.1.0
 			 *
-			 * @param array $item Item data.
-			 * @param array $args Gallery arguments.
+			 * @param CyberGalleryItem $item Item data.
+			 * @param CyberGalleryArgs $args Gallery arguments.
 			 */
 			$item = (array) apply_filters( 'mai_cyber_gallery_item', $item, $this->args );
 
@@ -757,8 +837,8 @@ class Mai_Cyber_Gallery {
 		 *
 		 * @since 0.1.0
 		 *
-		 * @param array $items Prepared items.
-		 * @param array $args  Gallery arguments.
+		 * @param list<CyberGalleryItem> $items Prepared items.
+		 * @param CyberGalleryArgs       $args  Gallery arguments.
 		 */
 		$items = (array) apply_filters( 'mai_cyber_gallery_items', $items, $this->args );
 
@@ -819,8 +899,8 @@ class Mai_Cyber_Gallery {
 			$normalized[]          = $item;
 		}
 
-		// Item position is part of labels, lightbox grouping, and filmstrip state.
-		return array_values( $normalized );
+		// Items are appended in display order for labels, lightbox grouping, and filmstrip state.
+		return $normalized;
 	}
 
 	/**
@@ -828,10 +908,10 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param array  $item       Item data.
-	 * @param int    $index      Zero-based item index.
-	 * @param int    $total      Total items.
-	 * @param string $gallery_id Gallery ID.
+	 * @param CyberGalleryItem $item       Item data.
+	 * @param int              $index      Zero-based item index.
+	 * @param int              $total      Total items.
+	 * @param string           $gallery_id Gallery ID.
 	 *
 	 * @return string
 	 */
@@ -944,9 +1024,9 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.3.0
 	 *
-	 * @param array  $item       Normalized gallery item.
-	 * @param int    $index      Zero-based item index.
-	 * @param string $gallery_id Gallery ID.
+	 * @param CyberGalleryItem $item       Normalized gallery item.
+	 * @param int              $index      Zero-based item index.
+	 * @param string           $gallery_id Gallery ID.
 	 *
 	 * @return string
 	 */
@@ -1010,12 +1090,12 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.1.0
 	 *
-	 * @param array  $item       Item data.
-	 * @param int    $index      Zero-based item index.
-	 * @param int    $total      Total items.
-	 * @param string $gallery_id Gallery ID.
+	 * @param CyberGalleryItem $item       Item data.
+	 * @param int              $index      Zero-based item index.
+	 * @param int              $total      Total items.
+	 * @param string           $gallery_id Gallery ID.
 	 *
-	 * @return array
+	 * @return array<string, scalar>
 	 */
 	protected function get_link_attributes( $item, $index, $total, $gallery_id ) {
 		$action = $this->args['click_action'];
@@ -1132,8 +1212,8 @@ class Mai_Cyber_Gallery {
 		 *
 		 * @since 0.1.0
 		 *
-		 * @param string $image_size WordPress image size.
-		 * @param array  $args       Gallery arguments.
+		 * @param string           $image_size WordPress image size.
+		 * @param CyberGalleryArgs $args       Gallery arguments.
 		 */
 		$image_size = apply_filters( 'mai_cyber_gallery_image_size', $image_size, $this->args );
 
@@ -1216,8 +1296,8 @@ class Mai_Cyber_Gallery {
 	 *
 	 * @since 0.2.0
 	 *
-	 * @param string $gallery_id Gallery ID.
-	 * @param array  $items      Normalized slide items.
+	 * @param string                   $gallery_id Gallery ID.
+	 * @param list<CyberGalleryItem>   $items      Normalized slide items.
 	 *
 	 * @return string
 	 */

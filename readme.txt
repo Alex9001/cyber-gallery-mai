@@ -1,9 +1,9 @@
 === Mai Cyber Gallery ===
-Requires at least: 6.4
+Requires at least: 6.5
 Tested up to: 7.0
-Requires PHP: 8.1
+Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.3.1
+Stable tag: 0.4.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,6 +40,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.4.0 =
+
+Requires WordPress 6.5 or later and PHP 8.3 or later. Saved galleries and public API behavior are unchanged; no content migration is required.
 
 = 0.3.1 =
 
@@ -83,6 +87,14 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.4.0 =
+
+* Raised the minimum requirements to WordPress 6.5 and PHP 8.3 while retaining compatibility through WordPress 7.0.
+* Added compatibility-safe PHP typing and static-analysis tooling without changing public API behavior.
+* Declared Block API version 3 explicitly for predictable editor iframe behavior.
+* Added pinned, reproducible asset builds and continuous integration checks.
+* Preserved all saved gallery content and settings; no content migration is required.
 
 = 0.3.1 =
 

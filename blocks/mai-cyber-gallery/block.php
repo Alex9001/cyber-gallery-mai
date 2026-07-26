@@ -16,7 +16,7 @@ add_action( 'acf/init', 'mai_cyber_gallery_register_block' );
  *
  * @return void
  */
-function mai_cyber_gallery_register_block() {
+function mai_cyber_gallery_register_block(): void {
 	register_block_type( __DIR__ . '/block.json' );
 }
 
@@ -25,14 +25,14 @@ function mai_cyber_gallery_register_block() {
  *
  * @since 0.1.0
  *
- * @param array  $block      Block settings and attributes.
- * @param string $content    Inner block content.
- * @param bool   $is_preview Whether this is an editor preview.
- * @param int    $post_id    Current post ID.
+ * @param array<string, mixed> $block      Block settings and attributes.
+ * @param string               $content    Inner block content.
+ * @param bool                 $is_preview Whether this is an editor preview.
+ * @param int                  $post_id    Current post ID.
  *
  * @return void
  */
-function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = false, $post_id = 0 ) {
+function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = false, $post_id = 0 ): void {
 	static $instance = 0;
 
 	$instance++;
@@ -101,10 +101,10 @@ add_filter( 'acf/validate_value/key=mai_cyber_gallery_slide_button_link', 'mai_c
  *
  * @since 0.3.0
  *
- * @param bool|string $valid Whether the current value is valid.
- * @param mixed       $value Submitted Link field value.
- * @param array       $field ACF field settings.
- * @param string      $input Input name.
+ * @param bool|string          $valid Whether the current value is valid.
+ * @param mixed                $value Submitted Link field value.
+ * @param array<string, mixed> $field ACF field settings.
+ * @param string               $input Input name.
  *
  * @return bool|string
  */
@@ -129,7 +129,7 @@ function mai_cyber_gallery_validate_slide_button_link( $valid, $value, $field, $
  *
  * @return void
  */
-function mai_cyber_gallery_register_field_group() {
+function mai_cyber_gallery_register_field_group(): void {
 	if ( ! function_exists( 'acf_add_local_field_group' ) ) {
 		return;
 	}

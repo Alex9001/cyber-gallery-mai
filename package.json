@@ -1,0 +1,26 @@
+{
+  "name": "mai-cyber-gallery",
+  "version": "0.4.0",
+  "private": true,
+  "description": "Reproducible asset tooling for Mai Cyber Gallery.",
+  "engines": {
+    "node": "^20.0.0 || >=22.0.0"
+  },
+  "scripts": {
+    "test": "npm run check",
+    "build": "npm run build:css && npm run build:js",
+    "build:css": "cleancss -o assets/css/mai-cyber-gallery.min.css assets/css/mai-cyber-gallery.css",
+    "build:js": "terser assets/js/mai-cyber-gallery.js --compress --mangle --output assets/js/mai-cyber-gallery.min.js",
+    "check": "npm run check:syntax && node scripts/check-dist.mjs",
+    "check:syntax": "node --check assets/js/mai-cyber-gallery.js && node --check assets/js/mai-cyber-gallery.min.js"
+  },
+  "devDependencies": {
+    "clean-css-cli": "5.6.3",
+    "terser": "5.49.0"
+  },
+  "overrides": {
+    "clean-css-cli": {
+      "glob": "13.0.6"
+    }
+  }
+}
