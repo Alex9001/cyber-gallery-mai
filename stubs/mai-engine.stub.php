@@ -24,6 +24,18 @@ function genesis_attr( string $context, array $attributes = [], array $args = []
 function mai_get_version(): string {}
 
 /**
+ * @return array<string,string>
+ */
+function mai_get_colors(): array {}
+
+function mai_get_color_css( string $color ): string {}
+
+/**
+ * @return array<string,string>
+ */
+function mai_get_radio_color_choices(): array {}
+
+/**
  * @param string|array<int,string> $new
  */
 function mai_add_classes( string|array $new, string $existing = '' ): string {}

@@ -75,6 +75,18 @@ defined( 'ABSPATH' ) || die;
  *     slider_navigation_position: 'overlay'|'below',
  *     slider_dots_position: 'top'|'bottom',
  *     slider_arrow_style: string,
+ *     slider_transition: string,
+ *     slider_transition_speed: string,
+ *     slider_navigation_hover: string,
+ *     slider_navigation_main: string,
+ *     slider_navigation_border: string,
+ *     slider_navigation_inner: string,
+ *     slider_navigation_main_hover: string,
+ *     slider_navigation_border_hover: string,
+ *     slider_navigation_inner_hover: string,
+ *     slider_overlay_style: string,
+ *     slider_overlay_color: string,
+ *     slider_overlay_opacity: int,
  *     slider_width_mode: 'full'|'contained'|'inset',
  *     slider_width: int,
  *     slider_height: int,
@@ -156,15 +168,27 @@ class Mai_Cyber_Gallery {
 				'justified_row_height'       => 240,
 				'mosaic_feature_side'        => 'left',
 				'mosaic_alternate'           => false,
-				'slider_navigation'          => 'arrows-dots',
-				'slider_navigation_position' => 'overlay',
-				'slider_dots_position'       => 'top',
-				'slider_arrow_style'         => 'circle',
-				'slider_width_mode'          => 'full',
-				'slider_width'               => 1200,
-				'slider_height'              => 560,
-				'slider_height_mobile'       => 320,
-				'slider_image_fit'           => 'cover',
+				'slider_navigation'            => 'arrows-dots',
+				'slider_navigation_position'   => 'overlay',
+				'slider_dots_position'         => 'top',
+				'slider_arrow_style'           => 'circle',
+				'slider_transition'            => 'native',
+				'slider_transition_speed'      => 'normal',
+				'slider_navigation_hover'      => 'color',
+				'slider_navigation_main'       => '',
+				'slider_navigation_border'     => '',
+				'slider_navigation_inner'      => '',
+				'slider_navigation_main_hover' => '',
+				'slider_navigation_border_hover' => '',
+				'slider_navigation_inner_hover'  => '',
+				'slider_overlay_style'           => 'none',
+				'slider_overlay_color'           => 'black',
+				'slider_overlay_opacity'         => 35,
+				'slider_width_mode'              => 'full',
+				'slider_width'                   => 1200,
+				'slider_height'                  => 560,
+				'slider_height_mobile'           => 320,
+				'slider_image_fit'               => 'cover',
 			]
 		);
 
@@ -262,6 +286,10 @@ class Mai_Cyber_Gallery {
 			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation_position'];
 			$root_classes[] = 'has-slider-dots-' . $this->args['slider_dots_position'];
 			$root_classes[] = 'has-slider-arrows-' . $this->args['slider_arrow_style'];
+			$root_classes[] = 'has-slider-transition-' . $this->args['slider_transition'];
+			$root_classes[] = 'has-slider-transition-speed-' . $this->args['slider_transition_speed'];
+			$root_classes[] = 'has-slider-navigation-hover-' . $this->args['slider_navigation_hover'];
+			$root_classes[] = 'has-slider-overlay-' . $this->args['slider_overlay_style'];
 			$root_classes[] = 'has-slider-width-' . $this->args['slider_width_mode'];
 			$root_classes[] = 'has-slider-fit-' . $this->args['slider_image_fit'];
 		}
@@ -304,6 +332,43 @@ class Mai_Cyber_Gallery {
 				$this->args['slider_height'],
 				$this->args['slider_height_mobile']
 			);
+
+			$navigation_colors = [
+				'slider_navigation_main'         => '--cyber-slider-nav-main',
+				'slider_navigation_border'       => '--cyber-slider-nav-border',
+				'slider_navigation_inner'        => '--cyber-slider-nav-inner',
+				'slider_navigation_main_hover'   => '--cyber-slider-nav-main-hover',
+				'slider_navigation_border_hover' => '--cyber-slider-nav-border-hover',
+				'slider_navigation_inner_hover'  => '--cyber-slider-nav-inner-hover',
+			];
+
+			foreach ( $navigation_colors as $key => $property ) {
+				if ( ! $this->args[ $key ] ) {
+					continue;
+				}
+
+				$root_style .= sprintf(
+					'%1$s:%2$s;',
+					$property,
+					mai_get_color_css( $this->args[ $key ] )
+				);
+			}
+
+			if ( 'none' !== $this->args['slider_overlay_style'] ) {
+				$overlay_opacity = rtrim(
+					rtrim(
+						number_format( $this->args['slider_overlay_opacity'] / 100, 2, '.', '' ),
+						'0'
+					),
+					'.'
+				);
+				$overlay_opacity = '' === $overlay_opacity ? '0' : $overlay_opacity;
+				$root_style .= sprintf(
+					'--cyber-slider-overlay-color:%1$s;--cyber-slider-overlay-opacity:%2$s;',
+					mai_get_color_css( $this->args['slider_overlay_color'] ),
+					$overlay_opacity
+				);
+			}
 		}
 
 		if ( $root_style ) {
@@ -415,10 +480,14 @@ class Mai_Cyber_Gallery {
 	 * @return CyberGalleryArgs
 	 */
 	protected function sanitize_args( $args, $defaults ) {
-		$layouts           = array_keys( mai_cyber_gallery_get_layout_choices() );
-		$arrow_styles      = array_keys( mai_cyber_gallery_get_arrow_style_choices() );
-		$button_styles     = array_keys( mai_cyber_gallery_get_button_style_choices() );
-		$slider_navigation = array_keys( mai_cyber_gallery_get_slider_navigation_choices() );
+		$layouts            = array_keys( mai_cyber_gallery_get_layout_choices() );
+		$arrow_styles       = array_keys( mai_cyber_gallery_get_arrow_style_choices() );
+		$button_styles      = array_keys( mai_cyber_gallery_get_button_style_choices() );
+		$slider_navigation  = array_keys( mai_cyber_gallery_get_slider_navigation_choices() );
+		$slider_transitions = array_keys( mai_cyber_gallery_get_slider_transition_choices() );
+		$slider_speeds      = array_keys( mai_cyber_gallery_get_slider_transition_speed_choices() );
+		$slider_hovers      = array_keys( mai_cyber_gallery_get_slider_navigation_hover_choices() );
+		$slider_overlays    = array_keys( mai_cyber_gallery_get_slider_overlay_style_choices() );
 
 		$args['preview']                    = mai_sanitize_bool( $args['preview'] );
 		$args['id']                         = sanitize_title( (string) $args['id'] );
@@ -436,6 +505,10 @@ class Mai_Cyber_Gallery {
 		$args['slider_navigation_position'] = sanitize_key( (string) $args['slider_navigation_position'] );
 		$args['slider_dots_position']       = sanitize_key( (string) $args['slider_dots_position'] );
 		$args['slider_arrow_style']         = sanitize_key( (string) $args['slider_arrow_style'] );
+		$args['slider_transition']          = sanitize_key( (string) $args['slider_transition'] );
+		$args['slider_transition_speed']    = sanitize_key( (string) $args['slider_transition_speed'] );
+		$args['slider_navigation_hover']    = sanitize_key( (string) $args['slider_navigation_hover'] );
+		$args['slider_overlay_style']       = sanitize_key( (string) $args['slider_overlay_style'] );
 		$args['slider_width_mode']          = sanitize_key( (string) $args['slider_width_mode'] );
 		$args['slider_image_fit']           = sanitize_key( (string) $args['slider_image_fit'] );
 
@@ -484,6 +557,41 @@ class Mai_Cyber_Gallery {
 		if ( ! in_array( $args['slider_arrow_style'], $arrow_styles, true ) ) {
 			$args['slider_arrow_style'] = $defaults['slider_arrow_style'];
 		}
+
+		if ( ! in_array( $args['slider_transition'], $slider_transitions, true ) ) {
+			$args['slider_transition'] = $defaults['slider_transition'];
+		}
+
+		if ( ! in_array( $args['slider_transition_speed'], $slider_speeds, true ) ) {
+			$args['slider_transition_speed'] = $defaults['slider_transition_speed'];
+		}
+
+		if ( ! in_array( $args['slider_navigation_hover'], $slider_hovers, true ) ) {
+			$args['slider_navigation_hover'] = $defaults['slider_navigation_hover'];
+		}
+
+		if ( ! in_array( $args['slider_overlay_style'], $slider_overlays, true ) ) {
+			$args['slider_overlay_style'] = $defaults['slider_overlay_style'];
+		}
+
+		foreach (
+			[
+				'slider_navigation_main',
+				'slider_navigation_border',
+				'slider_navigation_inner',
+				'slider_navigation_main_hover',
+				'slider_navigation_border_hover',
+				'slider_navigation_inner_hover',
+				'slider_overlay_color',
+			] as $key
+		) {
+			$args[ $key ] = $this->sanitize_color( $args[ $key ], $defaults[ $key ] );
+		}
+
+		if ( ! is_numeric( $args['slider_overlay_opacity'] ) ) {
+			$args['slider_overlay_opacity'] = $defaults['slider_overlay_opacity'];
+		}
+		$args['slider_overlay_opacity'] = max( 0, min( 100, (int) $args['slider_overlay_opacity'] ) );
 
 		if ( ! in_array( $args['slider_width_mode'], [ 'full', 'contained', 'inset' ], true ) ) {
 			$args['slider_width_mode'] = $defaults['slider_width_mode'];
@@ -561,6 +669,32 @@ class Mai_Cyber_Gallery {
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Sanitize a Mai palette slug or custom hex color.
+	 *
+	 * @since 0.5.0
+	 *
+	 * @param mixed  $color   Raw color value.
+	 * @param string $default Trusted fallback value.
+	 *
+	 * @return string
+	 */
+	protected function sanitize_color( $color, $default = '' ) {
+		$color = is_scalar( $color ) ? trim( (string) $color ) : '';
+
+		if ( '' === $color ) {
+			return $default;
+		}
+
+		$palette = array_keys( (array) mai_get_colors() );
+		if ( in_array( $color, $palette, true ) ) {
+			return sanitize_key( $color );
+		}
+
+		$hex = sanitize_hex_color( $color );
+		return $hex ? $hex : $default;
 	}
 
 	/**

@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.4.1
+Stable tag: 0.5.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -35,13 +35,23 @@ Slider uses structured rows with a required image, optional title, plain-text su
 
 Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
 
-Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row.
+Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. The seven animated entrance presets use Fast, Normal, and Slow speeds; Smooth Slide keeps native scroll timing. Navigation hover effects include Color Shift, Grow, Nudge, Glow, Fill, and Ring while retaining stable hit targets. Motion effects honor the visitor's reduced-motion preference.
+
+Slider navigation background, border, and inner colors have independent normal and hover settings. Each reuses the Mai Engine palette and supports a custom color.
+
+Slider image overlays support None, Solid, four directional gradients, and Vignette styles with Mai palette/custom color and 0–100 opacity controls. The image overlay remains separate from the content-legibility scrim behind slide copy.
+
+Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row. Browser up/down spinner controls are removed from those Slider dimension inputs while their numeric validation remains.
 
 The Image Quality / Source Size setting chooses the WordPress image source. A larger source can look sharper at large display dimensions, but uses more bandwidth.
 
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.5.0 =
+
+Adds Slider transition and speed choices, navigation hover and color controls, configurable image overlays, and cleaner Slider dimension inputs.
 
 = 0.4.1 =
 
@@ -97,6 +107,16 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.5.0 =
+
+* Added `slider_transition` choices: `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, and `cinematic`.
+* Added `slider_transition_speed` choices: `fast`, `normal`, and `slow`; motion effects honor reduced-motion preferences.
+* Added `slider_navigation_hover` choices: `color`, `grow`, `nudge`, `glow`, `fill`, and `ring`, with stable navigation hit targets.
+* Added Mai palette/custom color settings for `slider_navigation_main`, `slider_navigation_border`, `slider_navigation_inner`, `slider_navigation_main_hover`, `slider_navigation_border_hover`, and `slider_navigation_inner_hover`.
+* Added `slider_overlay_style` choices: `none`, `solid`, `gradient-bottom`, `gradient-top`, `gradient-left`, `gradient-right`, and `vignette`.
+* Added Mai palette/custom `slider_overlay_color` plus `slider_overlay_opacity` from 0 through 100, defaulting to 35. The image overlay remains separate from the content-legibility scrim.
+* Removed browser up/down spinner controls from Slider maximum-width and desktop/mobile-height inputs without removing their numeric validation.
 
 = 0.4.1 =
 

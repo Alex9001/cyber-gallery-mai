@@ -92,6 +92,114 @@ function mai_cyber_gallery_get_slider_navigation_choices(): array {
 }
 
 /**
+ * Get Slider transition choices.
+ *
+ * @since 0.5.0
+ *
+ * @return array<string,string>
+ */
+function mai_cyber_gallery_get_slider_transition_choices(): array {
+	$choices = [
+		'native'     => esc_html__( 'Smooth Slide', 'mai-cyber-gallery' ),
+		'fade'       => esc_html__( 'Fade', 'mai-cyber-gallery' ),
+		'zoom-in'    => esc_html__( 'Zoom In', 'mai-cyber-gallery' ),
+		'zoom-out'   => esc_html__( 'Zoom Out', 'mai-cyber-gallery' ),
+		'rise'       => esc_html__( 'Rise', 'mai-cyber-gallery' ),
+		'soft-focus' => esc_html__( 'Soft Focus', 'mai-cyber-gallery' ),
+		'reveal'     => esc_html__( 'Reveal', 'mai-cyber-gallery' ),
+		'cinematic'  => esc_html__( 'Cinematic', 'mai-cyber-gallery' ),
+	];
+
+	/**
+	 * Filter Slider transition choices.
+	 *
+	 * @since 0.5.0
+	 *
+	 * @param array<string,string> $choices Transition slug and label pairs.
+	 */
+	return (array) apply_filters( 'mai_cyber_gallery_slider_transition_choices', $choices );
+}
+
+/**
+ * Get Slider transition speed choices.
+ *
+ * @since 0.5.0
+ *
+ * @return array<string,string>
+ */
+function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
+	$choices = [
+		'fast'   => esc_html__( 'Fast', 'mai-cyber-gallery' ),
+		'normal' => esc_html__( 'Normal', 'mai-cyber-gallery' ),
+		'slow'   => esc_html__( 'Slow', 'mai-cyber-gallery' ),
+	];
+
+	/**
+	 * Filter Slider transition speed choices.
+	 *
+	 * @since 0.5.0
+	 *
+	 * @param array<string,string> $choices Speed slug and label pairs.
+	 */
+	return (array) apply_filters( 'mai_cyber_gallery_slider_transition_speed_choices', $choices );
+}
+
+/**
+ * Get Slider navigation hover choices.
+ *
+ * @since 0.5.0
+ *
+ * @return array<string,string>
+ */
+function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
+	$choices = [
+		'color' => esc_html__( 'Color Shift', 'mai-cyber-gallery' ),
+		'grow'  => esc_html__( 'Grow', 'mai-cyber-gallery' ),
+		'nudge' => esc_html__( 'Nudge', 'mai-cyber-gallery' ),
+		'glow'  => esc_html__( 'Glow', 'mai-cyber-gallery' ),
+		'fill'  => esc_html__( 'Fill', 'mai-cyber-gallery' ),
+		'ring'  => esc_html__( 'Ring', 'mai-cyber-gallery' ),
+	];
+
+	/**
+	 * Filter Slider navigation hover choices.
+	 *
+	 * @since 0.5.0
+	 *
+	 * @param array<string,string> $choices Hover effect slug and label pairs.
+	 */
+	return (array) apply_filters( 'mai_cyber_gallery_slider_navigation_hover_choices', $choices );
+}
+
+/**
+ * Get Slider image overlay choices.
+ *
+ * @since 0.5.0
+ *
+ * @return array<string,string>
+ */
+function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
+	$choices = [
+		'none'            => esc_html__( 'None', 'mai-cyber-gallery' ),
+		'solid'           => esc_html__( 'Solid', 'mai-cyber-gallery' ),
+		'gradient-bottom' => esc_html__( 'Gradient from Bottom', 'mai-cyber-gallery' ),
+		'gradient-top'    => esc_html__( 'Gradient from Top', 'mai-cyber-gallery' ),
+		'gradient-left'   => esc_html__( 'Gradient from Left', 'mai-cyber-gallery' ),
+		'gradient-right'  => esc_html__( 'Gradient from Right', 'mai-cyber-gallery' ),
+		'vignette'        => esc_html__( 'Vignette', 'mai-cyber-gallery' ),
+	];
+
+	/**
+	 * Filter Slider image overlay choices.
+	 *
+	 * @since 0.5.0
+	 *
+	 * @param array<string,string> $choices Overlay style slug and label pairs.
+	 */
+	return (array) apply_filters( 'mai_cyber_gallery_slider_overlay_style_choices', $choices );
+}
+
+/**
  * Get CTA button style choices shared by Slider slide rows and the PHP API.
  *
  * Values mirror Mai Engine's established button-style vocabulary.

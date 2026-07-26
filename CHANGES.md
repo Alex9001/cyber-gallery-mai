@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.5.0
+
+- Added the `slider_transition` argument with `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, and `cinematic` choices.
+- Added the `slider_transition_speed` argument with `fast`, `normal`, and `slow` choices; motion effects honor reduced-motion preferences.
+- Added the `slider_navigation_hover` argument with `color`, `grow`, `nudge`, `glow`, `fill`, and `ring` choices while retaining stable navigation hit targets.
+- Added Mai Engine palette and custom-color support for `slider_navigation_main`, `slider_navigation_border`, `slider_navigation_inner`, `slider_navigation_main_hover`, `slider_navigation_border_hover`, and `slider_navigation_inner_hover`.
+- Added `slider_overlay_style` with `none`, `solid`, `gradient-bottom`, `gradient-top`, `gradient-left`, `gradient-right`, and `vignette` choices.
+- Added Mai palette/custom `slider_overlay_color` and `slider_overlay_opacity` from 0 through 100, defaulting to 35. The user-selected image overlay remains separate from the content-legibility scrim.
+- Removed browser up/down spinner controls from Slider width and height inputs while retaining their numeric validation.
+
 ## 0.4.1
 
 - Added the `slider_width_mode` argument with `full`, `contained`, and `inset` choices. Full is the default and fills the available block or parent canvas, Contained uses the Slider maximum width and preserves the previous centered presentation, and Inset fills the canvas with responsive side gutters.

@@ -67,13 +67,25 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'mosaic_alternate'       => get_field( 'mosaic_alternate' ),
 		'slider_navigation'      => get_field( 'slider_navigation' ),
 		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
-		'slider_dots_position'   => get_field( 'slider_dots_position' ),
-		'slider_arrow_style'     => get_field( 'slider_arrow_style' ),
-		'slider_width_mode'      => get_field( 'slider_width_mode' ),
-		'slider_width'           => get_field( 'slider_width' ),
-		'slider_height'          => get_field( 'slider_height' ),
-		'slider_height_mobile'   => get_field( 'slider_height_mobile' ),
-		'slider_image_fit'       => get_field( 'slider_image_fit' ),
+		'slider_dots_position'        => get_field( 'slider_dots_position' ),
+		'slider_arrow_style'          => get_field( 'slider_arrow_style' ),
+		'slider_transition'           => get_field( 'slider_transition' ),
+		'slider_transition_speed' => get_field( 'slider_transition_speed' ),
+		'slider_navigation_hover' => get_field( 'slider_navigation_hover' ),
+		'slider_navigation_main'  => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_main' ),
+		'slider_navigation_border' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_border' ),
+		'slider_navigation_inner'  => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_inner' ),
+		'slider_navigation_main_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_main_hover' ),
+		'slider_navigation_border_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_border_hover' ),
+		'slider_navigation_inner_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_inner_hover' ),
+		'slider_overlay_style'        => get_field( 'slider_overlay_style' ),
+		'slider_overlay_color'        => mai_cyber_gallery_get_acf_color_value( 'slider_overlay_color' ),
+		'slider_overlay_opacity'      => get_field( 'slider_overlay_opacity' ),
+		'slider_width_mode'           => get_field( 'slider_width_mode' ),
+		'slider_width'                => get_field( 'slider_width' ),
+		'slider_height'               => get_field( 'slider_height' ),
+		'slider_height_mobile'        => get_field( 'slider_height_mobile' ),
+		'slider_image_fit'            => get_field( 'slider_image_fit' ),
 		'columns'                => get_field( 'columns' ),
 		'columns_responsive'     => get_field( 'columns_responsive' ),
 		'columns_md'             => get_field( 'columns_md' ),
@@ -89,6 +101,26 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery handles escaping.
 	echo mai_get_cyber_gallery( $args );
+}
+
+/**
+ * Resolve a Mai palette radio field and its optional custom color.
+ *
+ * @since 0.5.0
+ *
+ * @param string $name ACF field name.
+ *
+ * @return string
+ */
+function mai_cyber_gallery_get_acf_color_value( $name ): string {
+	$name  = sanitize_key( (string) $name );
+	$value = get_field( $name );
+
+	if ( 'custom' === $value ) {
+		$value = get_field( $name . '_custom' );
+	}
+
+	return is_scalar( $value ) ? trim( (string) $value ) : '';
 }
 
 add_action( 'acf/init', 'mai_cyber_gallery_register_field_group', 12 );
@@ -141,6 +173,155 @@ function mai_cyber_gallery_register_field_group(): void {
 	if ( ! isset( $image_sizes['full'] ) ) {
 		$image_sizes = [ 'full' => esc_html__( 'Full Size', 'mai-cyber-gallery' ) ] + $image_sizes;
 	}
+
+	$slider_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+		],
+	];
+	$slider_transition_effect_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_slider_transition',
+				'operator' => '!=',
+				'value'    => 'native',
+			],
+		],
+	];
+	$slider_navigation_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_slider_navigation',
+				'operator' => '!=',
+				'value'    => 'none',
+			],
+		],
+	];
+	$slider_navigation_interactive_condition = [];
+	foreach ( [ 'arrows-dots', 'arrows', 'dots' ] as $navigation ) {
+		$slider_navigation_interactive_condition[] = [
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_slider_navigation',
+				'operator' => '==',
+				'value'    => $navigation,
+			],
+		];
+	}
+	$slider_overlay_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'slider',
+			],
+			[
+				'field'    => 'mai_cyber_gallery_slider_overlay_style',
+				'operator' => '!=',
+				'value'    => 'none',
+			],
+		],
+	];
+
+	/**
+	 * Build a Mai palette radio field and its conditional custom picker.
+	 *
+	 * @param string                              $key               Unique field key suffix.
+	 * @param string                              $label             Visible field label.
+	 * @param string                              $name              Stored field name.
+	 * @param string                              $default           Default palette slug.
+	 * @param array<int,array<int,array<string,string>>> $conditional_logic ACF conditional rules.
+	 *
+	 * @return array<int,array<string,mixed>>
+	 */
+	$make_color_fields = static function ( $key, $label, $name, $default, $conditional_logic ) {
+		$choices      = mai_get_radio_color_choices();
+		$field_key    = 'mai_cyber_gallery_' . $key;
+		$custom_logic = [];
+
+		if ( $default && isset( $choices[''] ) ) {
+			$choices[''] = esc_html__( 'Default', 'mai-cyber-gallery' );
+		}
+
+		foreach ( $conditional_logic as $group ) {
+			$group[]       = [
+				'field'    => $field_key,
+				'operator' => '==',
+				'value'    => 'custom',
+			];
+			$custom_logic[] = $group;
+		}
+
+		return [
+			[
+				'key'               => $field_key,
+					'label'             => $label,
+					'name'              => $name,
+					'type'              => 'radio',
+					'choices'           => $choices,
+				'default_value'     => $default,
+				'wrapper'           => [
+					'class' => 'mai-block-colors',
+				],
+				'conditional_logic' => $conditional_logic,
+			],
+			[
+				'key'               => $field_key . '_custom',
+				'label'             => sprintf(
+					/* translators: %s: Color setting label. */
+					esc_html__( 'Custom %s', 'mai-cyber-gallery' ),
+					$label
+				),
+				'name'              => $name . '_custom',
+				'type'              => 'color_picker',
+				'return_format'     => 'string',
+				'conditional_logic' => $custom_logic,
+			],
+		];
+	};
+
+	$slider_navigation_color_fields = [];
+	foreach (
+		[
+			[ 'slider_navigation_main', esc_html__( 'Main Color', 'mai-cyber-gallery' ), 'slider_navigation_main', '', $slider_navigation_condition ],
+			[ 'slider_navigation_border', esc_html__( 'Border Color', 'mai-cyber-gallery' ), 'slider_navigation_border', '', $slider_navigation_condition ],
+			[ 'slider_navigation_inner', esc_html__( 'Inner Color', 'mai-cyber-gallery' ), 'slider_navigation_inner', '', $slider_navigation_condition ],
+			[ 'slider_navigation_main_hover', esc_html__( 'Main Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_main_hover', '', $slider_navigation_interactive_condition ],
+			[ 'slider_navigation_border_hover', esc_html__( 'Border Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_border_hover', '', $slider_navigation_interactive_condition ],
+			[ 'slider_navigation_inner_hover', esc_html__( 'Inner Hover Color', 'mai-cyber-gallery' ), 'slider_navigation_inner_hover', '', $slider_navigation_interactive_condition ],
+		] as $color_field
+	) {
+		$slider_navigation_color_fields = array_merge(
+			$slider_navigation_color_fields,
+			$make_color_fields( ...$color_field )
+		);
+	}
+
+	$slider_overlay_color_fields = $make_color_fields(
+		'slider_overlay_color',
+		esc_html__( 'Overlay Color', 'mai-cyber-gallery' ),
+		'slider_overlay_color',
+		'black',
+		$slider_overlay_condition
+	);
 
 	acf_add_local_field_group(
 		[
@@ -434,6 +615,29 @@ function mai_cyber_gallery_register_field_group(): void {
 					],
 				],
 				[
+					'key'               => 'mai_cyber_gallery_slider_overlay_style',
+					'label'             => esc_html__( 'Slider Image Overlay', 'mai-cyber-gallery' ),
+					'name'              => 'slider_overlay_style',
+					'type'              => 'select',
+					'default_value'     => 'none',
+					'choices'           => mai_cyber_gallery_get_slider_overlay_style_choices(),
+					'ui'                => 1,
+					'conditional_logic' => $slider_condition,
+				],
+				...$slider_overlay_color_fields,
+				[
+					'key'               => 'mai_cyber_gallery_slider_overlay_opacity',
+					'label'             => esc_html__( 'Overlay Opacity', 'mai-cyber-gallery' ),
+					'name'              => 'slider_overlay_opacity',
+					'type'              => 'range',
+					'default_value'     => 35,
+					'min'               => 0,
+					'max'               => 100,
+					'step'              => 1,
+					'append'            => '%',
+					'conditional_logic' => $slider_overlay_condition,
+				],
+				[
 					'key'           => 'mai_cyber_gallery_captions',
 					'label'         => esc_html__( 'Captions', 'mai-cyber-gallery' ),
 					'instructions'  => esc_html__( 'Uses the caption saved for each image in the Media Library.', 'mai-cyber-gallery' ),
@@ -659,6 +863,54 @@ function mai_cyber_gallery_register_field_group(): void {
 					],
 				],
 				[
+					'key'               => 'mai_cyber_gallery_slider_transition',
+					'label'             => esc_html__( 'Slide Transition', 'mai-cyber-gallery' ),
+					'name'              => 'slider_transition',
+					'type'              => 'select',
+					'default_value'     => 'native',
+					'choices'           => mai_cyber_gallery_get_slider_transition_choices(),
+					'ui'                => 1,
+					'conditional_logic' => $slider_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_transition_speed',
+					'label'             => esc_html__( 'Transition Speed', 'mai-cyber-gallery' ),
+					'name'              => 'slider_transition_speed',
+					'type'              => 'button_group',
+					'default_value'     => 'normal',
+					'choices'           => mai_cyber_gallery_get_slider_transition_speed_choices(),
+					'wrapper'           => [
+						'class' => 'mai-acf-button-group',
+					],
+					'conditional_logic' => $slider_transition_effect_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_navigation_hover',
+					'label'             => esc_html__( 'Navigation Hover Effect', 'mai-cyber-gallery' ),
+					'name'              => 'slider_navigation_hover',
+					'type'              => 'select',
+					'default_value'     => 'color',
+					'choices'           => mai_cyber_gallery_get_slider_navigation_hover_choices(),
+					'ui'                => 1,
+					'conditional_logic' => $slider_navigation_interactive_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_slider_navigation_colors_accordion',
+					'label'             => esc_html__( 'Navigation Colors', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Main controls the surface; Inner controls arrow icons, circle fills, and counter text.', 'mai-cyber-gallery' ),
+					'type'              => 'accordion',
+					'open'              => 0,
+					'multi_expand'      => 1,
+					'conditional_logic' => $slider_navigation_condition,
+				],
+				...$slider_navigation_color_fields,
+				[
+					'key'      => 'mai_cyber_gallery_slider_navigation_colors_accordion_end',
+					'label'    => '',
+					'type'     => 'accordion',
+					'endpoint' => 1,
+				],
+				[
 					'key'           => 'mai_cyber_gallery_slider_width_mode',
 					'label'         => esc_html__( 'Slider Width', 'mai-cyber-gallery' ),
 					'instructions'  => esc_html__( 'Full Width follows the available block or parent width. Contained uses the maximum width below. Inset adds responsive side spacing.', 'mai-cyber-gallery' ),
@@ -696,7 +948,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'append'        => 'px',
 					'wrapper'       => [
 						'width' => 33,
-						'class' => 'mai-cyber-gallery-slider-dimension',
+						'class' => 'mai-cyber-gallery-slider-dimension mai-cyber-gallery-number-no-spinner',
 					],
 					'conditional_logic' => [
 						[
@@ -725,7 +977,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'append'        => 'px',
 					'wrapper'       => [
 						'width' => 33,
-						'class' => 'mai-cyber-gallery-slider-dimension',
+						'class' => 'mai-cyber-gallery-slider-dimension mai-cyber-gallery-number-no-spinner',
 					],
 					'conditional_logic' => [
 						[
@@ -749,7 +1001,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'append'        => 'px',
 					'wrapper'       => [
 						'width' => 33,
-						'class' => 'mai-cyber-gallery-slider-dimension',
+						'class' => 'mai-cyber-gallery-slider-dimension mai-cyber-gallery-number-no-spinner',
 					],
 					'conditional_logic' => [
 						[

@@ -1294,6 +1294,7 @@
 			const active = itemIndex === index;
 
 			item.inert = ! active;
+			item.classList.toggle( 'is-cyber-slide-active', active );
 
 			if ( active ) {
 				item.removeAttribute( 'aria-hidden' );
@@ -1393,6 +1394,7 @@
 
 			existing.items.forEach( function ( item ) {
 				item.inert = false;
+				item.classList.remove( 'is-cyber-slide-active' );
 				item.removeAttribute( 'aria-hidden' );
 			} );
 
@@ -1816,6 +1818,7 @@
 		if ( sliderStates === states && state.items ) {
 			state.items.forEach( function ( item ) {
 				item.inert = false;
+				item.classList.remove( 'is-cyber-slide-active' );
 				item.removeAttribute( 'aria-hidden' );
 			} );
 		}
@@ -1902,6 +1905,7 @@
 				if ( sliderStates === states && state.items ) {
 					state.items.forEach( function ( item ) {
 						item.inert = false;
+						item.classList.remove( 'is-cyber-slide-active' );
 						item.removeAttribute( 'aria-hidden' );
 					} );
 				}

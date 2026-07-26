@@ -16,6 +16,8 @@ Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typin
 
 Version 0.4.1 adds Slider width modes and editor-control refinements. Existing content and settings require no migration; choose **Contained** to retain the previous centered maximum-width presentation.
 
+Version 0.5.0 adds selectable Slider transitions, navigation hover treatments and Mai-aware colors, plus configurable image overlays.
+
 ## Layouts
 
 - **Mai Grid** — the familiar responsive Mai flex-column gallery.
@@ -26,7 +28,7 @@ Version 0.4.1 adds Slider width modes and editor-control refinements. Existing c
 - **Square Tiles** — responsive 1:1 cropped tiles.
 - **Circle Tiles** — responsive circular 1:1 tiles.
 - **Filmstrip** — touch-friendly horizontal scroll snap with accessible controls.
-- **Slider** — a responsive content slider with per-slide titles, subtext, CTA buttons, horizontal and vertical content alignment, selectable navigation, dimensions, and image fit.
+- **Slider** — a responsive content slider with per-slide titles, subtext, CTA buttons, horizontal and vertical content alignment, selectable transitions and navigation treatments, dimensions, image fit, and color overlays.
 
 Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups. Every layout retains top and bottom block margins.
 
@@ -51,7 +53,13 @@ Slider does not fall back to the legacy `images` array. Slider blocks created be
 
 Slider navigation choices are Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, width mode, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
 
-Slider width modes are **Full**, **Contained**, and **Inset**. Full is the default and fills the available block or parent canvas. Contained applies **Maximum Slider Width** and preserves the previous centered presentation. Inset fills the canvas while retaining responsive side gutters. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps those three fields together in one row. Button-group choices use equal widths throughout the gallery controls.
+Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. The seven animated entrance presets use Fast, Normal, and Slow speeds; Smooth Slide keeps the browser's native scroll timing. Motion is reduced when the visitor requests reduced motion.
+
+Navigation hover choices are Color Shift, Grow, Nudge, Glow, Fill, and Ring. Main, border, and inner colors can each be set independently for normal and hover states using the Mai Engine palette or a custom color. Hover treatments preserve the navigation controls' hit targets.
+
+Slider image overlays support None, Solid, Gradient Bottom, Gradient Top, Gradient Left, Gradient Right, and Vignette styles. Overlay color uses the Mai Engine palette or a custom color, and opacity can be set from 0 through 100. This image treatment is separate from the content-legibility scrim used behind slide copy and CTAs.
+
+Slider width modes are **Full**, **Contained**, and **Inset**. Full is the default and fills the available block or parent canvas. Contained applies **Maximum Slider Width** and preserves the previous centered presentation. Inset fills the canvas while retaining responsive side gutters. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps those three fields together in one row. Their number inputs retain validation but omit browser up/down spinner controls. Button-group choices use equal widths throughout the gallery controls.
 
 **Image Quality / Source Size** selects the WordPress image source used in the responsive image markup. Choose a source at least as large as the displayed image: larger sources can look sharper but use more bandwidth. Slider dimensions control the display box independently.
 
@@ -79,9 +87,15 @@ Slider uses structured rows rather than the gallery image arrays:
 ```php
 echo mai_get_cyber_gallery(
 	[
-		'layout'            => 'slider',
-		'slider_width_mode' => 'full',
-		'slides'            => [
+		'layout'                       => 'slider',
+		'slider_width_mode'            => 'full',
+		'slider_transition'            => 'cinematic',
+		'slider_transition_speed'      => 'normal',
+		'slider_navigation_hover'      => 'glow',
+		'slider_overlay_style'         => 'gradient-bottom',
+		'slider_overlay_color'         => 'black',
+		'slider_overlay_opacity'       => 35,
+		'slides'                       => [
 			[
 				'image'          => 123,
 				'title'          => 'Build something memorable',
@@ -131,6 +145,14 @@ echo mai_get_cyber_gallery(
 | `slider_navigation_position` | `overlay` | `overlay` or `below`. |
 | `slider_dots_position` | `top` | `top` or `bottom`; applies to circle navigation when it overlays the image. |
 | `slider_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by navigation modes that include arrows. |
+| `slider_transition` | `native` | `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, or `cinematic`. |
+| `slider_transition_speed` | `normal` | `fast`, `normal`, or `slow`; applies to the animated entrance presets while `native` keeps browser scroll timing. |
+| `slider_navigation_hover` | `color` | `color`, `grow`, `nudge`, `glow`, `fill`, or `ring`; applies to interactive Slider navigation. |
+| `slider_navigation_main`, `slider_navigation_border`, `slider_navigation_inner` | empty/site default | A Mai Engine palette slug or custom color for the navigation background, border, and inner icon/text/dot. |
+| `slider_navigation_main_hover`, `slider_navigation_border_hover`, `slider_navigation_inner_hover` | empty/site default | A Mai Engine palette slug or custom color for the corresponding navigation hover state. |
+| `slider_overlay_style` | `none` | `none`, `solid`, `gradient-bottom`, `gradient-top`, `gradient-left`, `gradient-right`, or `vignette`. |
+| `slider_overlay_color` | `black` | A Mai Engine palette slug or custom overlay color. |
+| `slider_overlay_opacity` | `35` | Overlay opacity from 0 through 100. |
 | `slider_width_mode` | `full` | `full` fills the available block or parent canvas, `contained` uses `slider_width`, and `inset` fills the canvas with responsive side gutters. |
 | `slider_width` | `1200` | Maximum Slider width in pixels from 0 through 2400 when `slider_width_mode` is `contained`; `0` removes the maximum. |
 | `slider_height` | `560` | Desktop slider height in pixels from 320 through 1200. |
@@ -173,6 +195,10 @@ The helpers are available after Mai Engine has set up the theme. A gallery rende
 - `mai_cyber_gallery_layouts( array $layouts ): array` filters layout slug/label pairs. A custom layout must supply its own CSS and behavior.
 - `mai_cyber_gallery_arrow_styles( array $styles ): array` filters the arrow design slug/label pairs shared by the lightbox and Slider.
 - `mai_cyber_gallery_slider_navigation_choices( array $choices ): array` filters Slider navigation slug/label pairs.
+- `mai_cyber_gallery_slider_transition_choices( array $choices ): array` filters Slider transition slug/label pairs.
+- `mai_cyber_gallery_slider_transition_speed_choices( array $choices ): array` filters Slider transition-speed slug/label pairs.
+- `mai_cyber_gallery_slider_navigation_hover_choices( array $choices ): array` filters Slider navigation-hover slug/label pairs.
+- `mai_cyber_gallery_slider_overlay_style_choices( array $choices ): array` filters Slider overlay-style slug/label pairs.
 - `mai_cyber_gallery_button_style_choices( array $choices ): array` filters Slider CTA style slug/label pairs.
 - `mai_cyber_gallery_button_style_classes( array $styles ): array` filters CTA style-to-class mappings.
 - `mai_cyber_gallery_args( array $args ): array` filters parsed arguments before sanitization.
@@ -194,8 +220,9 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 - Tiled Mosaic uses image ratios to build mixed, close-packed groups while preserving source order.
 - Filmstrip uses native scrolling and never autoplays.
 - Slider uses canonical content rows, a responsive contrast scrim, Mai-styled CTAs, native scroll snap, keyboard navigation, counters, titled status updates, and no autoplay.
+- Slider transitions and navigation hover effects retain stable control hit targets and honor `prefers-reduced-motion`.
+- Slider image overlays use Mai Engine palette colors when selected and remain separate from the content-legibility scrim.
 - The lightbox uses the browser's modal `<dialog>` behavior, supports Escape/arrow/Home/End keys, offers four arrow designs, and returns focus to its trigger.
-- Motion effects honor `prefers-reduced-motion`.
 - No updater is bundled until this fork has its own release repository. It will never use the upstream Mai Galleries update channel.
 
 ## License
