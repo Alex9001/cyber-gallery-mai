@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0
+
+- Replaced Slider's image-only source with canonical slide rows containing a required image plus optional title, plain-text subtext, and Start/Center/End alignment.
+- Added up to two CTA links per slide using Mai Engine's Primary, Secondary, Outline, and Link Button styles.
+- Enabled ACF block validation and require every CTA to have both a URL and visible button label.
+- Added responsive overlay typography, a contrast scrim, navigation-safe spacing, mobile wrapping, long-copy fallback, and print styling.
+- Made Slider images non-interactive and suppressed irrelevant click-action, caption, hover, column, gallery-alignment, and gap controls.
+- Added titled slide, circle, and live-region labels plus focus handoff when a swipe deactivates a focused CTA.
+- Raised Slider minimum heights to 320px desktop and 280px mobile.
+- Added the `slides` PHP API argument and the `mai_cyber_gallery_button_style_choices` and `mai_cyber_gallery_button_style_classes` filters.
+
 ## 0.2.1
 
 - Added Top and Bottom placement for Slider circle navigation when controls overlay the image.

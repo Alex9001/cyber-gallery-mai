@@ -3,11 +3,11 @@ Requires at least: 6.4
 Tested up to: 7.0
 Requires PHP: 8.1
 Requires Plugins: mai-engine
-Stable tag: 0.2.1
+Stable tag: 0.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Nine responsive masonry, tiled mosaic, filmstrip, and slider gallery layouts powered by Mai Engine.
+Nine responsive masonry, tiled mosaic, filmstrip, and content-slider layouts powered by Mai Engine.
 
 == Description ==
 
@@ -25,17 +25,25 @@ Mai Cyber Gallery is a deliberate Mai Engine add-on. It adds a dynamic ACF galle
 
 The block reuses Mai Engine's ACF Pro integration, responsive columns, image sizes, gap and margin fields, Genesis markup API, and design tokens.
 
-Click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
+For non-Slider layouts, click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
 
 Editorial Mosaic can start its feature image on the left or right and optionally alternate sides every five images.
 
 Masonry places each image in the current shortest column to reduce unnecessary gaps. Tiled Mosaic uses source image ratios to create mixed full-height and stacked tiles while preserving image order, with the responsive column setting capped at four visual groups.
 
-Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include the shared arrow designs, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Irrelevant column, alignment, and gap controls are hidden for Slider.
+Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End alignment, and up to two CTA links. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
+
+Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
 
 The Image Quality / Source Size setting chooses the WordPress image source. A larger source can look sharper at large display dimensions, but uses more bandwidth.
 
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
+
+== Upgrade Notice ==
+
+= 0.3.0 =
+
+Slider now uses canonical Slides rows with no legacy Images fallback. Re-add images from older Slider blocks through the new Slides repeater.
 
 == Installation ==
 
@@ -71,6 +79,16 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.3.0 =
+
+* Added canonical Slider rows with per-slide titles, plain-text subtext, alignment, and up to two CTA buttons.
+* Reused Mai Engine Primary, Secondary, Outline, and Link Button styles.
+* Enabled field validation for required slide images, CTA URLs, and visible button labels.
+* Added a responsive contrast scrim, navigation-safe content spacing, titled accessibility labels, and print behavior.
+* Made Slider images non-interactive and removed irrelevant click, caption, hover, column, alignment, and gap controls.
+* Raised minimum Slider heights to 320px desktop and 280px mobile.
+* Added the `slides` PHP API argument and filterable CTA style choices/classes.
 
 = 0.2.1 =
 

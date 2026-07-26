@@ -1165,6 +1165,27 @@
 	}
 
 	/**
+	 * Format a localized slider position with its visible title.
+	 *
+	 * @param {number} current Current slide number.
+	 * @param {number} total   Total slides.
+	 * @param {string} title   Visible slide title.
+	 * @return {string}
+	 */
+	function formatSlideStatus( current, total, title ) {
+		if ( ! title ) {
+			return formatSlidePosition( current, total );
+		}
+
+		return String( settings.slideTitle || 'Slide %1$d of %2$d: %3$s' )
+			.replace( /%1\$d/g, String( current ) )
+			.replace( /%2\$d/g, String( total ) )
+			.replace( /%3\$s/g, function () {
+				return title;
+			} );
+	}
+
+	/**
 	 * Find the slide closest to the track center.
 	 *
 	 * @param {Object} state Slider state.
@@ -1261,6 +1282,14 @@
 			state.counter.textContent = counter;
 		}
 
+		const focusedItem = state.items.find( function ( item ) {
+			return item.contains( document.activeElement );
+		} );
+
+		if ( focusedItem && focusedItem !== state.items[ index ] ) {
+			state.track.focus( { preventScroll: true } );
+		}
+
 		state.items.forEach( function ( item, itemIndex ) {
 			const active = itemIndex === index;
 
@@ -1274,7 +1303,11 @@
 		} );
 
 		if ( state.status && previousIndex !== index ) {
-			state.status.textContent = formatSlidePosition( index + 1, total );
+			state.status.textContent = formatSlideStatus(
+				index + 1,
+				total,
+				state.items[ index ].dataset.cyberSlideTitle || ''
+			);
 		}
 	}
 

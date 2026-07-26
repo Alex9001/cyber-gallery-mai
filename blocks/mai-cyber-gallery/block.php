@@ -55,6 +55,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'lightbox_arrow_style'   => get_field( 'lightbox_arrow_style' ),
 		'images'                 => get_field( 'images' ),
 		'images_links'           => get_field( 'images_links' ),
+		'slides'                 => get_field( 'slides' ),
 		'image_orientation'      => get_field( 'image_orientation' ),
 		'image_size'             => get_field( 'image_size' ),
 		'image_radius'           => get_field( 'image_radius' ),
@@ -90,6 +91,37 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 }
 
 add_action( 'acf/init', 'mai_cyber_gallery_register_field_group', 12 );
+add_filter( 'acf/validate_value/key=mai_cyber_gallery_slide_button_link', 'mai_cyber_gallery_validate_slide_button_link', 10, 4 );
+
+/**
+ * Require visible text for Slider CTA links.
+ *
+ * ACF's Link field only validates its URL, while the link title is the CTA's
+ * visible label in this block.
+ *
+ * @since 0.3.0
+ *
+ * @param bool|string $valid Whether the current value is valid.
+ * @param mixed       $value Submitted Link field value.
+ * @param array       $field ACF field settings.
+ * @param string      $input Input name.
+ *
+ * @return bool|string
+ */
+function mai_cyber_gallery_validate_slide_button_link( $valid, $value, $field, $input ) {
+	if ( true !== $valid ) {
+		return $valid;
+	}
+
+	$title = is_array( $value ) && isset( $value['title'] ) && is_scalar( $value['title'] )
+		? sanitize_text_field( (string) $value['title'] )
+		: '';
+
+	return '' !== $title
+		? $valid
+		: esc_html__( 'Add link text to use as the button label.', 'mai-cyber-gallery' );
+}
+
 /**
  * Register the local ACF field group after Mai Engine's clone fields.
  *
@@ -121,19 +153,123 @@ function mai_cyber_gallery_register_field_group() {
 					'placement' => 'top',
 				],
 				[
-					'key'           => 'mai_cyber_gallery_click_action',
-					'label'         => esc_html__( 'Click Action', 'mai-cyber-gallery' ),
-					'name'          => 'click_action',
-					'type'          => 'select',
-					'default_value' => 'lightbox',
-					'choices'       => [
+					'key'               => 'mai_cyber_gallery_click_action',
+					'label'             => esc_html__( 'Click Action', 'mai-cyber-gallery' ),
+					'name'              => 'click_action',
+					'type'              => 'select',
+					'default_value'     => 'lightbox',
+					'choices'           => [
 						'none'       => esc_html__( 'None', 'mai-cyber-gallery' ),
 						'lightbox'   => esc_html__( 'Lightbox', 'mai-cyber-gallery' ),
 						'media'      => esc_html__( 'Media File', 'mai-cyber-gallery' ),
 						'attachment' => esc_html__( 'Attachment Page', 'mai-cyber-gallery' ),
 						'custom'     => esc_html__( 'Custom Links', 'mai-cyber-gallery' ),
 					],
-					'ui'            => 1,
+					'ui'                => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
+					'key'          => 'mai_cyber_gallery_slides',
+					'label'        => esc_html__( 'Slides', 'mai-cyber-gallery' ),
+					'instructions' => esc_html__( 'Add an image and optional content for each slide. Buttons use the site-wide Mai Engine button styles.', 'mai-cyber-gallery' ),
+					'name'         => 'slides',
+					'type'         => 'repeater',
+					'layout'       => 'block',
+					'min'          => 1,
+					'collapsed'    => 'mai_cyber_gallery_slide_title',
+					'button_label' => esc_html__( 'Add Slide', 'mai-cyber-gallery' ),
+					'sub_fields'   => [
+						[
+							'key'             => 'mai_cyber_gallery_slide_image',
+							'label'           => esc_html__( 'Image', 'mai-cyber-gallery' ),
+							'name'            => 'image',
+							'type'            => 'image',
+							'required'        => 1,
+							'return_format'   => 'id',
+							'preview_size'    => 'thumbnail',
+							'library'         => 'all',
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_slide_title',
+							'label'           => esc_html__( 'Title', 'mai-cyber-gallery' ),
+							'name'            => 'title',
+							'type'            => 'text',
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_slide_subtext',
+							'label'           => esc_html__( 'Subtext', 'mai-cyber-gallery' ),
+							'name'            => 'subtext',
+							'type'            => 'textarea',
+							'rows'            => 3,
+							'new_lines'       => '',
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_slide_align',
+							'label'           => esc_html__( 'Content Alignment', 'mai-cyber-gallery' ),
+							'name'            => 'align',
+							'type'            => 'button_group',
+							'default_value'   => 'start',
+							'choices'         => [
+								'start'  => esc_html__( 'Start', 'mai-cyber-gallery' ),
+								'center' => esc_html__( 'Center', 'mai-cyber-gallery' ),
+								'end'    => esc_html__( 'End', 'mai-cyber-gallery' ),
+							],
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+						],
+						[
+							'key'             => 'mai_cyber_gallery_slide_buttons',
+							'label'           => esc_html__( 'CTA Buttons', 'mai-cyber-gallery' ),
+							'instructions'    => esc_html__( 'Add up to two calls to action.', 'mai-cyber-gallery' ),
+							'name'            => 'buttons',
+							'type'            => 'repeater',
+							'layout'          => 'block',
+							'max'             => 2,
+							'button_label'    => esc_html__( 'Add Button', 'mai-cyber-gallery' ),
+							'parent_repeater' => 'mai_cyber_gallery_slides',
+							'sub_fields'      => [
+								[
+									'key'             => 'mai_cyber_gallery_slide_button_link',
+									'label'           => esc_html__( 'Link', 'mai-cyber-gallery' ),
+									'instructions'    => esc_html__( 'The link title is used as the button label.', 'mai-cyber-gallery' ),
+									'name'            => 'link',
+									'type'            => 'link',
+									'required'        => 1,
+									'return_format'   => 'array',
+									'parent_repeater' => 'mai_cyber_gallery_slide_buttons',
+								],
+								[
+									'key'             => 'mai_cyber_gallery_slide_button_style',
+									'label'           => esc_html__( 'Style', 'mai-cyber-gallery' ),
+									'name'            => 'style',
+									'type'            => 'select',
+									'default_value'   => mai_cyber_gallery_get_default_button_style(),
+									'choices'         => mai_cyber_gallery_get_button_style_choices(),
+									'ui'              => 1,
+									'parent_repeater' => 'mai_cyber_gallery_slide_buttons',
+								],
+							],
+						],
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_images',
@@ -151,6 +287,11 @@ function mai_cyber_gallery_register_field_group() {
 								'field'    => 'mai_cyber_gallery_click_action',
 								'operator' => '!=',
 								'value'    => 'custom',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
 							],
 						],
 					],
@@ -190,6 +331,11 @@ function mai_cyber_gallery_register_field_group() {
 								'field'    => 'mai_cyber_gallery_click_action',
 								'operator' => '==',
 								'value'    => 'custom',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
 							],
 						],
 					],
@@ -279,6 +425,15 @@ function mai_cyber_gallery_register_field_group() {
 						'below'   => esc_html__( 'Below', 'mai-cyber-gallery' ),
 						'overlay' => esc_html__( 'Overlay', 'mai-cyber-gallery' ),
 					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
+							],
+						],
+					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_image_radius',
@@ -336,6 +491,11 @@ function mai_cyber_gallery_register_field_group() {
 								'field'    => 'mai_cyber_gallery_click_action',
 								'operator' => '==',
 								'value'    => 'lightbox',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
 							],
 						],
 					],
@@ -421,7 +581,7 @@ function mai_cyber_gallery_register_field_group() {
 				[
 					'key'           => 'mai_cyber_gallery_slider_dots_position',
 					'label'         => esc_html__( 'Circle Position', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Top is recommended when captions are displayed.', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Choose whether overlay circles sit at the top or bottom of the slide.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_dots_position',
 					'type'          => 'button_group',
 					'default_value' => 'top',
@@ -494,7 +654,7 @@ function mai_cyber_gallery_register_field_group() {
 					'name'          => 'slider_height',
 					'type'          => 'number',
 					'default_value' => 560,
-					'min'           => 180,
+					'min'           => 320,
 					'max'           => 1200,
 					'step'          => 10,
 					'append'        => 'px',
@@ -515,7 +675,7 @@ function mai_cyber_gallery_register_field_group() {
 					'name'          => 'slider_height_mobile',
 					'type'          => 'number',
 					'default_value' => 320,
-					'min'           => 120,
+					'min'           => 280,
 					'max'           => 800,
 					'step'          => 10,
 					'append'        => 'px',
@@ -619,6 +779,15 @@ function mai_cyber_gallery_register_field_group() {
 						'zoom' => esc_html__( 'Zoom', 'mai-cyber-gallery' ),
 						'lift' => esc_html__( 'Lift', 'mai-cyber-gallery' ),
 						'fade' => esc_html__( 'Fade', 'mai-cyber-gallery' ),
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'slider',
+							],
+						],
 					],
 				],
 				[

@@ -1,7 +1,7 @@
 {
 	"name": "acf/mai-cyber-gallery",
 	"title": "Mai Cyber Gallery",
-	"description": "Nine responsive gallery layouts, including masonry, tiled mosaic, filmstrip, and slider, powered by Mai Engine.",
+	"description": "Nine responsive gallery layouts, including masonry, tiled mosaic, filmstrip, and a content slider, powered by Mai Engine.",
 	"category": "widgets",
 	"keywords": ["gallery", "masonry", "slider"],
 	"icon": "format-gallery",
@@ -12,7 +12,7 @@
 		"blockVersion": 3,
 		"mode": "preview",
 		"renderCallback": "mai_cyber_gallery_render_block",
-		"validate": false
+		"validate": true
 	},
 	"supports": {
 		"align": ["wide", "full"],
