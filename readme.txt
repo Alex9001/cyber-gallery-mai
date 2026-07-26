@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.4.0
+Stable tag: 0.4.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -33,13 +33,19 @@ Masonry places each image in the current shortest column to reduce unnecessary g
 
 Slider uses structured rows with a required image, optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary, Secondary, Outline, and Link Button designs. Slider images are non-interactive so CTAs remain the only destinations.
 
-Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
+Slider navigation can use arrows and circles, arrows only, circles only, a slide counter, or no controls. Navigation can overlay the image or appear below it, and overlay circles can be placed at the top or bottom. Slider settings include arrow design, width mode, maximum width, separate desktop and mobile heights, and crop-to-fill or show-full-image fitting. Full width is the default and fills the available block or parent canvas. Contained width uses the maximum width and preserves the previous centered presentation. Inset width fills the canvas with responsive side gutters. Irrelevant image-click, caption, hover, column, gallery-alignment, and gap controls are hidden for Slider.
+
+Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row.
 
 The Image Quality / Source Size setting chooses the WordPress image source. A larger source can look sharper at large display dimensions, but uses more bandwidth.
 
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.4.1 =
+
+Adds Full, Contained, and Inset Slider width modes plus more consistent editor controls. Existing content and settings require no migration; choose Contained to retain the previous centered maximum-width presentation.
 
 = 0.4.0 =
 
@@ -78,6 +84,10 @@ Use an uncropped size such as Large so portrait and landscape images retain thei
 
 Set Image Quality / Source Size to a WordPress image size at least as large as the Slider's display dimensions. Width and height control the display box; the image size controls the source pixels and bandwidth.
 
+= How do I control Slider width? =
+
+Full fills the available block or parent canvas and is the default. Contained respects Maximum Slider Width for the previous centered look. Inset fills the canvas with responsive side gutters.
+
 = Does the filmstrip autoplay? =
 
 No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/next controls.
@@ -87,6 +97,15 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.4.1 =
+
+* Added the `slider_width_mode` setting and PHP API argument with Full, Contained, and Inset choices.
+* Made Full the default width mode so the Slider fills its available block or parent canvas.
+* Preserved the previous centered maximum-width presentation as Contained and added an Inset presentation with responsive side gutters.
+* Made button-group choices equal width throughout the block editor.
+* Stacked maximum width, desktop height, and mobile height fields in the compact inspector while retaining their single-row expanded-editor layout.
+* Preserved existing block content and settings; no content migration is required.
 
 = 0.4.0 =
 

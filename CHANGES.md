@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1
+
+- Added the `slider_width_mode` argument with `full`, `contained`, and `inset` choices. Full is the default and fills the available block or parent canvas, Contained uses the Slider maximum width and preserves the previous centered presentation, and Inset fills the canvas with responsive side gutters.
+- Made button-group choices equal width throughout the block editor for a more consistent control layout.
+- Stacked maximum width, desktop height, and mobile height fields one per row in the compact inspector while retaining their single-row layout in the expanded editor.
+- Preserved existing block content and settings; no content migration is required.
+
 ## 0.4.0
 
 - Raised the minimum requirements to WordPress 6.5 and PHP 8.3 while retaining compatibility through WordPress 7.0.

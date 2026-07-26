@@ -312,6 +312,8 @@
 
 .mai-cyber-gallery-layout-slider {
 	--cyber-slider-current-height: var(--cyber-slider-height-mobile, 320px);
+	--cyber-slider-inset: clamp(var(--spacing-sm, 0.75rem), 2.5vw, var(--spacing-xxl, 3rem));
+	--cyber-slider-rail-width: min(100%, var(--cyber-slider-max-width, 1200px));
 	--cyber-slider-content-padding: clamp(var(--spacing-md), 3.5vw, var(--spacing-xxxl));
 	--cyber-slider-content-padding-block-start: var(--cyber-slider-content-padding);
 	--cyber-slider-content-padding-block-end: var(--cyber-slider-content-padding);
@@ -320,14 +322,22 @@
 	position: relative;
 }
 
+.mai-cyber-gallery-layout-slider.has-slider-width-full {
+	--cyber-slider-rail-width: 100%;
+}
+
+.mai-cyber-gallery-layout-slider.has-slider-width-inset {
+	--cyber-slider-rail-width: calc(100% - var(--cyber-slider-inset) - var(--cyber-slider-inset));
+}
+
 .mai-cyber-gallery-layout-slider .mai-cyber-gallery.has-columns {
 	display: flex;
 	flex-wrap: nowrap;
 	gap: 0;
 	align-items: stretch;
 	justify-content: flex-start;
-	width: 100%;
-	max-width: var(--cyber-slider-max-width, 1200px);
+	width: var(--cyber-slider-rail-width);
+	max-width: none;
 	height: var(--cyber-slider-current-height);
 	margin-inline: auto;
 	padding: 0;
@@ -640,8 +650,8 @@
 .mai-cyber-gallery-slider-controls {
 	z-index: 5;
 	display: none;
-	width: 100%;
-	max-width: var(--cyber-slider-max-width, 1200px);
+	width: var(--cyber-slider-rail-width);
+	max-width: none;
 	margin-inline: auto;
 	pointer-events: none;
 }
@@ -1336,6 +1346,29 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 .editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content-layer,
 .editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content {
 	pointer-events: none;
+}
+
+.acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+	float: none !important;
+	clear: both !important;
+	width: 100% !important;
+}
+
+@media screen and (min-width: 782px) {
+
+	.acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+		float: left !important;
+		clear: none !important;
+		width: 33.333333% !important;
+	}
+
+	.acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field[data-key="mai_cyber_gallery_slider_width"] {
+		clear: both !important;
+	}
+
+	html[dir="rtl"] .acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+		float: right !important;
+	}
 }
 
 @media print {

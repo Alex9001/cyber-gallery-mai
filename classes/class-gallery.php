@@ -75,6 +75,7 @@ defined( 'ABSPATH' ) || die;
  *     slider_navigation_position: 'overlay'|'below',
  *     slider_dots_position: 'top'|'bottom',
  *     slider_arrow_style: string,
+ *     slider_width_mode: 'full'|'contained'|'inset',
  *     slider_width: int,
  *     slider_height: int,
  *     slider_height_mobile: int,
@@ -159,6 +160,7 @@ class Mai_Cyber_Gallery {
 				'slider_navigation_position' => 'overlay',
 				'slider_dots_position'       => 'top',
 				'slider_arrow_style'         => 'circle',
+				'slider_width_mode'          => 'full',
 				'slider_width'               => 1200,
 				'slider_height'              => 560,
 				'slider_height_mobile'       => 320,
@@ -260,6 +262,7 @@ class Mai_Cyber_Gallery {
 			$root_classes[] = 'has-slider-navigation-' . $this->args['slider_navigation_position'];
 			$root_classes[] = 'has-slider-dots-' . $this->args['slider_dots_position'];
 			$root_classes[] = 'has-slider-arrows-' . $this->args['slider_arrow_style'];
+			$root_classes[] = 'has-slider-width-' . $this->args['slider_width_mode'];
 			$root_classes[] = 'has-slider-fit-' . $this->args['slider_image_fit'];
 		}
 
@@ -433,6 +436,7 @@ class Mai_Cyber_Gallery {
 		$args['slider_navigation_position'] = sanitize_key( (string) $args['slider_navigation_position'] );
 		$args['slider_dots_position']       = sanitize_key( (string) $args['slider_dots_position'] );
 		$args['slider_arrow_style']         = sanitize_key( (string) $args['slider_arrow_style'] );
+		$args['slider_width_mode']          = sanitize_key( (string) $args['slider_width_mode'] );
 		$args['slider_image_fit']           = sanitize_key( (string) $args['slider_image_fit'] );
 
 		if ( ! in_array( $args['layout'], $layouts, true ) ) {
@@ -479,6 +483,10 @@ class Mai_Cyber_Gallery {
 
 		if ( ! in_array( $args['slider_arrow_style'], $arrow_styles, true ) ) {
 			$args['slider_arrow_style'] = $defaults['slider_arrow_style'];
+		}
+
+		if ( ! in_array( $args['slider_width_mode'], [ 'full', 'contained', 'inset' ], true ) ) {
+			$args['slider_width_mode'] = $defaults['slider_width_mode'];
 		}
 
 		if ( ! in_array( $args['slider_image_fit'], [ 'cover', 'contain' ], true ) ) {

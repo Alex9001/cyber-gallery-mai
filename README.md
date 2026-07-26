@@ -14,6 +14,8 @@ Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column co
 
 Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typing and development tooling. Saved block content, gallery settings, and public PHP API behavior are unchanged, so no content migration is required.
 
+Version 0.4.1 adds Slider width modes and editor-control refinements. Existing content and settings require no migration; choose **Contained** to retain the previous centered maximum-width presentation.
+
 ## Layouts
 
 - **Mai Grid** — the familiar responsive Mai flex-column gallery.
@@ -47,7 +49,9 @@ Slider uses a dedicated **Slides** repeater. Every row has a required image plus
 
 Slider does not fall back to the legacy `images` array. Slider blocks created before 0.3.0 must be repopulated through the **Slides** repeater.
 
-Slider navigation choices are Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
+Slider navigation choices are Arrows + Circles, Arrows, Circles, Slide Counter, or None. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, width mode, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
+
+Slider width modes are **Full**, **Contained**, and **Inset**. Full is the default and fills the available block or parent canvas. Contained applies **Maximum Slider Width** and preserves the previous centered presentation. Inset fills the canvas while retaining responsive side gutters. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps those three fields together in one row. Button-group choices use equal widths throughout the gallery controls.
 
 **Image Quality / Source Size** selects the WordPress image source used in the responsive image markup. Choose a source at least as large as the displayed image: larger sources can look sharper but use more bandwidth. Slider dimensions control the display box independently.
 
@@ -75,8 +79,9 @@ Slider uses structured rows rather than the gallery image arrays:
 ```php
 echo mai_get_cyber_gallery(
 	[
-		'layout' => 'slider',
-		'slides' => [
+		'layout'            => 'slider',
+		'slider_width_mode' => 'full',
+		'slides'            => [
 			[
 				'image'          => 123,
 				'title'          => 'Build something memorable',
@@ -126,7 +131,8 @@ echo mai_get_cyber_gallery(
 | `slider_navigation_position` | `overlay` | `overlay` or `below`. |
 | `slider_dots_position` | `top` | `top` or `bottom`; applies to circle navigation when it overlays the image. |
 | `slider_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by navigation modes that include arrows. |
-| `slider_width` | `1200` | Maximum slider width in pixels from 0 through 2400; `0` fills the available block width. |
+| `slider_width_mode` | `full` | `full` fills the available block or parent canvas, `contained` uses `slider_width`, and `inset` fills the canvas with responsive side gutters. |
+| `slider_width` | `1200` | Maximum Slider width in pixels from 0 through 2400 when `slider_width_mode` is `contained`; `0` removes the maximum. |
 | `slider_height` | `560` | Desktop slider height in pixels from 320 through 1200. |
 | `slider_height_mobile` | `320` | Mobile slider height in pixels from 280 through 800. |
 | `slider_image_fit` | `cover` | `cover` crops to fill the slide; `contain` shows the complete image. |

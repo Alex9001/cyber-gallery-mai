@@ -4,7 +4,7 @@
  *
  * Plugin Name:       Mai Cyber Gallery
  * Description:       Advanced masonry, tiled mosaic, content slider, and lightbox galleries powered by Mai Engine.
- * Version:           0.4.0
+ * Version:           0.4.1
  * Requires at least: 6.5
  * Tested up to:      7.0
  * Requires PHP:      8.3
@@ -79,7 +79,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return void
 	 */
 	private function setup_constants(): void {
-		define( 'MAI_CYBER_GALLERY_VERSION', '0.4.0' );
+		define( 'MAI_CYBER_GALLERY_VERSION', '0.4.1' );
 		define( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION', '2.39.0' );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

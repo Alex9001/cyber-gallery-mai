@@ -69,6 +69,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'slider_navigation_position' => get_field( 'slider_navigation_position' ),
 		'slider_dots_position'   => get_field( 'slider_dots_position' ),
 		'slider_arrow_style'     => get_field( 'slider_arrow_style' ),
+		'slider_width_mode'      => get_field( 'slider_width_mode' ),
 		'slider_width'           => get_field( 'slider_width' ),
 		'slider_height'          => get_field( 'slider_height' ),
 		'slider_height_mobile'   => get_field( 'slider_height_mobile' ),
@@ -225,6 +226,9 @@ function mai_cyber_gallery_register_field_group(): void {
 								'center' => esc_html__( 'Center', 'mai-cyber-gallery' ),
 								'end'    => esc_html__( 'End', 'mai-cyber-gallery' ),
 							],
+							'wrapper'         => [
+								'class' => 'mai-acf-button-group',
+							],
 							'parent_repeater' => 'mai_cyber_gallery_slides',
 						],
 						[
@@ -237,6 +241,9 @@ function mai_cyber_gallery_register_field_group(): void {
 								'top'    => esc_html__( 'Top', 'mai-cyber-gallery' ),
 								'center' => esc_html__( 'Center', 'mai-cyber-gallery' ),
 								'bottom' => esc_html__( 'Bottom', 'mai-cyber-gallery' ),
+							],
+							'wrapper'         => [
+								'class' => 'mai-acf-button-group',
 							],
 							'parent_repeater' => 'mai_cyber_gallery_slides',
 						],
@@ -438,6 +445,9 @@ function mai_cyber_gallery_register_field_group(): void {
 						'below'   => esc_html__( 'Below', 'mai-cyber-gallery' ),
 						'overlay' => esc_html__( 'Overlay', 'mai-cyber-gallery' ),
 					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
+					],
 					'conditional_logic' => [
 						[
 							[
@@ -457,6 +467,9 @@ function mai_cyber_gallery_register_field_group(): void {
 					'choices'       => [
 						'square'  => esc_html__( 'Square', 'mai-cyber-gallery' ),
 						'rounded' => esc_html__( 'Rounded', 'mai-cyber-gallery' ),
+					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
 					],
 					'conditional_logic' => [
 						[
@@ -541,6 +554,9 @@ function mai_cyber_gallery_register_field_group(): void {
 						'overlay' => esc_html__( 'Overlay', 'mai-cyber-gallery' ),
 						'below'   => esc_html__( 'Below', 'mai-cyber-gallery' ),
 					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
+					],
 					'conditional_logic' => [
 						[
 							[
@@ -602,6 +618,9 @@ function mai_cyber_gallery_register_field_group(): void {
 						'top'    => esc_html__( 'Top', 'mai-cyber-gallery' ),
 						'bottom' => esc_html__( 'Bottom', 'mai-cyber-gallery' ),
 					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
+					],
 					'conditional_logic' => [
 						[
 							[
@@ -640,9 +659,34 @@ function mai_cyber_gallery_register_field_group(): void {
 					],
 				],
 				[
+					'key'           => 'mai_cyber_gallery_slider_width_mode',
+					'label'         => esc_html__( 'Slider Width', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Full Width follows the available block or parent width. Contained uses the maximum width below. Inset adds responsive side spacing.', 'mai-cyber-gallery' ),
+					'name'          => 'slider_width_mode',
+					'type'          => 'button_group',
+					'default_value' => 'full',
+					'choices'       => [
+						'full'      => esc_html__( 'Full Width', 'mai-cyber-gallery' ),
+						'contained' => esc_html__( 'Contained', 'mai-cyber-gallery' ),
+						'inset'     => esc_html__( 'Inset', 'mai-cyber-gallery' ),
+					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
+					],
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'slider',
+							],
+						],
+					],
+				],
+				[
 					'key'           => 'mai_cyber_gallery_slider_width',
 					'label'         => esc_html__( 'Maximum Slider Width', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Use 0 to fill the available block width.', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Used by Contained mode. Use 0 to remove the maximum.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_width',
 					'type'          => 'number',
 					'default_value' => 1200,
@@ -650,13 +694,21 @@ function mai_cyber_gallery_register_field_group(): void {
 					'max'           => 2400,
 					'step'          => 20,
 					'append'        => 'px',
-					'wrapper'       => [ 'width' => 33 ],
+					'wrapper'       => [
+						'width' => 33,
+						'class' => 'mai-cyber-gallery-slider-dimension',
+					],
 					'conditional_logic' => [
 						[
 							[
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '==',
 								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_slider_width_mode',
+								'operator' => '==',
+								'value'    => 'contained',
 							],
 						],
 					],
@@ -671,7 +723,10 @@ function mai_cyber_gallery_register_field_group(): void {
 					'max'           => 1200,
 					'step'          => 10,
 					'append'        => 'px',
-					'wrapper'       => [ 'width' => 33 ],
+					'wrapper'       => [
+						'width' => 33,
+						'class' => 'mai-cyber-gallery-slider-dimension',
+					],
 					'conditional_logic' => [
 						[
 							[
@@ -692,7 +747,10 @@ function mai_cyber_gallery_register_field_group(): void {
 					'max'           => 800,
 					'step'          => 10,
 					'append'        => 'px',
-					'wrapper'       => [ 'width' => 33 ],
+					'wrapper'       => [
+						'width' => 33,
+						'class' => 'mai-cyber-gallery-slider-dimension',
+					],
 					'conditional_logic' => [
 						[
 							[
@@ -712,6 +770,9 @@ function mai_cyber_gallery_register_field_group(): void {
 					'choices'       => [
 						'cover'   => esc_html__( 'Crop to Fill', 'mai-cyber-gallery' ),
 						'contain' => esc_html__( 'Show Full Image', 'mai-cyber-gallery' ),
+					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
 					],
 					'conditional_logic' => [
 						[
@@ -754,6 +815,9 @@ function mai_cyber_gallery_register_field_group(): void {
 					'choices'       => [
 						'left'  => esc_html__( 'Left', 'mai-cyber-gallery' ),
 						'right' => esc_html__( 'Right', 'mai-cyber-gallery' ),
+					],
+					'wrapper'       => [
+						'class' => 'mai-acf-button-group',
 					],
 					'conditional_logic' => [
 						[
