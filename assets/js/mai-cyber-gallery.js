@@ -1498,7 +1498,7 @@
 	function makeDialogButton( className, label, path ) {
 		const button = document.createElement( 'button' );
 		button.type = 'button';
-		button.className = 'mai-cyber-gallery-dialog-button ' + className;
+		button.className = 'button mai-cyber-gallery-dialog-button ' + className;
 		button.setAttribute( 'aria-label', label );
 		button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="' +
 			path + '"></path></svg>';

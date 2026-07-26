@@ -9,6 +9,31 @@
 defined( 'ABSPATH' ) || die;
 
 add_action( 'acf/init', 'mai_cyber_gallery_register_block' );
+
+foreach (
+	[
+		'mai_cyber_gallery_slider_navigation_main',
+		'mai_cyber_gallery_slider_navigation_border',
+		'mai_cyber_gallery_slider_navigation_inner',
+		'mai_cyber_gallery_slider_navigation_main_hover',
+		'mai_cyber_gallery_slider_navigation_border_hover',
+		'mai_cyber_gallery_slider_navigation_inner_hover',
+		'mai_cyber_gallery_slider_overlay_color',
+	] as $mai_cyber_gallery_color_field_key
+) {
+	add_filter(
+		"acf/prepare_field/key={$mai_cyber_gallery_color_field_key}",
+		'mai_prepare_legacy_color_field'
+	);
+	add_filter(
+		"acf/format_value/key={$mai_cyber_gallery_color_field_key}",
+		'mai_format_acf_color_value',
+		10,
+		3
+	);
+}
+unset( $mai_cyber_gallery_color_field_key );
+
 /**
  * Register the block from metadata.
  *
@@ -33,9 +58,7 @@ function mai_cyber_gallery_register_block(): void {
  * @return void
  */
 function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = false, $post_id = 0 ): void {
-	static $instance = 0;
-
-	$instance++;
+	$instance = mai_get_index( 'mai-cyber-gallery-block' ) + 1;
 	$block_id = isset( $block['id'] ) ? sanitize_html_class( $block['id'] ) : 'block';
 
 	// Identical ACF blocks can share a content-derived block ID. Keep front-end
@@ -72,14 +95,14 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'slider_transition'           => get_field( 'slider_transition' ),
 		'slider_transition_speed' => get_field( 'slider_transition_speed' ),
 		'slider_navigation_hover' => get_field( 'slider_navigation_hover' ),
-		'slider_navigation_main'  => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_main' ),
-		'slider_navigation_border' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_border' ),
-		'slider_navigation_inner'  => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_inner' ),
-		'slider_navigation_main_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_main_hover' ),
-		'slider_navigation_border_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_border_hover' ),
-		'slider_navigation_inner_hover' => mai_cyber_gallery_get_acf_color_value( 'slider_navigation_inner_hover' ),
+		'slider_navigation_main'  => get_field( 'slider_navigation_main' ),
+		'slider_navigation_border' => get_field( 'slider_navigation_border' ),
+		'slider_navigation_inner'  => get_field( 'slider_navigation_inner' ),
+		'slider_navigation_main_hover' => get_field( 'slider_navigation_main_hover' ),
+		'slider_navigation_border_hover' => get_field( 'slider_navigation_border_hover' ),
+		'slider_navigation_inner_hover' => get_field( 'slider_navigation_inner_hover' ),
 		'slider_overlay_style'        => get_field( 'slider_overlay_style' ),
-		'slider_overlay_color'        => mai_cyber_gallery_get_acf_color_value( 'slider_overlay_color' ),
+		'slider_overlay_color'        => get_field( 'slider_overlay_color' ),
 		'slider_overlay_opacity'      => get_field( 'slider_overlay_opacity' ),
 		'slider_width_mode'           => get_field( 'slider_width_mode' ),
 		'slider_width'                => get_field( 'slider_width' ),
@@ -101,26 +124,6 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Gallery handles escaping.
 	echo mai_get_cyber_gallery( $args );
-}
-
-/**
- * Resolve a Mai palette radio field and its optional custom color.
- *
- * @since 0.5.0
- *
- * @param string $name ACF field name.
- *
- * @return string
- */
-function mai_cyber_gallery_get_acf_color_value( $name ): string {
-	$name  = sanitize_key( (string) $name );
-	$value = get_field( $name );
-
-	if ( 'custom' === $value ) {
-		$value = get_field( $name . '_custom' );
-	}
-
-	return is_scalar( $value ) ? trim( (string) $value ) : '';
 }
 
 add_action( 'acf/init', 'mai_cyber_gallery_register_field_group', 12 );
@@ -169,6 +172,7 @@ function mai_cyber_gallery_register_field_group(): void {
 
 	$orientations = (array) mai_get_image_orientation_choices();
 	$image_sizes  = (array) mai_get_image_size_choices();
+	$slider_width = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
 
 	if ( ! isset( $image_sizes['full'] ) ) {
 		$image_sizes = [ 'full' => esc_html__( 'Full Size', 'mai-cyber-gallery' ) ] + $image_sizes;
@@ -941,7 +945,7 @@ function mai_cyber_gallery_register_field_group(): void {
 					'instructions'  => esc_html__( 'Used by Contained mode. Use 0 to remove the maximum.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_width',
 					'type'          => 'number',
-					'default_value' => 1200,
+					'default_value' => $slider_width,
 					'min'           => 0,
 					'max'           => 2400,
 					'step'          => 20,

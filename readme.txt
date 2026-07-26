@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.5.0
+Stable tag: 0.5.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,7 +23,7 @@ Mai Cyber Gallery is a deliberate Mai Engine add-on. It adds a dynamic ACF galle
 * Filmstrip
 * Slider
 
-The block reuses Mai Engine's ACF Pro integration, responsive columns, image sizes, gap and margin fields, Genesis markup API, and design tokens.
+The block reuses Mai Engine's ACF Pro integration, responsive columns, image sizes, gap and margin fields, color formatting, configured breakpoints, controls, utility classes, Genesis markup API, and design tokens. Mai Engine 2.40.0 or later is required.
 
 For non-Slider layouts, click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
 
@@ -49,6 +49,10 @@ Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
 
+= 0.5.1 =
+
+Completes the Mai Engine integration audit, delegates more shared behavior to Engine, follows the configured XL breakpoint, and requires Mai Engine 2.40.0 or later.
+
 = 0.5.0 =
 
 Adds Slider transition and speed choices, navigation hover and color controls, configurable image overlays, and cleaner Slider dimension inputs.
@@ -71,7 +75,7 @@ Slider now uses canonical Slides rows with no legacy Images fallback. Re-add ima
 
 == Installation ==
 
-1. Install and activate Genesis, a Mai child theme, and Mai Engine 2.39.0 or later.
+1. Install and activate Genesis, a Mai child theme, and Mai Engine 2.40.0 or later.
 2. Upload the `mai-cyber-gallery` directory to `/wp-content/plugins/`.
 3. Activate Mai Cyber Gallery.
 4. Add the Mai Cyber Gallery block in the block editor.
@@ -107,6 +111,13 @@ No. It uses native touch/mouse scrolling, scroll snap, and accessible previous/n
 No. It uses native scroll snap with accessible navigation and keyboard controls.
 
 == Changelog ==
+
+= 0.5.1 =
+
+* Replaced the local ACF palette/custom-color resolver with Mai Engine's color migration and formatting callbacks.
+* Delegated column defaults, indexes, units, configured XL width, button foundations, shadows, icons, and Slider typography to Mai Engine.
+* Raised the minimum Mai Engine version to 2.40.0 for its current responsive-column fraction fix.
+* Documented why gallery algorithms and integer responsive-column values remain plugin-owned.
 
 = 0.5.0 =
 

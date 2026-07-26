@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.1
+
+- Completed a source-level Mai Engine integration audit and documented the deliberate boundary between framework-owned behavior and gallery-specific code.
+- Replaced the local ACF palette/custom-color resolver with Mai Engine's color migration and formatting hooks for all seven Slider color fields.
+- Delegated column defaults, instance indexes, CSS unit formatting, the configured XL breakpoint, control foundations, drop shadows, icons, and Slider typography to Mai Engine.
+- Made the default contained Slider width follow the site's configured Mai XL breakpoint, typically 1200px.
+- Raised the minimum Mai Engine version to 2.40.0 so delegated responsive-column fractions include the current corruption fix.
+- Retained Cyber's integer responsive-column mirror because Mai's fractional column variables cannot drive CSS `column-count` or the JavaScript packing algorithms.
+
 ## 0.5.0
 
 - Added the `slider_transition` argument with `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, and `cinematic` choices.

@@ -23,6 +23,8 @@ function genesis_attr( string $context, array $attributes = [], array $args = []
 
 function mai_get_version(): string {}
 
+function mai_get_breakpoint( string $size = 'lg', string $suffix = '' ): int|string {}
+
 /**
  * @return array<string,string>
  */
@@ -65,6 +67,8 @@ function mai_get_columns_defaults(): array {}
  */
 function mai_get_columns_sanitized( array $args ): array {}
 
+function mai_get_index( string $context, bool $reset = false ): int {}
+
 /**
  * @return array<string,string>|null
  */
@@ -80,6 +84,19 @@ function mai_has_image_orientiation( string $orientation ): bool {}
 function mai_is_valid_size( mixed $size ): bool {}
 
 function mai_sanitize_bool( mixed $value ): bool {}
+
+function mai_get_unit_value( mixed $value, string $fallback = 'px' ): mixed {}
+
+/**
+ * @param array<string,mixed> $field
+ * @return array<string,mixed>
+ */
+function mai_prepare_legacy_color_field( array $field ): array {}
+
+/**
+ * @param array<string,mixed> $field
+ */
+function mai_format_acf_color_value( mixed $value, mixed $post_id, array $field ): mixed {}
 
 /**
  * @param array<string,scalar> $atts

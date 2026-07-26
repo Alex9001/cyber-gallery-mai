@@ -8,7 +8,7 @@ Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layout
 - PHP 8.3 or later
 - Genesis Framework
 - A Genesis child theme with Mai Engine support
-- Mai Engine 2.39.0 or later
+- Mai Engine 2.40.0 or later
 
 Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column controls, image sizes, sanitizers, design tokens, and the Genesis/Mai runtime.
 
@@ -17,6 +17,14 @@ Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typin
 Version 0.4.1 adds Slider width modes and editor-control refinements. Existing content and settings require no migration; choose **Contained** to retain the previous centered maximum-width presentation.
 
 Version 0.5.0 adds selectable Slider transitions, navigation hover treatments and Mai-aware colors, plus configurable image overlays.
+
+Version 0.5.1 completes a source-level Mai Engine integration audit. ACF color migration/formatting, column defaults and sanitization, instance indexes, CSS unit formatting, the configured XL breakpoint, control foundations, shadows, icons, typography, palettes, and design tokens now delegate to Mai Engine wherever it exposes a matching implementation.
+
+## Mai Engine integration boundary
+
+Mai Cyber Gallery intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
+
+Gallery-specific responsibilities remain local because Mai Engine has no equivalent API: attachment normalization, masonry/justified/tiled placement, slider and filmstrip state, the dialog lightbox, accessibility lifecycle, transitions, and overlays. Cyber's integer `--cyber-columns-*` values are also intentional: Mai's standard `--columns-*` values are CSS fractions such as `1 / 3`, while CSS `column-count` and the packing algorithms require whole-number counts.
 
 ## Layouts
 
@@ -154,7 +162,7 @@ echo mai_get_cyber_gallery(
 | `slider_overlay_color` | `black` | A Mai Engine palette slug or custom overlay color. |
 | `slider_overlay_opacity` | `35` | Overlay opacity from 0 through 100. |
 | `slider_width_mode` | `full` | `full` fills the available block or parent canvas, `contained` uses `slider_width`, and `inset` fills the canvas with responsive side gutters. |
-| `slider_width` | `1200` | Maximum Slider width in pixels from 0 through 2400 when `slider_width_mode` is `contained`; `0` removes the maximum. |
+| `slider_width` | Mai XL breakpoint (typically `1200`) | Maximum Slider width in pixels from 0 through 2400 when `slider_width_mode` is `contained`; `0` removes the maximum. |
 | `slider_height` | `560` | Desktop slider height in pixels from 320 through 1200. |
 | `slider_height_mobile` | `320` | Mobile slider height in pixels from 280 through 800. |
 | `slider_image_fit` | `cover` | `cover` crops to fill the slide; `contain` shows the complete image. |
@@ -215,6 +223,7 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 ## Design notes
 
 - Thumbnail markup comes from `wp_get_attachment_image()` so WordPress controls intrinsic dimensions, responsive sources, lazy loading, decoding, and fetch priority.
+- Shared controls inherit Mai's button foundation, image shadows use Mai's `has-drop-shadow` utility, and Slider copy inherits Mai typography and dark-background rules.
 - Masonry progressively enhances its CSS multi-column fallback with a shortest-column layout that preserves source order and removes avoidable holes.
 - Justified Rows progressively enhances the normal Mai grid and recalculates through `ResizeObserver`.
 - Tiled Mosaic uses image ratios to build mixed, close-packed groups while preserving source order.

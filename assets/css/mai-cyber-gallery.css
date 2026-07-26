@@ -9,7 +9,6 @@
 	--cyber-control-size: 2.75rem;
 	--cyber-rounded-image-radius: max(0.5rem, var(--image-border-radius, var(--border-radius, 0.5rem)));
 	--cyber-image-radius: var(--cyber-rounded-image-radius);
-	line-height: 1.5;
 }
 
 .mai-cyber-gallery-wrap.has-image-radius-square {
@@ -31,7 +30,6 @@
 	align-content: center;
 	justify-content: flex-start;
 	margin: 0;
-	line-height: 1;
 	text-align: center;
 }
 
@@ -40,7 +38,6 @@
 	width: 100%;
 	min-width: 0;
 	line-height: 0;
-	filter: var(--image-filter, none);
 	transition:
 		transform var(--transition-duration) var(--transition-timing-function),
 		filter var(--transition-duration) var(--transition-timing-function);
@@ -73,7 +70,6 @@
 .mai-cyber-gallery-image-caption {
 	margin: var(--spacing-xxs) 0 0;
 	line-height: var(--line-height-sm, 1.4);
-	text-align: center;
 }
 
 .has-captions-overlay .mai-cyber-gallery-media {
@@ -313,7 +309,10 @@
 .mai-cyber-gallery-layout-slider {
 	--cyber-slider-current-height: var(--cyber-slider-height-mobile, 320px);
 	--cyber-slider-inset: clamp(var(--spacing-sm, 0.75rem), 2.5vw, var(--spacing-xxl, 3rem));
-	--cyber-slider-rail-width: min(100%, var(--cyber-slider-max-width, 1200px));
+	--cyber-slider-rail-width: min(
+		100%,
+		var(--cyber-slider-max-width, var(--breakpoint-xl, 1200px))
+	);
 	--cyber-slider-transition-duration: 560ms;
 	--cyber-slider-content-padding: clamp(var(--spacing-md), 3.5vw, var(--spacing-xxxl));
 	--cyber-slider-content-padding-block-start: var(--cyber-slider-content-padding);
@@ -507,10 +506,6 @@
 		var(--cyber-slider-content-padding-inline-start)
 		var(--cyber-slider-content-padding-inline-end);
 	overflow: hidden;
-	color: var(--color-white, #fff);
-	font-family: var(--body-font-family, inherit);
-	font-style: var(--body-font-style, normal);
-	font-weight: var(--body-font-weight, normal);
 	line-height: var(--body-line-height, var(--line-height-lg, 1.5));
 	text-align: start;
 	pointer-events: none;
@@ -525,7 +520,6 @@
 	overflow-wrap: anywhere;
 	scrollbar-color: rgb(255 255 255 / 62%) rgb(255 255 255 / 12%);
 	scrollbar-width: thin;
-	color: inherit;
 	text-align: start;
 	text-shadow: 0 1px 2px rgb(0 0 0 / 78%);
 	pointer-events: auto;
@@ -533,33 +527,21 @@
 
 .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-title {
 	margin: 0;
-	color: inherit;
-	font-family: var(--heading-font-family, inherit);
 	font-size: clamp(
 		var(--font-size-lg, 1.25rem),
 		calc(1rem + 2.2vw),
 		var(--font-size-xxxl, 3rem)
 	);
-	font-style: var(--heading-font-style, normal);
-	font-weight: var(--heading-font-weight, 700);
-	letter-spacing: var(--heading-letter-spacing, normal);
-	line-height: var(--heading-line-height, var(--line-height-sm, 1.2));
-	text-transform: var(--heading-text-transform, none);
 	text-wrap: balance;
 }
 
 .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-subtext {
 	margin: clamp(var(--spacing-xs), 1.5vw, var(--spacing-md)) 0 0;
-	color: inherit;
-	font-family: var(--body-font-family, inherit);
 	font-size: clamp(
 		var(--font-size-sm, 0.875rem),
 		calc(0.82rem + 0.45vw),
 		var(--font-size-lg, 1.125rem)
 	);
-	font-style: var(--body-font-style, normal);
-	font-weight: var(--body-font-weight, normal);
-	line-height: var(--body-line-height, var(--line-height-lg, 1.5));
 	text-wrap: pretty;
 }
 
@@ -987,44 +969,23 @@
 
 .mai-cyber-gallery-slider-arrow {
 	--button-width: var(--cyber-control-size);
+	--button-border-radius: 50%;
 	--button-color: var(--cyber-slider-nav-inner, var(--color-white));
 	--button-color-hover: var(--cyber-slider-nav-inner-hover, var(--color-white));
 	--button-background: var(--cyber-slider-nav-main, rgb(0 0 0 / 55%));
 	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 78%));
 	--button-border: 1px solid var(--cyber-slider-nav-border, rgb(255 255 255 / 45%));
 	--button-border-hover: 1px solid var(--cyber-slider-nav-border-hover, rgb(255 255 255 / 80%));
-	position: relative;
-	z-index: 2;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--cyber-control-size);
-	height: var(--cyber-control-size);
-	margin: 0;
-	padding: 0;
-	color: var(--button-color);
-	background: var(--button-background);
-	border: var(--button-border);
-	border-radius: 50%;
-	cursor: pointer;
-	isolation: isolate;
-	pointer-events: auto;
-	transform: none;
-	transition:
+	--button-transition:
 		color var(--transition-duration) var(--transition-timing-function),
 		background var(--transition-duration) var(--transition-timing-function),
 		border-color var(--transition-duration) var(--transition-timing-function),
 		box-shadow var(--transition-duration) var(--transition-timing-function),
 		opacity var(--transition-duration) var(--transition-timing-function);
-}
-
-.mai-cyber-gallery-slider-arrow:hover,
-.mai-cyber-gallery-slider-arrow:active,
-.mai-cyber-gallery-slider-arrow:focus-visible {
-	color: var(--button-color-hover);
-	background: var(--button-background-hover);
-	border: var(--button-border-hover);
-	transform: none;
+	z-index: 2;
+	height: var(--cyber-control-size);
+	isolation: isolate;
+	pointer-events: auto;
 }
 
 .mai-cyber-gallery-slider-arrow:focus-visible {
@@ -1075,7 +1036,7 @@
 }
 
 .has-slider-arrows-square .mai-cyber-gallery-slider-arrow {
-	border-radius: var(--border-radius, 0.4rem);
+	--button-border-radius: var(--border-radius, 0.4rem);
 }
 
 .has-slider-arrows-minimal .mai-cyber-gallery-slider-arrow {
@@ -1087,8 +1048,8 @@
 }
 
 .has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-arrow {
+	--button-border-radius: 0;
 	width: calc(var(--cyber-control-size) + var(--spacing-xs));
-	border-radius: 0;
 }
 
 .has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-previous {
@@ -1104,8 +1065,8 @@
 }
 
 .has-slider-arrows-edge.has-slider-navigation-below .mai-cyber-gallery-slider-arrow {
+	--button-border-radius: 999px;
 	width: calc(var(--cyber-control-size) + var(--spacing-md));
-	border-radius: 999px;
 }
 
 .mai-cyber-gallery-slider-dots {
@@ -1140,38 +1101,17 @@
 
 .mai-cyber-gallery-slider-dot {
 	--button-width: var(--cyber-control-size);
+	--button-border-radius: 50%;
 	--button-color: var(--cyber-slider-nav-inner, var(--color-white));
 	--button-color-hover: var(--cyber-slider-nav-inner-hover, var(--color-white));
 	--button-background: transparent;
 	--button-background-hover: transparent;
 	--button-border: 0;
 	--button-border-hover: 0;
-	position: relative;
-	display: inline-flex;
 	flex: 0 0 var(--cyber-control-size);
-	align-items: center;
-	justify-content: center;
-	width: var(--cyber-control-size);
 	height: var(--cyber-control-size);
-	margin: 0;
-	padding: 0;
-	color: var(--button-color);
-	background: transparent;
-	border: 0;
-	border-radius: 50%;
-	cursor: pointer;
 	isolation: isolate;
 	pointer-events: auto;
-	transform: none;
-}
-
-.mai-cyber-gallery-slider-dot:hover,
-.mai-cyber-gallery-slider-dot:active,
-.mai-cyber-gallery-slider-dot:focus-visible {
-	color: var(--button-color-hover);
-	background: transparent;
-	border: 0;
-	transform: none;
 }
 
 .mai-cyber-gallery-slider-dot:focus-visible {
@@ -1563,36 +1503,29 @@ html[dir="rtl"]
 }
 
 .mai-cyber-gallery-control {
+	--button-width: var(--cyber-control-size);
+	--button-border-radius: 50%;
 	--button-margin: 0;
 	--button-padding: 0;
+	--button-color: var(--color-body);
+	--button-color-hover: var(--color-white);
+	--button-background: var(--color-alt);
+	--button-background-hover: var(--color-primary-dark, var(--color-primary));
+	--button-border: var(--border);
 	--button-filter: none;
 	--button-filter-hover: none;
 	--button-box-shadow: none;
 	--button-box-shadow-hover: none;
 	--button-transform: none;
 	--button-transform-hover: none;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--cyber-control-size);
+	--button-transition: opacity var(--transition-duration) var(--transition-timing-function);
 	height: var(--cyber-control-size);
-	margin: 0;
-	padding: 0;
-	color: var(--color-body);
-	background: var(--color-alt);
-	border: var(--border);
-	border-radius: 50%;
-	cursor: pointer;
-	transition: opacity var(--transition-duration) var(--transition-timing-function);
 }
 
 .mai-cyber-gallery-control:hover,
 .mai-cyber-gallery-control:active,
 .mai-cyber-gallery-control:focus-visible {
-	color: var(--color-white);
-	background: var(--color-primary-dark, var(--color-primary));
 	border-color: var(--color-primary-dark, var(--color-primary));
-	transform: none;
 }
 
 .mai-cyber-gallery-control:focus-visible {
@@ -1621,10 +1554,6 @@ html[dir="rtl"]
 	justify-content: center;
 	margin: 0;
 	padding: var(--spacing-xl);
-	color: var(--body-color);
-	font-family: var(--body-font-family);
-	font-size: var(--body-font-size);
-	font-weight: var(--body-font-weight);
 	border: 1px dashed currentColor;
 	border-radius: var(--border-radius);
 	opacity: 0.62;
@@ -1711,6 +1640,7 @@ body.mai-cyber-gallery-lightbox-open {
 
 .mai-cyber-gallery-dialog-button {
 	--button-width: var(--cyber-control-size, 2.75rem);
+	--button-border-radius: 50%;
 	--button-margin: 0;
 	--button-padding: 0;
 	--button-color: var(--color-white);
@@ -1725,37 +1655,15 @@ body.mai-cyber-gallery-lightbox-open {
 	--button-box-shadow-hover: none;
 	--button-transform: none;
 	--button-transform-hover: none;
-	position: fixed;
-	z-index: 10;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: var(--cyber-control-size, 2.75rem);
-	height: var(--cyber-control-size, 2.75rem);
-	margin: 0;
-	padding: 0;
-	color: var(--button-color);
-	background: var(--button-background);
-	border: var(--button-border);
-	border-radius: 50%;
-	cursor: pointer;
-	pointer-events: auto;
-	transform: none;
-	transition:
+	--button-transition:
 		color var(--transition-duration) var(--transition-timing-function),
 		background var(--transition-duration) var(--transition-timing-function),
 		border-color var(--transition-duration) var(--transition-timing-function),
 		opacity var(--transition-duration) var(--transition-timing-function);
-}
-
-.mai-cyber-gallery-dialog-button:hover,
-.mai-cyber-gallery-dialog-button:active,
-.mai-cyber-gallery-dialog-button:focus-visible {
-	color: var(--button-color-hover);
-	background: var(--button-background-hover);
-	border: var(--button-border-hover);
-	filter: var(--button-filter-hover);
-	transform: none;
+	position: fixed;
+	z-index: 10;
+	height: var(--cyber-control-size, 2.75rem);
+	pointer-events: auto;
 }
 
 .mai-cyber-gallery-dialog-button:focus-visible {
@@ -1793,7 +1701,7 @@ body.mai-cyber-gallery-lightbox-open {
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="square"] .mai-cyber-gallery-dialog-previous,
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="square"] .mai-cyber-gallery-dialog-next {
-	border-radius: var(--border-radius, 0.4rem);
+	--button-border-radius: var(--border-radius, 0.4rem);
 }
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="minimal"] .mai-cyber-gallery-dialog-previous,
@@ -1808,8 +1716,8 @@ body.mai-cyber-gallery-lightbox-open {
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous,
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-next {
+	--button-border-radius: 0;
 	width: calc(var(--cyber-control-size, 2.75rem) + var(--spacing-xs));
-	border-radius: 0;
 }
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous {
@@ -2018,6 +1926,49 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 .editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content-layer,
 .editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content {
 	pointer-events: none;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 78%));
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap.has-slider-arrows-minimal .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 34%));
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap.has-slider-navigation-hover-fill .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	background: var(--button-background);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-dot:is(:hover, :active, :focus-visible) {
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-control:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--color-primary-dark, var(--color-primary));
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border-color: var(--color-primary-dark, var(--color-primary));
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-arrow:focus-visible {
+	outline: 2px solid var(--color-white);
+	outline-offset: 3px;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-dot:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -3px;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-control:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
 }
 
 .mai-cyber-gallery-number-no-spinner input[type="number"] {

@@ -129,21 +129,8 @@ class Mai_Cyber_Gallery {
 	 * @param array<string, mixed> $args Gallery arguments.
 	 */
 	public function __construct( $args = [] ) {
-		$column_defaults = function_exists( 'mai_get_columns_defaults' )
-			? mai_get_columns_defaults()
-			: [
-				'columns'                => 3,
-				'columns_responsive'     => false,
-				'columns_md'             => 1,
-				'columns_sm'             => 1,
-				'columns_xs'             => 1,
-				'align_columns'          => '',
-				'align_columns_vertical' => '',
-				'column_gap'             => 'md',
-				'row_gap'                => 'md',
-				'margin_top'             => '',
-				'margin_bottom'          => '',
-			];
+		$column_defaults = mai_get_columns_defaults();
+		$slider_width    = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
 
 		$defaults = array_merge(
 			$column_defaults,
@@ -185,7 +172,7 @@ class Mai_Cyber_Gallery {
 				'slider_overlay_color'           => 'black',
 				'slider_overlay_opacity'         => 35,
 				'slider_width_mode'              => 'full',
-				'slider_width'                   => 1200,
+				'slider_width'                   => $slider_width,
 				'slider_height'                  => 560,
 				'slider_height_mobile'           => 320,
 				'slider_image_fit'               => 'cover',
@@ -227,15 +214,13 @@ class Mai_Cyber_Gallery {
 	 * @return string
 	 */
 	public function get() {
-		static $instance = 0;
-
 		$items = $this->get_items();
 
 		if ( ! $items ) {
 			return $this->get_empty_preview();
 		}
 
-		$instance++;
+		$instance   = mai_get_index( 'mai-cyber-gallery' ) + 1;
 		$gallery_id = $this->args['anchor']
 			? $this->args['anchor']
 			: ( $this->args['id'] ? $this->args['id'] : sprintf( 'mai-cyber-gallery-%d', $instance ) );
@@ -263,10 +248,6 @@ class Mai_Cyber_Gallery {
 					break;
 				}
 			}
-		}
-
-		if ( $this->args['shadow'] ) {
-			$root_classes[] = 'has-image-shadow';
 		}
 
 		if ( 'mosaic' === $this->args['layout'] ) {
@@ -317,20 +298,16 @@ class Mai_Cyber_Gallery {
 
 		$root_style = '';
 
-		if ( $this->args['shadow'] ) {
-			$root_style .= '--image-filter:var(--drop-shadow);';
-		}
-
 		if ( 'slider' === $this->args['layout'] ) {
 			$slider_width = $this->args['slider_width']
-				? $this->args['slider_width'] . 'px'
+				? mai_get_unit_value( $this->args['slider_width'] )
 				: '100%';
 
 			$root_style .= sprintf(
-				'--cyber-slider-max-width:%1$s;--cyber-slider-height:%2$dpx;--cyber-slider-height-mobile:%3$dpx;',
+				'--cyber-slider-max-width:%1$s;--cyber-slider-height:%2$s;--cyber-slider-height-mobile:%3$s;',
 				$slider_width,
-				$this->args['slider_height'],
-				$this->args['slider_height_mobile']
+				mai_get_unit_value( $this->args['slider_height'] ),
+				mai_get_unit_value( $this->args['slider_height_mobile'] )
 			);
 
 			$navigation_colors = [
@@ -647,7 +624,7 @@ class Mai_Cyber_Gallery {
 			}
 		}
 
-		$args = array_merge( $args, mai_get_columns_sanitized( $args ) );
+		$args = mai_get_columns_sanitized( $args );
 
 		foreach ( [ 'columns', 'columns_md', 'columns_sm', 'columns_xs' ] as $key ) {
 			$args[ $key ] = max( 1, min( 8, absint( $args[ $key ] ) ) );
@@ -1135,7 +1112,10 @@ class Mai_Cyber_Gallery {
 		$slide_content = $has_slide_content
 			? $this->get_slider_content_markup( $item, $index, $gallery_id )
 			: '';
-		$media = '<div class="mai-cyber-gallery-media">' . $frame . $slide_content;
+		$media_class = $this->args['shadow']
+			? mai_add_classes( 'has-drop-shadow', 'mai-cyber-gallery-media' )
+			: 'mai-cyber-gallery-media';
+		$media = sprintf( '<div class="%s">', esc_attr( $media_class ) ) . $frame . $slide_content;
 		if ( 'overlay' === $this->args['captions'] ) {
 			$media .= $caption;
 			$caption = '';
@@ -1412,24 +1392,26 @@ class Mai_Cyber_Gallery {
 	 * @return string
 	 */
 	protected function get_filmstrip_controls( $gallery_id ) {
-		$previous_icon = function_exists( 'mai_get_svg_icon' )
-			? mai_get_svg_icon( 'arrow-left', 'regular' )
-			: '&larr;';
-		$next_icon = function_exists( 'mai_get_svg_icon' )
-			? mai_get_svg_icon( 'arrow-right', 'regular' )
-			: '&rarr;';
+		$icon_atts = [
+			'aria-hidden' => 'true',
+			'focusable'   => 'false',
+		];
+		$previous_icon = mai_get_svg_icon( 'angle-left', 'solid', $icon_atts );
+		$next_icon     = mai_get_svg_icon( 'angle-right', 'solid', $icon_atts );
+		$previous_icon = $previous_icon ? $previous_icon : '&larr;';
+		$next_icon     = $next_icon ? $next_icon : '&rarr;';
 
 		return sprintf(
 			'<div class="mai-cyber-gallery-controls" role="group" aria-label="%1$s">'
-			. '<button class="mai-cyber-gallery-control mai-cyber-gallery-control-previous" type="button" data-cyber-filmstrip-previous aria-controls="%2$s" aria-label="%3$s" disabled><span aria-hidden="true">%4$s</span></button>'
-			. '<button class="mai-cyber-gallery-control mai-cyber-gallery-control-next" type="button" data-cyber-filmstrip-next aria-controls="%2$s" aria-label="%5$s"><span aria-hidden="true">%6$s</span></button>'
+			. '<button class="button mai-cyber-gallery-control mai-cyber-gallery-control-previous" type="button" data-cyber-filmstrip-previous aria-controls="%2$s" aria-label="%3$s" disabled><span aria-hidden="true">%4$s</span></button>'
+			. '<button class="button mai-cyber-gallery-control mai-cyber-gallery-control-next" type="button" data-cyber-filmstrip-next aria-controls="%2$s" aria-label="%5$s"><span aria-hidden="true">%6$s</span></button>'
 			. '</div>',
 			esc_attr__( 'Gallery navigation', 'mai-cyber-gallery' ),
 			esc_attr( $gallery_id . '-items' ),
 			esc_attr__( 'Previous images', 'mai-cyber-gallery' ),
-			$previous_icon ? $previous_icon : '&larr;',
+			$previous_icon,
 			esc_attr__( 'Next images', 'mai-cyber-gallery' ),
-			$next_icon ? $next_icon : '&rarr;'
+			$next_icon
 		);
 	}
 
@@ -1452,12 +1434,22 @@ class Mai_Cyber_Gallery {
 		$controls   = '';
 
 		if ( $has_arrows ) {
-			$previous_icon = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M15.5 4 7.5 12l8 8 1.5-1.5-6.5-6.5L17 5.5z"></path></svg>';
-			$next_icon     = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="m8.5 20 8-8-8-8L7 5.5l6.5 6.5L7 18.5z"></path></svg>';
+			$icon_atts = [
+				'aria-hidden' => 'true',
+				'focusable'   => 'false',
+			];
+			$previous_icon = mai_get_svg_icon( 'angle-left', 'solid', $icon_atts );
+			$next_icon     = mai_get_svg_icon( 'angle-right', 'solid', $icon_atts );
+			$previous_icon = $previous_icon
+				? $previous_icon
+				: '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="M15.5 4 7.5 12l8 8 1.5-1.5-6.5-6.5L17 5.5z"></path></svg>';
+			$next_icon = $next_icon
+				? $next_icon
+				: '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="m8.5 20 8-8-8-8L7 5.5l6.5 6.5L7 18.5z"></path></svg>';
 
 			$controls .= sprintf(
-				'<button class="mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-previous" type="button" data-cyber-slider-previous aria-controls="%1$s" aria-label="%2$s" disabled>%3$s</button>'
-				. '<button class="mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-next" type="button" data-cyber-slider-next aria-controls="%1$s" aria-label="%4$s">%5$s</button>',
+				'<button class="button mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-previous" type="button" data-cyber-slider-previous aria-controls="%1$s" aria-label="%2$s" disabled>%3$s</button>'
+				. '<button class="button mai-cyber-gallery-slider-arrow mai-cyber-gallery-slider-next" type="button" data-cyber-slider-next aria-controls="%1$s" aria-label="%4$s">%5$s</button>',
 				esc_attr( $track_id ),
 				esc_attr__( 'Previous slide', 'mai-cyber-gallery' ),
 				$previous_icon,
@@ -1489,7 +1481,7 @@ class Mai_Cyber_Gallery {
 					);
 
 				$controls .= sprintf(
-					'<button class="mai-cyber-gallery-slider-dot" type="button" data-cyber-slider-dot="%1$d" aria-controls="%2$s" aria-label="%3$s"%4$s><span aria-hidden="true"></span></button>',
+					'<button class="button mai-cyber-gallery-slider-dot" type="button" data-cyber-slider-dot="%1$d" aria-controls="%2$s" aria-label="%3$s"%4$s><span aria-hidden="true"></span></button>',
 					$index,
 					esc_attr( $track_id ),
 					esc_attr( $label ),
