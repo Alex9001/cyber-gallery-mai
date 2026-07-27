@@ -24,6 +24,8 @@ Version 0.6.0 gives Slider effects true in-place transitions instead of layering
 
 Version 0.7.0 preserves every layout's image source and dormant settings when layouts change, shares image overlays and hover treatments across layouts, and expands Filmstrip with accessible autoplay, optional and positionable arrows, and purpose-built logo normalization.
 
+Version 0.7.1 moves per-image logo sizing next to the selected image's metadata, uses Mai Icons for lightbox controls when available, and removes the Filmstrip's visual scrollbar while preserving native scrolling.
+
 ## Mai Engine integration boundary
 
 Mai Cyber Gallery intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
@@ -77,7 +79,7 @@ Hover treatments are also shared across layouts. Desaturate removes a configurab
 
 Filmstrip arrows can be disabled or placed over the images, above them, or below them with Start, Center, and End alignment. Arrow design, hover treatment, and Mai palette/custom navigation colors are shared with Slider, including the autoplay control. Optional timed movement advances one visible group at a time and wraps at the end. When the strip overflows and motion is allowed, it provides a visible Pause/Start control even if arrows are disabled; controls stay out of the way when every item already fits. Rotation pauses for manual interaction, keyboard focus, hidden tabs, offscreen galleries, reduced-motion preferences, and optionally mouse-over.
 
-For mixed logo rows, choose **Logo / Contain**. Every item receives the same responsive cell height, its complete source is centered with consistent inner breathing room, and any selected hard-cropped preset automatically falls back to the uncropped original. **Logo Size Overrides** compensate for unusual transparent whitespace or optically small files. Values above 100 percent deliberately zoom within the fixed cell and can clip if pushed too far. **Uniform Crop** provides equal-height photographic cells, while **Natural** preserves the original Filmstrip behavior.
+For mixed logo rows, choose **Logo / Contain**. Every item receives the same responsive cell height, its complete source is centered with consistent inner breathing room, and any selected hard-cropped preset automatically falls back to the uncropped original. Select an image in the **Images** field and enable **Use a custom size for this image** beside its Title, Caption, and other metadata when unusual transparent whitespace makes that logo look optically small or large. Linked Images expose the same checkbox below each image. The setting belongs only to the current gallery; values above 100 percent deliberately zoom within the fixed cell and can clip if pushed too far. **Uniform Crop** provides equal-height photographic cells, while **Natural** preserves the original Filmstrip behavior.
 
 Slider width modes are **Full**, **Contained**, and **Inset**. Full is the default and fills the available block or parent canvas. Contained applies **Maximum Slider Width** and preserves the previous centered presentation. Inset fills the canvas while retaining responsive side gutters. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps those three fields together in one row. Their number inputs retain validation but omit browser up/down spinner controls. Button-group choices use equal widths throughout the gallery controls.
 
@@ -258,11 +260,11 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 ## Design notes
 
 - Thumbnail markup comes from `wp_get_attachment_image()` so WordPress controls intrinsic dimensions, responsive sources, lazy loading, decoding, and fetch priority.
-- Shared controls inherit Mai's button foundation, image shadows use Mai's `has-drop-shadow` utility, and Slider copy inherits Mai typography and dark-background rules.
+- Shared controls inherit Mai's button foundation and variables, lightbox glyphs use Mai Icons when available, image shadows use Mai's `has-drop-shadow` utility, and Slider copy inherits Mai typography and dark-background rules.
 - Masonry progressively enhances its CSS multi-column fallback with a shortest-column layout that preserves source order and removes avoidable holes.
 - Justified Rows progressively enhances the normal Mai grid and recalculates through `ResizeObserver`.
 - Tiled Mosaic uses image ratios to build mixed, close-packed groups while preserving source order.
-- Filmstrip keeps native scrolling and scroll snap as its baseline; optional accessible autoplay layers on top without taking away touch, trackpad, or keyboard control.
+- Filmstrip keeps native scrolling and scroll snap as its baseline while hiding browser scrollbar chrome; optional accessible autoplay layers on top without taking away touch, mouse, trackpad, or keyboard control.
 - Slider uses canonical content rows, a responsive contrast scrim, Mai-styled CTAs, native scroll snap, keyboard navigation, counters, titled status updates, and optional accessible autoplay.
 - Non-native Slider presets use an in-place transition compositor for controls and autoplay; direct gestures retain native scrolling. Transitions and navigation hover effects honor `prefers-reduced-motion`.
 - Shared image overlays use Mai Engine palette colors when selected and remain separate from Slider's content-legibility scrim.

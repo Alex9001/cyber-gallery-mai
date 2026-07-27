@@ -4,7 +4,7 @@
  *
  * Plugin Name:       Mai Cyber Gallery
  * Description:       Advanced masonry, tiled mosaic, content slider, and lightbox galleries powered by Mai Engine.
- * Version:           0.7.0
+ * Version:           0.7.1
  * Requires at least: 6.5
  * Tested up to:      7.0
  * Requires PHP:      8.3
@@ -79,7 +79,7 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return void
 	 */
 	private function setup_constants(): void {
-		define( 'MAI_CYBER_GALLERY_VERSION', '0.7.0' );
+		define( 'MAI_CYBER_GALLERY_VERSION', '0.7.1' );
 		define( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION', '2.40.0' );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 		define( 'MAI_CYBER_GALLERY_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
@@ -161,6 +161,7 @@ final class Mai_Cyber_Gallery_Plugin {
 			'mai_get_columns_atts',
 			'mai_get_columns_defaults',
 			'mai_get_columns_sanitized',
+			'mai_get_acf_request',
 			'mai_get_image_orientation_choices',
 			'mai_get_image_size_choices',
 			'mai_get_index',
@@ -196,6 +197,10 @@ final class Mai_Cyber_Gallery_Plugin {
 		$script_file = "assets/js/mai-cyber-gallery{$suffix}.js";
 		$style_path  = MAI_CYBER_GALLERY_PLUGIN_DIR . $style_file;
 		$script_path = MAI_CYBER_GALLERY_PLUGIN_DIR . $script_file;
+		$icon_atts   = [
+			'aria-hidden' => 'true',
+			'focusable'   => 'false',
+		];
 
 		wp_register_style(
 			'mai-cyber-gallery',
@@ -229,6 +234,11 @@ final class Mai_Cyber_Gallery_Plugin {
 				'status'            => __( '%1$s, %2$s', 'mai-cyber-gallery' ),
 				'slide'             => __( 'Slide %1$d of %2$d', 'mai-cyber-gallery' ),
 				'slideTitle'        => __( 'Slide %1$d of %2$d: %3$s', 'mai-cyber-gallery' ),
+				'icons'             => [
+					'close'    => mai_get_svg_icon( 'times', 'solid', $icon_atts ),
+					'previous' => mai_get_svg_icon( 'angle-left', 'solid', $icon_atts ),
+					'next'     => mai_get_svg_icon( 'angle-right', 'solid', $icon_atts ),
+				],
 			]
 		);
 	}

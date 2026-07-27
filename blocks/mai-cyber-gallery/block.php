@@ -44,6 +44,125 @@ add_filter(
 	10,
 	3
 );
+add_filter(
+	'attachment_fields_to_edit',
+	'mai_cyber_gallery_add_logo_scale_attachment_field',
+	10,
+	2
+);
+add_action(
+	'acf/render_field/key=mai_cyber_gallery_image',
+	'mai_cyber_gallery_render_linked_image_logo_scale_field',
+	10,
+	0
+);
+add_action(
+	'acf/render_field/key=mai_cyber_gallery_images',
+	'mai_cyber_gallery_render_gallery_logo_scale_support',
+	10,
+	0
+);
+
+/**
+ * Add a block-local logo-size control to this block's ACF Gallery sidebar.
+ *
+ * The inputs intentionally have no names. Editor JavaScript mirrors their
+ * values into the existing filmstrip_logo_overrides repeater, so WordPress
+ * never treats them as global attachment metadata.
+ *
+ * @since 0.7.1
+ *
+ * @param array<string,array<string,mixed>> $fields Attachment fields.
+ * @param WP_Post                           $post   Attachment post.
+ *
+ * @return array<string,array<string,mixed>>
+ */
+function mai_cyber_gallery_add_logo_scale_attachment_field( $fields, $post ): array {
+	if (
+		! wp_doing_ajax()
+		|| 'acf/fields/gallery/get_attachment' !== sanitize_text_field( (string) mai_get_acf_request( 'action' ) )
+		|| 'mai_cyber_gallery_images' !== sanitize_key( (string) mai_get_acf_request( 'field_key' ) )
+		|| ! $post instanceof WP_Post
+		|| 'attachment' !== $post->post_type
+		|| ! wp_attachment_is_image( $post )
+	) {
+		return $fields;
+	}
+
+	$fields['mai_cyber_gallery_logo_scale'] = [
+		'tr' => sprintf(
+			'<tr class="compat-field-mai-cyber-gallery-logo-scale mai-cyber-gallery-logo-scale-control" data-cyber-logo-scale-control data-attachment-id="%1$d" hidden>
+				<th scope="row">%2$s</th>
+				<td>
+					<div class="mai-cyber-gallery-logo-scale-fields">
+						<label class="mai-cyber-gallery-logo-scale-toggle">
+							<input type="checkbox" value="1" data-cyber-logo-scale-enabled>
+							<span>%3$s</span>
+						</label>
+						<div class="mai-cyber-gallery-logo-scale-range" data-cyber-logo-scale-range hidden>
+							<input type="range" min="50" max="200" step="5" value="100" aria-label="%4$s" data-cyber-logo-scale-input>
+							<output data-cyber-logo-scale-output>%5$s</output>
+						</div>
+						<p class="description">%6$s</p>
+					</div>
+				</td>
+			</tr>',
+			absint( $post->ID ),
+			esc_html__( 'Logo Size', 'mai-cyber-gallery' ),
+			esc_html__( 'Use a custom size for this image', 'mai-cyber-gallery' ),
+			esc_attr__( 'Logo size percentage', 'mai-cyber-gallery' ),
+			esc_html__( '100%', 'mai-cyber-gallery' ),
+			esc_html__( 'Applies only to this gallery.', 'mai-cyber-gallery' )
+		),
+	];
+
+	return $fields;
+}
+
+/**
+ * Render the block-local logo-size control for a Linked Images row.
+ *
+ * Its unnamed inputs are progressive editor controls only. The existing
+ * filmstrip_logo_overrides repeater remains the canonical saved field.
+ *
+ * @since 0.7.1
+ *
+ * @return void
+ */
+function mai_cyber_gallery_render_linked_image_logo_scale_field(): void {
+	?>
+	<div class="mai-cyber-gallery-logo-scale-control mai-cyber-gallery-logo-scale-control-inline" data-cyber-logo-scale-control data-cyber-logo-scale-linked hidden>
+		<p class="mai-cyber-gallery-logo-scale-heading">
+			<strong><?php esc_html_e( 'Logo Size', 'mai-cyber-gallery' ); ?></strong>
+		</p>
+		<div class="mai-cyber-gallery-logo-scale-fields">
+			<label class="mai-cyber-gallery-logo-scale-toggle">
+				<input type="checkbox" value="1" data-cyber-logo-scale-enabled>
+				<span><?php esc_html_e( 'Use a custom size for this image', 'mai-cyber-gallery' ); ?></span>
+			</label>
+			<div class="mai-cyber-gallery-logo-scale-range" data-cyber-logo-scale-range hidden>
+				<input type="range" min="50" max="200" step="5" value="100" aria-label="<?php esc_attr_e( 'Logo size percentage', 'mai-cyber-gallery' ); ?>" data-cyber-logo-scale-input>
+				<output data-cyber-logo-scale-output><?php esc_html_e( '100%', 'mai-cyber-gallery' ); ?></output>
+			</div>
+			<p class="description"><?php esc_html_e( 'Applies only to this gallery.', 'mai-cyber-gallery' ); ?></p>
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Render a feature-detection marker beside the ACF Gallery field.
+ *
+ * Editor JavaScript requires this server-rendered marker before replacing the
+ * canonical repeater UI with attachment-side controls.
+ *
+ * @since 0.7.1
+ *
+ * @return void
+ */
+function mai_cyber_gallery_render_gallery_logo_scale_support(): void {
+	echo '<span data-cyber-logo-scale-gallery-support hidden></span>';
+}
 
 /**
  * Preserve intentionally atomic navigation saved before the second selector.
@@ -1169,6 +1288,9 @@ function mai_cyber_gallery_register_field_group(): void {
 					'collapsed'         => 'mai_cyber_gallery_filmstrip_logo_override_image',
 					'button_label'      => esc_html__( 'Add Logo Override', 'mai-cyber-gallery' ),
 					'conditional_logic' => $filmstrip_logo_condition,
+					'wrapper'           => [
+						'class' => 'mai-cyber-gallery-logo-overrides-fallback',
+					],
 					'sub_fields'        => [
 						[
 							'key'             => 'mai_cyber_gallery_filmstrip_logo_override_image',

@@ -3,7 +3,7 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.7.0
+Stable tag: 0.7.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -49,7 +49,7 @@ Hover treatments also work across every layout. Desaturate removes a configurabl
 
 Filmstrip supports optional timed group movement with an accessible Pause/Start control whenever the strip overflows and motion is allowed, optional mouse-over pause, and arrows that can be disabled, overlaid, or aligned above or below the images. Controls hide when every item fits. Filmstrip arrow design, navigation hover effects, and Mai palette/custom colors are shared with Slider.
 
-Filmstrip also includes Natural, Uniform Crop, and Logo / Contain image modes. Logo mode centers artwork in consistent responsive cells with shared inner padding and automatically replaces a selected hard-cropped preset with the uncropped original. Per-image scale overrides compensate for unusual transparent whitespace or optically small logos without changing the source files; values above 100 percent intentionally zoom within the cell and can clip if overdone.
+Filmstrip also includes Natural, Uniform Crop, and Logo / Contain image modes. Logo mode centers artwork in consistent responsive cells with shared inner padding and automatically replaces a selected hard-cropped preset with the uncropped original. Select an image and enable its block-local custom-size checkbox beside the image metadata when unusual transparent whitespace or optical size needs compensation; Linked Images expose the same control below each image. Values above 100 percent intentionally zoom within the cell and can clip if overdone.
 
 Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row. Browser up/down spinner controls are removed from those Slider dimension inputs while their numeric validation remains.
 
@@ -58,6 +58,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 0.7.1 =
+
+Moves logo sizing beside each image, adopts Mai Icons for lightbox controls when available, and removes the Filmstrip's visible scrollbar without removing native scrolling.
 
 = 0.7.0 =
 
@@ -129,6 +133,14 @@ Optionally. It always retains native touch, mouse, trackpad, keyboard scrolling,
 Autoplay is optional. Set the time between slides from 3 through 30 seconds and optionally pause while the pointer is over the Slider. A Pause/Start control remains available whenever motion is allowed; reduced-motion preferences disable autoplay.
 
 == Changelog ==
+
+= 0.7.1 =
+
+* Moved Filmstrip logo sizing into an optional block-local control beside each selected image's metadata.
+* Preserved the existing override data and public PHP API, with a progressively enhanced editor fallback.
+* Reused Mai Icons for lightbox controls when available and consolidated navigation styling on Mai's button system.
+* Hid Filmstrip scrollbar chrome while preserving native scrolling.
+* Added local sizing guards against gallery-driven horizontal overflow.
 
 = 0.7.0 =
 

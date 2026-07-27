@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.1
+
+- Moved Filmstrip logo-size overrides into an optional, block-local control beside each image's metadata instead of presenting a separate design repeater.
+- Kept the established `filmstrip_logo_overrides` data and PHP API as the canonical storage format, including a progressively enhanced fallback when the editor integration is unavailable.
+- Replaced hard-coded lightbox glyph markup with Mai Icons output when available while retaining accessible standalone fallbacks.
+- Consolidated gallery navigation controls on Mai Engine's button variables and foundations.
+- Hid the Filmstrip's visual browser scrollbar without removing native touch, trackpad, mouse, or keyboard scrolling.
+- Added local sizing guards so gallery wrappers and items cannot force their parent canvas wider.
+
 ## 0.7.0
 
 - Preserved ordinary Images, Linked Images, structured Slides, and dormant layout settings across editor layout changes instead of allowing ACF conditional fields to drop them from block serialization.

@@ -18,6 +18,7 @@
 	const tiledStates = new WeakMap();
 	const filmstripStates = new WeakMap();
 	const sliderStates = new WeakMap();
+	const logoScaleControlStates = new WeakMap();
 	let dialogState = null;
 
 	/**
@@ -191,6 +192,528 @@
 		}
 
 		fields.forEach( preserveCyberField );
+	}
+
+	/**
+	 * Find the ACF block-fields wrapper that owns an editor element.
+	 *
+	 * @param {Element|null} element Editor element.
+	 * @return {Element|null}
+	 */
+	function getCyberEditorRoot( element ) {
+		if ( ! element || ! element.closest ) {
+			return null;
+		}
+
+		return element.closest( '.acf-block-fields' )
+			|| element.closest( '.acf-block-component' )
+			|| element.closest( '.acf-fields' );
+	}
+
+	/**
+	 * Get an initialized ACF field model for one field element.
+	 *
+	 * @param {Element|null} element ACF field element.
+	 * @return {Object|null}
+	 */
+	function getAcfFieldModel( element ) {
+		if (
+			! element
+			|| ! window.acf
+			|| 'function' !== typeof window.acf.getField
+			|| ! window.jQuery
+		) {
+			return null;
+		}
+
+		return window.acf.getField( window.jQuery( element ) ) || null;
+	}
+
+	/**
+	 * Get the canonical logo-overrides repeater and its ACF model.
+	 *
+	 * @param {Element|null} root ACF block-fields wrapper.
+	 * @return {Object|null}
+	 */
+	function getLogoOverrideStorage( root ) {
+		if ( ! root || ! root.querySelector ) {
+			return null;
+		}
+
+		const element = root.querySelector(
+			'.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_overrides"]'
+		);
+		const model = getAcfFieldModel( element );
+
+		if (
+			! model
+			|| 'function' !== typeof model.$rows
+			|| 'function' !== typeof model.add
+			|| 'function' !== typeof model.remove
+		) {
+			return null;
+		}
+
+		return { element, model };
+	}
+
+	/**
+	 * Clamp one logo scale to the field's canonical range and increment.
+	 *
+	 * @param {*} value Candidate scale.
+	 * @return {number}
+	 */
+	function normalizeLogoScale( value ) {
+		const parsed = Number.parseFloat( value );
+		const scale = Number.isFinite( parsed ) ? parsed : 100;
+
+		return Math.max( 50, Math.min( 200, Math.round( scale / 5 ) * 5 ) );
+	}
+
+	/**
+	 * Read the canonical inputs from one logo-overrides repeater row.
+	 *
+	 * @param {Element|null} element Repeater row.
+	 * @return {Object|null}
+	 */
+	function getLogoOverrideRow( element ) {
+		if ( ! element || ! element.querySelector ) {
+			return null;
+		}
+
+		const imageField = element.querySelector(
+			'.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_override_image"]'
+		);
+		const scaleField = element.querySelector(
+			'.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_override_scale"]'
+		);
+		const imageInput = imageField
+			? imageField.querySelector( '.acf-image-uploader > input[type="hidden"]' )
+			: null;
+		const scaleInput = scaleField
+			? scaleField.querySelector( 'input[type="range"], input[type="number"]' )
+			: null;
+
+		if ( ! imageInput || ! scaleInput ) {
+			return null;
+		}
+
+		return {
+			element,
+			imageField,
+			scaleField,
+			imageInput,
+			scaleInput,
+			attachmentId: Number.parseInt( imageInput.value, 10 ) || 0,
+			scale: normalizeLogoScale( scaleInput.value ),
+		};
+	}
+
+	/**
+	 * Read every active row from the canonical logo-overrides repeater.
+	 *
+	 * @param {Object} storage Repeater storage.
+	 * @return {Object[]}
+	 */
+	function getLogoOverrideRows( storage ) {
+		if ( ! storage || ! storage.model ) {
+			return [];
+		}
+
+		return Array.from( storage.model.$rows() )
+			.filter( function ( element ) {
+				return 'true' !== element.dataset.cyberLogoRemoving;
+			} )
+			.map( getLogoOverrideRow )
+			.filter( Boolean );
+	}
+
+	/**
+	 * Get the effective row for an attachment. Last duplicate wins, matching
+	 * the PHP sanitizer and the existing public API.
+	 *
+	 * @param {Object} storage      Repeater storage.
+	 * @param {number} attachmentId Attachment ID.
+	 * @return {Object|null}
+	 */
+	function getLogoOverride( storage, attachmentId ) {
+		const rows = getLogoOverrideRows( storage );
+		let match = null;
+
+		rows.forEach( function ( row ) {
+			if ( row.attachmentId === attachmentId ) {
+				match = row;
+			}
+		} );
+
+		return match;
+	}
+
+	/**
+	 * Set an ACF field through its model, with a native-input fallback.
+	 *
+	 * @param {Element}          fieldElement ACF field element.
+	 * @param {HTMLInputElement} input        Canonical input.
+	 * @param {string|number}    value        Value.
+	 * @return {void}
+	 */
+	function setLogoOverrideInput( fieldElement, input, value ) {
+		const next = String( value );
+
+		if ( input.value === next ) {
+			return;
+		}
+
+		const model = getAcfFieldModel( fieldElement );
+
+		if ( model && 'function' === typeof model.val ) {
+			model.val( next );
+		} else {
+			input.value = next;
+		}
+
+		input.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+	}
+
+	/**
+	 * Write one editor control to the canonical repeater.
+	 *
+	 * @param {Object}  storage      Repeater storage.
+	 * @param {number}  attachmentId Attachment ID.
+	 * @param {boolean} enabled      Whether the override is enabled.
+	 * @param {number}  scale        Scale percentage.
+	 * @return {boolean} Whether the write succeeded.
+	 */
+	function setLogoOverride( storage, attachmentId, enabled, scale ) {
+		if ( ! storage || ! attachmentId || ! window.jQuery ) {
+			return false;
+		}
+
+		const matches = getLogoOverrideRows( storage ).filter( function ( row ) {
+			return row.attachmentId === attachmentId;
+		} );
+
+		if ( ! enabled ) {
+			matches.forEach( function ( row ) {
+				row.element.dataset.cyberLogoRemoving = 'true';
+				storage.model.remove( window.jQuery( row.element ) );
+			} );
+
+			return true;
+		}
+
+		let row = matches.length ? matches[ matches.length - 1 ] : null;
+
+		if ( ! row ) {
+			const added = storage.model.add();
+			const element = added && added[ 0 ] ? added[ 0 ] : null;
+			row = getLogoOverrideRow( element );
+		}
+
+		if ( ! row ) {
+			return false;
+		}
+
+		setLogoOverrideInput( row.imageField, row.imageInput, attachmentId );
+		setLogoOverrideInput(
+			row.scaleField,
+			row.scaleInput,
+			normalizeLogoScale( scale )
+		);
+
+		return true;
+	}
+
+	/**
+	 * Read a select from this block's ACF field group.
+	 *
+	 * @param {Element} root ACF block-fields wrapper.
+	 * @param {string}  key  ACF field key.
+	 * @return {string}
+	 */
+	function getCyberSelectValue( root, key ) {
+		const select = root.querySelector( '.acf-field[data-key="' + key + '"] select' );
+		return select ? select.value : '';
+	}
+
+	/**
+	 * Whether the current block configuration uses contained filmstrip logos.
+	 *
+	 * @param {Element} root ACF block-fields wrapper.
+	 * @return {boolean}
+	 */
+	function isFilmstripLogoMode( root ) {
+		return 'filmstrip' === getCyberSelectValue( root, 'mai_cyber_gallery_layout' )
+			&& 'logo-contain' === getCyberSelectValue(
+				root,
+				'mai_cyber_gallery_filmstrip_image_mode'
+			);
+	}
+
+	/**
+	 * Feature-detect the active image editor before hiding the fallback.
+	 *
+	 * @param {Element} root ACF block-fields wrapper.
+	 * @return {boolean}
+	 */
+	function supportsLogoScaleEditor( root ) {
+		const customLinks = 'custom' === getCyberSelectValue(
+			root,
+			'mai_cyber_gallery_click_action'
+		);
+
+		if ( customLinks ) {
+			return Boolean(
+				root.querySelector(
+					'.acf-field[data-key="mai_cyber_gallery_image"] '
+					+ '[data-cyber-logo-scale-linked]'
+				)
+			);
+		}
+
+		const gallery = root.querySelector(
+			'.acf-field[data-key="mai_cyber_gallery_images"]'
+		);
+		const marker = gallery
+			? gallery.querySelector( '[data-cyber-logo-scale-gallery-support]' )
+			: null;
+		const model = getAcfFieldModel( gallery );
+
+		return Boolean(
+			marker
+			&& model
+			&& 'function' === typeof model.get
+			&& 'gallery' === model.get( 'type' )
+		);
+	}
+
+	/**
+	 * Get the attachment represented by one progressive editor control.
+	 *
+	 * @param {Element} control Logo-scale control.
+	 * @return {number}
+	 */
+	function getLogoScaleAttachmentId( control ) {
+		if ( control.hasAttribute( 'data-cyber-logo-scale-linked' ) ) {
+			const field = control.closest(
+				'.acf-field[data-key="mai_cyber_gallery_image"]'
+			);
+			const input = field
+				? field.querySelector( '.acf-image-uploader > input[type="hidden"]' )
+				: null;
+
+			return input ? Number.parseInt( input.value, 10 ) || 0 : 0;
+		}
+
+		return Number.parseInt( control.dataset.attachmentId, 10 ) || 0;
+	}
+
+	/**
+	 * Hydrate and show or hide one logo-scale editor control.
+	 *
+	 * @param {Element} control Logo-scale control.
+	 * @param {Object}  storage Repeater storage.
+	 * @param {Element} root    ACF block-fields wrapper.
+	 * @return {boolean} Whether the required control inputs exist.
+	 */
+	function refreshLogoScaleControl( control, storage, root ) {
+		const checkbox = control.querySelector( '[data-cyber-logo-scale-enabled]' );
+		const range = control.querySelector( '[data-cyber-logo-scale-range]' );
+		const input = control.querySelector( '[data-cyber-logo-scale-input]' );
+		const output = control.querySelector( '[data-cyber-logo-scale-output]' );
+		const attachmentId = getLogoScaleAttachmentId( control );
+		const visible = Boolean( attachmentId && isFilmstripLogoMode( root ) );
+
+		if ( ! checkbox || ! range || ! input || ! output ) {
+			control.hidden = true;
+			return false;
+		}
+
+		control.hidden = ! visible;
+
+		if ( ! visible ) {
+			return true;
+		}
+
+		const override = getLogoOverride( storage, attachmentId );
+		const enabled = Boolean( override );
+		const scale = override ? override.scale : 100;
+
+		checkbox.checked = enabled;
+		range.hidden = ! enabled;
+		input.disabled = ! enabled;
+		input.value = String( scale );
+		output.textContent = String( scale ) + '%';
+		control.classList.toggle( 'is-cyber-logo-scale-enabled', enabled );
+
+		return true;
+	}
+
+	/**
+	 * Reveal the canonical repeater if a progressive control cannot write.
+	 *
+	 * @param {Element} root ACF block-fields wrapper.
+	 * @return {void}
+	 */
+	function disableLogoScaleEditor( root ) {
+		root.classList.remove( 'is-cyber-logo-scale-enhanced' );
+		root.querySelectorAll( '[data-cyber-logo-scale-control]' ).forEach( function ( control ) {
+			control.hidden = true;
+		} );
+	}
+
+	/**
+	 * Bind one progressive logo-scale editor control once.
+	 *
+	 * @param {Element} control Logo-scale control.
+	 * @param {Object}  storage Repeater storage.
+	 * @param {Element} root    ACF block-fields wrapper.
+	 * @return {boolean} Whether the control initialized.
+	 */
+	function bindLogoScaleControl( control, storage, root ) {
+		const existingState = logoScaleControlStates.get( control );
+
+		if ( existingState ) {
+			existingState.storage = storage;
+			existingState.root = root;
+			return refreshLogoScaleControl( control, storage, root );
+		}
+
+		const checkbox = control.querySelector( '[data-cyber-logo-scale-enabled]' );
+		const range = control.querySelector( '[data-cyber-logo-scale-range]' );
+		const input = control.querySelector( '[data-cyber-logo-scale-input]' );
+		const output = control.querySelector( '[data-cyber-logo-scale-output]' );
+
+		if ( ! checkbox || ! range || ! input || ! output ) {
+			return false;
+		}
+
+		logoScaleControlStates.set( control, { storage, root } );
+
+		checkbox.addEventListener( 'change', function ( event ) {
+			event.stopPropagation();
+
+			const state = logoScaleControlStates.get( control );
+			const enabled = checkbox.checked;
+			const attachmentId = getLogoScaleAttachmentId( control );
+
+			range.hidden = ! enabled;
+			input.disabled = ! enabled;
+			control.classList.toggle( 'is-cyber-logo-scale-enabled', enabled );
+
+			if (
+				! state
+				|| ! attachmentId
+				|| ! setLogoOverride(
+					state.storage,
+					attachmentId,
+					enabled,
+					normalizeLogoScale( input.value )
+				)
+			) {
+				disableLogoScaleEditor( state ? state.root : root );
+				return;
+			}
+
+			refreshLogoScaleControl( control, state.storage, state.root );
+		} );
+
+		input.addEventListener( 'input', function ( event ) {
+			event.stopPropagation();
+			output.textContent = String( normalizeLogoScale( input.value ) ) + '%';
+		} );
+
+		input.addEventListener( 'change', function ( event ) {
+			event.stopPropagation();
+
+			const state = logoScaleControlStates.get( control );
+			const attachmentId = getLogoScaleAttachmentId( control );
+
+			if (
+				! state
+				|| ! attachmentId
+				|| ! setLogoOverride(
+					state.storage,
+					attachmentId,
+					true,
+					normalizeLogoScale( input.value )
+				)
+			) {
+				disableLogoScaleEditor( state ? state.root : root );
+				return;
+			}
+
+			refreshLogoScaleControl( control, state.storage, state.root );
+		} );
+
+		return refreshLogoScaleControl( control, storage, root );
+	}
+
+	/**
+	 * Initialize block-local logo sizing in one ACF block-fields wrapper.
+	 *
+	 * @param {Element} root ACF block-fields wrapper.
+	 * @return {void}
+	 */
+	function initializeLogoScaleRoot( root ) {
+		const storage = getLogoOverrideStorage( root );
+
+		if ( ! storage || ! supportsLogoScaleEditor( root ) ) {
+			disableLogoScaleEditor( root );
+			return;
+		}
+
+		const controls = Array.from(
+			root.querySelectorAll( '[data-cyber-logo-scale-control]' )
+		).filter( function ( control ) {
+			return ! control.closest( '.acf-clone' );
+		} );
+		const ready = controls.every( function ( control ) {
+			return bindLogoScaleControl( control, storage, root );
+		} );
+
+		if ( ! ready ) {
+			disableLogoScaleEditor( root );
+			return;
+		}
+
+		root.classList.add( 'is-cyber-logo-scale-enhanced' );
+	}
+
+	/**
+	 * Initialize logo controls in an ACF action scope.
+	 *
+	 * @param {Document|Element|Object} scope DOM node or ACF jQuery collection.
+	 * @return {void}
+	 */
+	function initializeLogoScaleEditors( scope ) {
+		const element = scope && scope[ 0 ] ? scope[ 0 ] : scope;
+
+		if ( ! element || ! element.querySelectorAll ) {
+			return;
+		}
+
+		const selector = [
+			'.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_overrides"]',
+			'[data-cyber-logo-scale-control]',
+			'[data-cyber-logo-scale-gallery-support]',
+		].join( ',' );
+		const candidates = Array.from( element.querySelectorAll( selector ) );
+		const roots = new Set();
+
+		if ( element.matches && element.matches( selector ) ) {
+			candidates.unshift( element );
+		}
+
+		candidates.forEach( function ( candidate ) {
+			const root = getCyberEditorRoot( candidate );
+
+			if ( root ) {
+				roots.add( root );
+			}
+		} );
+
+		roots.forEach( initializeLogoScaleRoot );
 	}
 
 	/**
@@ -2533,16 +3056,18 @@
 	 *
 	 * @param {string} className Extra class.
 	 * @param {string} label     Accessible label.
-	 * @param {string} path      SVG path data.
+	 * @param {string} icon      Mai Engine icon markup.
+	 * @param {string} path      Fallback SVG path data.
 	 * @return {HTMLButtonElement}
 	 */
-	function makeDialogButton( className, label, path ) {
+	function makeDialogButton( className, label, icon, path ) {
 		const button = document.createElement( 'button' );
 		button.type = 'button';
 		button.className = 'button mai-cyber-gallery-dialog-button ' + className;
 		button.setAttribute( 'aria-label', label );
-		button.innerHTML = '<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="' +
-			path + '"></path></svg>';
+		button.innerHTML = icon ||
+			'<svg aria-hidden="true" viewBox="0 0 24 24" focusable="false"><path d="' +
+				path + '"></path></svg>';
 		return button;
 	}
 
@@ -2568,19 +3093,23 @@
 		const caption = document.createElement( 'p' );
 		const position = document.createElement( 'p' );
 		const status = document.createElement( 'p' );
+		const icons = settings.icons || {};
 		const close = makeDialogButton(
 			'mai-cyber-gallery-dialog-close',
 			settings.close || 'Close image viewer',
+			icons.close || '',
 			'M6.4 5 5 6.4l5.6 5.6L5 17.6 6.4 19l5.6-5.6 5.6 5.6 1.4-1.4-5.6-5.6L19 6.4 17.6 5 12 10.6z'
 		);
 		const previous = makeDialogButton(
 			'mai-cyber-gallery-dialog-previous',
 			settings.previous || 'Previous image',
+			icons.previous || '',
 			'M14.7 5.3 13.3 4l-8 8 8 8 1.4-1.4L8.1 12z'
 		);
 		const next = makeDialogButton(
 			'mai-cyber-gallery-dialog-next',
 			settings.next || 'Next image',
+			icons.next || '',
 			'M9.3 18.7 10.7 20l8-8-8-8-1.4 1.4 6.6 6.6z'
 		);
 
@@ -3009,8 +3538,42 @@
 					preserveCyberField( field );
 				}
 			);
-			window.acf.addAction( 'append', preserveCyberFields );
-			window.acf.addAction( 'ready', preserveCyberFields );
+			window.acf.addAction(
+				'append',
+				function ( element ) {
+					preserveCyberFields();
+					initializeLogoScaleEditors( element );
+				}
+			);
+			window.acf.addAction(
+				'ready',
+				function () {
+					preserveCyberFields();
+					initializeLogoScaleEditors( document );
+				}
+			);
+			[
+				'new_field/key=mai_cyber_gallery_image',
+				'remount_field/key=mai_cyber_gallery_image',
+				'remount_field/key=mai_cyber_gallery_filmstrip_logo_overrides',
+			].forEach( function ( action ) {
+				window.acf.addAction( action, function ( field ) {
+					initializeLogoScaleEditors( field && field.$el ? field.$el : document );
+				} );
+			} );
+			window.acf.addAction( 'change_field', function ( field ) {
+				if (
+					! field
+					|| 'function' !== typeof field.get
+					|| 'mai_cyber_gallery_image' !== field.get( 'key' )
+				) {
+					return;
+				}
+
+				// ACF image selection uses jQuery's synthetic change event,
+				// which does not reach the native document listener below.
+				initializeLogoScaleEditors( field.$el ? field.$el : document );
+			} );
 			window.acf.addAction(
 				'render_block_preview/type=mai-cyber-gallery',
 				function ( block ) {
@@ -3020,20 +3583,35 @@
 				}
 			);
 			preserveCyberFields();
+			initializeLogoScaleEditors( document );
 		}
 
 		document.addEventListener( 'change', function ( event ) {
-			const select = event.target;
+			const target = event.target;
 
 			if (
-				select
-				&& select.matches
-				&& select.matches(
+				target
+				&& target.matches
+				&& target.matches(
 					'.acf-field[data-key="mai_cyber_gallery_slider_navigation"] select,'
 					+ '.acf-field[data-key="mai_cyber_gallery_slider_navigation_secondary"] select'
 				)
 			) {
-				syncSliderNavigationSelects( select.closest( '.acf-fields' ) || document, select );
+				syncSliderNavigationSelects( target.closest( '.acf-fields' ) || document, target );
+			}
+
+			if (
+				target
+				&& target.matches
+				&& target.matches(
+					'.acf-field[data-key="mai_cyber_gallery_layout"] select,'
+					+ '.acf-field[data-key="mai_cyber_gallery_click_action"] select,'
+					+ '.acf-field[data-key="mai_cyber_gallery_filmstrip_image_mode"] select,'
+					+ '.acf-field[data-key="mai_cyber_gallery_image"] '
+					+ '.acf-image-uploader > input[type="hidden"]'
+				)
+			) {
+				initializeLogoScaleEditors( getCyberEditorRoot( target ) || document );
 			}
 		} );
 
@@ -3073,6 +3651,7 @@
 						if ( 1 === node.nodeType ) {
 							initializeWithin( node );
 							syncSliderNavigationSelects( node, null );
+							initializeLogoScaleEditors( node );
 						}
 					} );
 
@@ -3096,6 +3675,7 @@
 				function () {
 					initializeWithin( document );
 					initializeAcf();
+					initializeLogoScaleEditors( document );
 				},
 				{ once: true }
 			);

@@ -69,6 +69,8 @@ function mai_get_columns_sanitized( array $args ): array {}
 
 function mai_get_index( string $context, bool $reset = false ): int {}
 
+function mai_get_acf_request( string $request ): mixed {}
+
 /**
  * @return array<string,string>|null
  */

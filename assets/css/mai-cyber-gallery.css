@@ -9,6 +9,7 @@
 	--cyber-control-size: 2.75rem;
 	--cyber-rounded-image-radius: max(0.5rem, var(--image-border-radius, var(--border-radius, 0.5rem)));
 	--cyber-image-radius: var(--cyber-rounded-image-radius);
+	min-width: 0;
 }
 
 .mai-cyber-gallery-wrap.has-image-radius-square {
@@ -21,6 +22,8 @@
 
 .mai-cyber-gallery {
 	--cyber-columns: var(--cyber-columns-xs, 1);
+	box-sizing: border-box;
+	min-width: 0;
 	width: 100%;
 }
 
@@ -314,8 +317,12 @@
 	overflow-y: hidden;
 	scroll-behavior: smooth;
 	scroll-snap-type: x mandatory;
-	scrollbar-width: thin;
+	scrollbar-width: none;
 	overscroll-behavior-inline: contain;
+}
+
+.mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery::-webkit-scrollbar {
+	display: none;
 }
 
 .mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery-item {
@@ -1102,7 +1109,9 @@
 
 .mai-cyber-gallery-slider-arrow,
 .mai-cyber-gallery-slider-dot,
-.mai-cyber-gallery-slider-autoplay {
+.mai-cyber-gallery-slider-autoplay,
+.mai-cyber-gallery-control,
+.mai-cyber-gallery-dialog-button {
 	--button-margin: 0;
 	--button-padding: 0;
 	--button-filter: none;
@@ -1145,11 +1154,7 @@
 }
 
 .mai-cyber-gallery-slider-autoplay {
-	position: relative;
 	z-index: 3;
-	height: var(--cyber-control-size);
-	border-radius: 50%;
-	pointer-events: auto;
 }
 
 .mai-cyber-gallery-slider-autoplay:focus-visible {
@@ -1217,7 +1222,6 @@
 
 .mai-cyber-gallery-layout-slider.has-slider-navigation-below
 	.mai-cyber-gallery-slider-arrow {
-	position: relative;
 	inset: auto;
 }
 
@@ -1247,12 +1251,13 @@
 	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 34%));
 	--button-border: 1px solid var(--cyber-slider-nav-border, transparent);
 	--button-border-hover: 1px solid var(--cyber-slider-nav-border-hover, transparent);
-	filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+	--button-filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+	--button-filter-hover: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
 }
 
 .has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-arrow {
+	--button-width: calc(var(--cyber-control-size) + var(--spacing-xs));
 	--button-border-radius: 0;
-	width: calc(var(--cyber-control-size) + var(--spacing-xs));
 }
 
 .has-slider-arrows-edge.has-slider-navigation-overlay .mai-cyber-gallery-slider-previous {
@@ -1268,8 +1273,8 @@
 }
 
 .has-slider-arrows-edge.has-slider-navigation-below .mai-cyber-gallery-slider-arrow {
+	--button-width: calc(var(--cyber-control-size) + var(--spacing-md));
 	--button-border-radius: 999px;
-	width: calc(var(--cyber-control-size) + var(--spacing-md));
 }
 
 .mai-cyber-gallery-slider-dots {
@@ -1764,8 +1769,6 @@ html[dir="rtl"]
 .mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery-control {
 	--button-width: var(--cyber-control-size);
 	--button-border-radius: 50%;
-	--button-margin: 0;
-	--button-padding: 0;
 	--button-color: var(--cyber-navigation-inner, var(--cyber-slider-nav-inner, var(--color-body)));
 	--button-color-hover: var(--cyber-navigation-inner-hover, var(--cyber-slider-nav-inner-hover, var(--color-white)));
 	--button-background: var(--cyber-navigation-main, var(--cyber-slider-nav-main, var(--color-alt)));
@@ -1780,12 +1783,6 @@ html[dir="rtl"]
 			--cyber-navigation-border-hover,
 			var(--cyber-slider-nav-border-hover, var(--color-primary-dark, var(--color-primary)))
 		);
-	--button-filter: none;
-	--button-filter-hover: none;
-	--button-box-shadow: none;
-	--button-box-shadow-hover: none;
-	--button-transform: none;
-	--button-transform-hover: none;
 	--button-transition:
 		color var(--transition-duration) var(--transition-timing-function),
 		background var(--transition-duration) var(--transition-timing-function),
@@ -1840,7 +1837,6 @@ html[dir="rtl"]
 
 .mai-cyber-gallery-layout-filmstrip:not(.has-filmstrip-controls-overlay)
 	.mai-cyber-gallery-control {
-	position: relative;
 	inset: auto;
 	translate: none;
 }
@@ -1852,7 +1848,6 @@ html[dir="rtl"]
 
 .mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery-control:disabled {
 	opacity: 0.38;
-	cursor: not-allowed;
 }
 
 .mai-cyber-gallery-layout-filmstrip.has-filmstrip-controls-overlay
@@ -1888,13 +1883,14 @@ html[dir="rtl"]
 		var(--cyber-navigation-border, var(--cyber-slider-nav-border, transparent));
 	--button-border-hover: 1px solid
 		var(--cyber-navigation-border-hover, var(--cyber-slider-nav-border-hover, transparent));
-	filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+	--button-filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+	--button-filter-hover: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
 }
 
 .mai-cyber-gallery-layout-filmstrip.has-filmstrip-arrows-edge.has-filmstrip-controls-overlay
 	:is(.mai-cyber-gallery-control-previous, .mai-cyber-gallery-control-next) {
+	--button-width: calc(var(--cyber-control-size) + var(--spacing-xs));
 	--button-border-radius: 0;
-	width: calc(var(--cyber-control-size) + var(--spacing-xs));
 }
 
 .mai-cyber-gallery-layout-filmstrip.has-filmstrip-arrows-edge.has-filmstrip-controls-overlay
@@ -1913,8 +1909,8 @@ html[dir="rtl"]
 
 .mai-cyber-gallery-layout-filmstrip.has-filmstrip-arrows-edge:not(.has-filmstrip-controls-overlay)
 	:is(.mai-cyber-gallery-control-previous, .mai-cyber-gallery-control-next) {
+	--button-width: calc(var(--cyber-control-size) + var(--spacing-md));
 	--button-border-radius: 999px;
-	width: calc(var(--cyber-control-size) + var(--spacing-md));
 }
 
 .mai-cyber-gallery-layout-filmstrip .mai-cyber-gallery-filmstrip-autoplay span,
@@ -2293,20 +2289,12 @@ body.mai-cyber-gallery-lightbox-open {
 .mai-cyber-gallery-dialog-button {
 	--button-width: var(--cyber-control-size, 2.75rem);
 	--button-border-radius: 50%;
-	--button-margin: 0;
-	--button-padding: 0;
 	--button-color: var(--color-white);
 	--button-color-hover: var(--color-black);
 	--button-background: rgb(255 255 255 / 10%);
 	--button-background-hover: var(--color-white);
 	--button-border: 1px solid rgb(255 255 255 / 38%);
 	--button-border-hover: 1px solid var(--color-white);
-	--button-filter: none;
-	--button-filter-hover: none;
-	--button-box-shadow: none;
-	--button-box-shadow-hover: none;
-	--button-transform: none;
-	--button-transform-hover: none;
 	--button-transition:
 		color var(--transition-duration) var(--transition-timing-function),
 		background var(--transition-duration) var(--transition-timing-function),
@@ -2368,8 +2356,8 @@ body.mai-cyber-gallery-lightbox-open {
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous,
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-next {
+	--button-width: calc(var(--cyber-control-size, 2.75rem) + var(--spacing-xs));
 	--button-border-radius: 0;
-	width: calc(var(--cyber-control-size, 2.75rem) + var(--spacing-xs));
 }
 
 .mai-cyber-gallery-dialog[data-cyber-arrow-style="edge"] .mai-cyber-gallery-dialog-previous {
@@ -2645,6 +2633,65 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 .editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-control:focus-visible {
 	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
 	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+:is(.acf-block-fields, .acf-block-component, .acf-fields).is-cyber-logo-scale-enhanced
+	.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_overrides"] {
+	display: none !important;
+}
+
+.mai-cyber-gallery-logo-scale-control[hidden],
+.mai-cyber-gallery-logo-scale-range[hidden] {
+	display: none !important;
+}
+
+.mai-cyber-gallery-logo-scale-fields {
+	display: grid;
+	gap: 10px;
+}
+
+.mai-cyber-gallery-logo-scale-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-weight: 500;
+}
+
+.mai-cyber-gallery-logo-scale-toggle input {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-range {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 4.5ch;
+	align-items: center;
+	gap: 10px;
+}
+
+.mai-cyber-gallery-logo-scale-range input[type="range"] {
+	width: 100%;
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-range output {
+	font-variant-numeric: tabular-nums;
+	text-align: end;
+}
+
+.mai-cyber-gallery-logo-scale-fields > .description {
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-control-inline {
+	padding-top: 12px;
+	margin-top: 12px;
+	border-top: 1px solid #dcdcde;
+}
+
+.mai-cyber-gallery-logo-scale-heading {
+	margin: 0 0 10px;
 }
 
 .mai-cyber-gallery-number-no-spinner input[type="number"] {
