@@ -26,7 +26,7 @@
   },
   "scripts": {
     "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
-    "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=512M",
+    "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
     "compat": "phpcs --standard=phpcs.xml.dist",
     "integration": [
       "php tests/meta-hook-signatures.php",
