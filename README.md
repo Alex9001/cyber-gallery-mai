@@ -1,9 +1,5 @@
 # Mai Cyber Gallery
 
-[Built by CYBER BRAND: Custom Web Development →](https://cyberbrand.net/)
-
-Copyright © 2026 Aleksandr Oreshkin.
-
 Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
 
 ## Requirements
