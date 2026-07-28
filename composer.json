@@ -28,10 +28,15 @@
     "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
     "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=512M",
     "compat": "phpcs --standard=phpcs.xml.dist",
+    "integration": [
+      "php tests/meta-hook-signatures.php",
+      "php tests/layout-options.php"
+    ],
     "test": [
       "@lint",
       "@phpstan",
-      "@compat"
+      "@compat",
+      "@integration"
     ]
   }
 }

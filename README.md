@@ -1,5 +1,9 @@
 # Mai Cyber Gallery
 
+[Built by CYBER BRAND: Custom Web Development →](https://cyberbrand.net/)
+
+Copyright © 2026 Aleksandr Oreshkin.
+
 Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
 
 ## Requirements
@@ -11,6 +15,13 @@ Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layout
 - Mai Engine 2.40.0 or later
 
 Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column controls, image sizes, sanitizers, design tokens, and the Genesis/Mai runtime.
+
+## Related projects
+
+- [maithemewp/mai-engine](https://github.com/maithemewp/mai-engine) — the required Mai framework and runtime.
+- [maithemewp/mai-grid-gallery](https://github.com/maithemewp/mai-grid-gallery) — the official Mai gallery project whose conventions and legacy block format are relevant to interoperability and migration.
+
+Mai Cyber Gallery is an independent add-on and is not presented as an official Mai Theme project.
 
 Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typing and development tooling. Saved block content, gallery settings, and public PHP API behavior are unchanged, so no content migration is required.
 
@@ -26,6 +37,24 @@ Version 0.7.0 preserves every layout's image source and dormant settings when la
 
 Version 0.7.1 moves per-image logo sizing next to the selected image's metadata, uses Mai Icons for lightbox controls when available, and removes the Filmstrip's visual scrollbar while preserving native scrolling.
 
+Version 0.7.2 adds a discreet CYBER BRAND authorship and custom-development link to the block editor without adding settings screens, dashboard advertising, tracking, or front-end output.
+
+Version 0.8.4 adds a native editor transform from the original Mai Gallery block, including its ordinary or custom-linked images and compatible Mai layout settings.
+
+Version 0.9.0 expands Editorial Mosaic into configurable feature groups, adds new Masonry, Justified, and Tiled composition choices, and gives every layout independent margins on all four sides. Existing galleries keep their previous appearance until a new option is selected.
+
+## Performance and page caching
+
+Public gallery output is deterministic and works with full-page caches. Frontend behavior is natively deferred and divided into conditional packing-layout, carousel, and lightbox scripts. Masonry, Justified, and Tiled galleries do not download Filmstrip or Slider code; carousel pages do not download the packing algorithms; and the lightbox loads only when a rendered gallery uses the Lightbox click action. Dynamic preview and content updates are batched so multiple DOM mutations trigger one focused gallery pass instead of repeated document rescans.
+
+LiteSpeed Cache integrations keep the natively deferred scripts out of interaction-delayed and Guest Mode rewrites, preserve JavaScript-only layout and dialog selectors during UCSS generation, and promote a newly selected Slider image through LiteSpeed's lazy loader before its transition begins. Gallery responses are tagged with their attachment IDs so changing an attachment's alt text or metadata purges only pages that rendered it. LiteSpeed image lazy loading and VPI remain available for untouched and offscreen images.
+
+Cold-cache rendering primes attachment posts and metadata in bulk before building responsive image markup. Standard WordPress image functions remain responsible for dimensions, `srcset`, `sizes`, loading hints, and image URLs, retaining compatibility with CDN and WebP/AVIF rewriting.
+
+## Building a release
+
+Run `npm run build:zip` from the plugin directory. The command rebuilds and validates generated assets, runs the JavaScript and PHP checks, recreates a clean `build/mai-cyber-gallery/` staging directory, and writes `build/mai-cyber-gallery-{version}.zip`. The ZIP contains only runtime assets, PHP, block metadata, and user-facing documentation.
+
 ## Mai Engine integration boundary
 
 Mai Cyber Gallery intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
@@ -35,41 +64,45 @@ Gallery-specific responsibilities remain local because Mai Engine has no equival
 ## Layouts
 
 - **Mai Grid** — the familiar responsive Mai flex-column gallery.
-- **Masonry Columns** — a natural-ratio waterfall that places each image in the current shortest column to avoid unnecessary empty space.
-- **Justified Rows** — upload-order rows balanced around a configurable target height.
-- **Tiled Mosaic** — a ratio-aware, source-order mosaic of mixed full-height and stacked tiles.
-- **Editorial Mosaic** — a responsive five-image bento pattern with a selectable starting side and optional side alternation.
+- **Masonry Columns** — a natural-ratio waterfall with balanced shortest-column or regular source-ordered packing.
+- **Justified Rows** — upload-order rows balanced around a configurable target height, with selectable final-row alignment.
+- **Tiled Mosaic** — a ratio-aware, source-order mosaic with Organic, Calm, and Dense composition presets.
+- **Editorial Mosaic** — configurable feature groups with 1–8 secondary images, deliberate odd-item alignment, selectable feature side, alternation, and tile height.
 - **Square Tiles** — responsive 1:1 cropped tiles.
 - **Circle Tiles** — responsive circular 1:1 tiles.
 - **Filmstrip** — touch-friendly horizontal scroll snap with optional positioned controls, accessible timed movement, uniform crop cells, and a no-crop logo mode.
 - **Slider** — a responsive content slider with per-slide titles, subtext, CTA buttons, horizontal and vertical content alignment, selectable transitions and navigation treatments, dimensions, image fit, and color overlays.
 
-Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups. Every layout retains top and bottom block margins.
+Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Circle, and Filmstrip also use Mai's responsive column counts; Tiled Mosaic uses those controls as a maximum of four visual groups. Every layout has independent top, right, bottom, and left outer margins using Mai's shared spacing scale.
 
 ## Editor usage
 
 1. Activate Mai Engine and a Mai child theme.
 2. Activate Mai Cyber Gallery.
 3. Add the **Mai Cyber Gallery** block.
-4. Choose a layout and add gallery images or structured Slider rows in the block sidebar.
+4. Choose a layout and use **Open Expanded Editor** to add gallery images or structured Slider rows.
+
+An existing Core Gallery can be changed to **Mai Cyber Gallery** through the block toolbar's Transform menu. Conversion creates a Mai Grid gallery and preserves valid local attachment IDs in source order, columns, image size, crop orientation, supported link behavior, wide/full alignment, anchor, and custom class. Core-only data such as external images without attachment IDs, individual captions, focal points, per-image links, styling, and unsupported nested content is intentionally dropped. The original block remains unchanged when it has no convertible local attachments.
 
 For non-Slider layouts, click actions include no link, the built-in dialog lightbox, the original media file, the attachment page, and per-image custom links.
 
 For Masonry, Justified, and Tiled Mosaic, choose an uncropped image size such as `large`. Mai Grid and Filmstrip use Mai's selected image orientation when an oriented size exists.
 
-Editorial Mosaic adds a **First Feature Side** control plus an option to alternate that side after every five images.
+Editorial Mosaic treats the first image as a feature, then places the selected 1–8 following images into the complementary mosaic before beginning another feature group. **Odd Remainder** can let an unpaired final secondary fill its row or align it to Start, Center, or End. You can also choose the first feature side, alternate sides by group, and keep the responsive automatic tile height or set a fixed height. A group of four secondary images with Fill and automatic height is the original five-image design.
+
+Masonry can balance every new image into the currently shortest column or cycle items through columns for a more regular source-order rhythm. Justified Rows can align its un-stretched final row to Start, Center, or End. Tiled Mosaic offers Organic Mix, Calm Bands, and Dense Stacks presets; the responsive column count remains its maximum number of visual groups.
 
 When the click action is Lightbox, choose Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab navigation arrows. The controls keep a stable hit target across hover, focus, and active states.
 
-Slider uses a dedicated **Slides** repeater. Every row has a required image plus optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary Button, Secondary Button, Outline Button, and Link Button styles. Slide images are intentionally non-interactive so CTAs remain the only destinations; Media Library captions are replaced by the structured slide content.
+Slider uses a dedicated **Slides** repeater. Every row has a required image plus optional title, plain-text subtext, Start/Center/End horizontal alignment, Top/Center/Bottom vertical alignment, and up to two CTA links. Vertical alignment defaults to Bottom. CTA styles reuse Mai Engine's Primary Button, Secondary Button, Outline Button, and Link Button styles. Slide images are intentionally non-interactive so CTAs remain the only destinations; Media Library captions are replaced by the structured slide content. Editor preview refreshes preserve the currently selected slide, allowing its content and effect to remain visible while fields are edited.
 
-Switching between Slider and another layout is non-destructive. The block keeps ordinary Images, Linked Images, structured Slides, and layout-specific settings serialized while they are hidden. If the newly selected layout has not yet been populated, it renders the retained source images as a fallback; returning to Slider restores its titles, copy, buttons, and alignment.
+Switching between Slider and another layout is non-destructive. The block keeps ordinary Images, Linked Images, structured Slides, and layout-specific settings serialized while they are hidden. Slider renders only its structured Slides rows, so an empty Slider shows its setup prompt instead of stale content from the previous layout; returning to another layout restores its retained images and settings.
 
 Slider has Primary and Secondary Navigation selectors. Each can use Arrows, Circles, Slide Counter, or None, so combinations such as Arrows + Circles and Circles + Counter are possible. Choosing the same control twice renders it only once, and the editor prevents duplicate selections. Navigation can overlay the images or appear below them, and overlay circles can sit at the top or bottom. Slider controls also set the arrow design, width mode, maximum width, desktop height, mobile height, and whether images crop to fill or fit completely inside the slide. Column, gallery alignment, and gap controls are hidden because a Slider always displays one full-width slide.
 
 Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. Smooth Slide uses native horizontal scrolling. Controls and autoplay render every other preset as an in-place crossfade, with the selected entrance treatment layered into that crossfade instead of exposing an underlying slide. Direct touch and trackpad gestures remain native. The animated presets use Fast, Normal, and Slow speeds, and motion is removed when the visitor requests reduced motion.
 
-Optional autoplay uses a configurable 3–30 second interval and can pause while the pointer is over the Slider. When motion is allowed, a visible Pause/Start control is provided while autoplay is enabled, including when both navigation selectors are None. Reduced-motion preferences disable rotation and hide its unnecessary toggle. Keyboard focus and manual navigation stop rotation until the visitor explicitly starts it again.
+Optional autoplay uses a configurable 3–30 second interval and can pause while the pointer is over the Slider. Its Pause/Start control can be shown or hidden independently without disabling rotation. Reduced-motion preferences disable rotation and hide its unnecessary toggle. Keyboard focus and manual navigation stop rotation until the visitor explicitly starts it again when the control is available.
 
 Navigation hover choices are Color Shift, Grow, Nudge, Glow, Fill, and Ring. Main, border, and inner colors can each be set independently for normal and hover states using the Mai Engine palette or a custom color. Hover treatments preserve the navigation controls' hit targets.
 
@@ -77,15 +110,23 @@ Image overlays are shared by every layout and support None, Solid, Gradient Bott
 
 Hover treatments are also shared across layouts. Desaturate removes a configurable 0–100 percent of color at rest and restores full color on mouse-over or keyboard focus. Zoom, Lift, Fade, and None remain available, and reduced-motion preferences suppress movement. Slider defaults to None so existing Sliders do not gain motion until a treatment is deliberately selected; other layouts retain the existing Zoom default.
 
-Filmstrip arrows can be disabled or placed over the images, above them, or below them with Start, Center, and End alignment. Arrow design, hover treatment, and Mai palette/custom navigation colors are shared with Slider, including the autoplay control. Optional timed movement advances one visible group at a time and wraps at the end. When the strip overflows and motion is allowed, it provides a visible Pause/Start control even if arrows are disabled; controls stay out of the way when every item already fits. Rotation pauses for manual interaction, keyboard focus, hidden tabs, offscreen galleries, reduced-motion preferences, and optionally mouse-over.
+Filmstrip controls can be hidden as a group, while arrows are opt-in and can be enabled independently. Visible controls can sit over the images or align above/below them at Start, Center, or End. Arrow design, hover treatment, and Mai palette/custom navigation colors are shared with Slider, including the autoplay control. Optional timed movement advances one item by default, supports a configurable items-per-advance value, and wraps at the end even when controls are hidden. Touch swipes and mouse/pen throws use restrained momentum, subtle edge stretch and tilt, and a light elastic snap to the closest item; autoplay, arrows, and keyboard navigation use a calm no-overshoot glide. Rotation pauses for manual interaction, keyboard focus, hidden tabs, offscreen galleries, reduced-motion preferences, and optionally mouse-over.
 
-For mixed logo rows, choose **Logo / Contain**. Every item receives the same responsive cell height, its complete source is centered with consistent inner breathing room, and any selected hard-cropped preset automatically falls back to the uncropped original. Select an image in the **Images** field and enable **Use a custom size for this image** beside its Title, Caption, and other metadata when unusual transparent whitespace makes that logo look optically small or large. Linked Images expose the same checkbox below each image. The setting belongs only to the current gallery; values above 100 percent deliberately zoom within the fixed cell and can clip if pushed too far. **Uniform Crop** provides equal-height photographic cells, while **Natural** preserves the original Filmstrip behavior.
+For mixed logo rows, choose **Logo / Contain**. Every item receives the same responsive cell height while each source keeps its intrinsic aspect ratio and centers within an explicit rail-height constraint. Shared padding is optional rather than necessary for containment, and any selected hard-cropped preset automatically falls back to the uncropped original. Select an image in the **Images** field and enable **Use a custom size for this image** beside its Title, Caption, and other metadata when unusual transparent whitespace makes that logo look optically small or large. Linked Images expose the same checkbox below each image. The setting belongs only to the current gallery; values above 100 percent deliberately zoom within the fixed cell and can clip if pushed too far. **Uniform Crop** provides equal-height photographic cells, while **Natural** preserves the original Filmstrip behavior.
 
 Slider width modes are **Full**, **Contained**, and **Inset**. Full is the default and fills the available block or parent canvas. Contained applies **Maximum Slider Width** and preserves the previous centered presentation. Inset fills the canvas while retaining responsive side gutters. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps those three fields together in one row. Their number inputs retain validation but omit browser up/down spinner controls. Button-group choices use equal widths throughout the gallery controls.
 
 **Image Quality / Source Size** selects the WordPress image source used in the responsive image markup. Choose a source at least as large as the displayed image: larger sources can look sharper but use more bandwidth. Slider dimensions control the display box independently.
 
 **Image Corners** switches gallery images between Square and Rounded corners. Circle Tiles remain circular.
+
+## Converting existing galleries
+
+Select an existing **Mai Gallery** or **Gallery** block in the WordPress editor, open the block-type/Transform menu at the left of its toolbar, and choose **Mai Cyber Gallery**. The selected block is immediately replaced with a Cyber Gallery using the familiar **Mai Grid** layout; WordPress Undo can restore the original until the post is saved.
+
+The Mai Gallery conversion preserves the active ordinary-image gallery or custom-linked-image repeater in source order, plus lightbox behavior, shadow, image orientation and custom source size, captions, hover behavior, responsive column counts, column alignment, gaps, margins, wide/full alignment, anchor, and custom class where available. An old custom URL becomes the corresponding Cyber linked-image URL. The original Mai Galleries plugin must be active while its block is loaded in the editor, but it can remain installed alongside Cyber Gallery.
+
+Core Gallery conversion preserves local attachment order, valid IDs, columns, image size, crop orientation, supported gallery-level link behavior, wide/full alignment, anchor, and custom class. Data without a direct Cyber equivalent is intentionally omitted. A source gallery with no valid attachments remains unchanged.
 
 ## PHP API
 
@@ -117,6 +158,7 @@ echo mai_get_cyber_gallery(
 		'slider_navigation_secondary'  => 'dots',
 		'slider_navigation_hover'      => 'glow',
 		'slider_autoplay'              => true,
+		'slider_autoplay_control'      => false,
 		'slider_autoplay_interval'     => 5,
 		'slider_pause_on_hover'        => true,
 		'slider_overlay_style'         => 'gradient-bottom',
@@ -154,12 +196,19 @@ echo mai_get_cyber_gallery(
 | `class` | empty | Space-separated additional classes. |
 | `align` | empty | Empty, `wide`, or `full`. |
 | `layout` | `masonry` | `grid`, `masonry`, `justified`, `tiled`, `mosaic`, `square`, `circle`, `filmstrip`, or `slider`. |
+| `masonry_flow` | `balanced` | `balanced` places each image in the shortest column; `ordered` cycles through columns. |
+| `justified_row_height` | `240` | Target pixel height from 100 through 600. |
+| `justified_last_row` | `start` | `start`, `center`, or `end`; aligns the un-stretched final row. |
+| `tiled_pattern` | `organic` | `organic`, `calm`, or `dense`; controls how frequently Tiled rows use stacked groups. |
 | `mosaic_feature_side` | `left` | `left` or `right`; positions the first feature tile and sets the starting side. |
-| `mosaic_alternate` | `false` | Boolean; swaps the feature side every five images. |
-| `click_action` | `lightbox` | `none`, `lightbox`, `media`, `attachment`, or `custom`. Slider never creates image links; when `slides` is empty, the retained value only selects ordinary versus linked-image fallback priority. |
+| `mosaic_alternate` | `false` | Boolean; swaps the feature side for each configured image group. |
+| `mosaic_items_after_feature` | `4` | Whole number from 1 through 8; secondary images placed after each feature. |
+| `mosaic_odd_alignment` | `fill` | `fill`, `start`, `center`, or `end`; treats the unpaired final secondary in an odd group. |
+| `mosaic_row_height` | `0` | Mosaic row height from 0 through 600 pixels; `0` uses the responsive automatic height. |
+| `click_action` | `lightbox` | `none`, `lightbox`, `media`, `attachment`, or `custom`. Slider never creates image links. |
 | `lightbox_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`; used by non-Slider lightboxes. |
-| `images` | empty array | Ordered attachment IDs used by non-custom galleries and as a Slider fallback when `slides` is empty. |
-| `images_links` | empty array | Image/link rows used by `click_action=custom` and as a retained-image fallback; schema shown below. |
+| `images` | empty array | Ordered attachment IDs used by non-custom galleries. |
+| `images_links` | empty array | Image/link rows used by `click_action=custom`; schema shown below. |
 | `slides` | empty array | Structured Slider rows and a retained-image fallback for other empty layouts. Each accepts `image`, `title`, `subtext`, horizontal `align` (`start`, `center`, or `end`), vertical `align_vertical` (`top`, `center`, or `bottom`; default `bottom`), and up to two `buttons`. |
 | `image_orientation` | `landscape` | A Mai image-orientation slug or `custom`; used by Grid and Filmstrip Natural/Uniform Crop modes, but intentionally ignored by Logo / Contain. |
 | `image_size` | `large` | Any registered WordPress image-size slug. This controls source dimensions and quality, not the rendered display box; Logo / Contain replaces a registered hard crop with `full`. |
@@ -168,17 +217,20 @@ echo mai_get_cyber_gallery(
 | `shadow` | `false` | Boolean value sanitized by Mai Engine. |
 | `hover` | `zoom` (`none` for Slider when omitted) | `none`, `zoom`, `lift`, `fade`, or `desaturate`; available to every layout. |
 | `hover_desaturate_amount` | `100` | Color removal from 0 through 100 percent at rest when `hover=desaturate`; full color returns on hover or focus. |
-| `justified_row_height` | `240` | Target pixel height from 100 through 600. |
-| `filmstrip_autoplay` | `false` | Boolean; advances visible Filmstrip groups automatically. |
-| `filmstrip_autoplay_interval` | `5` | Seconds between automatic Filmstrip movements, clamped from 3 through 30. |
+| `filmstrip_autoplay` | `false` | Boolean; advances the Filmstrip automatically. |
+| `filmstrip_autoplay_interval` | `5` | Seconds between automatic Filmstrip movements, accepted in 0.1-second increments from 0.1 through 30. |
+| `filmstrip_autoplay_items` | `1` | Positive whole number of Filmstrip items advanced by each automatic movement. |
 | `filmstrip_pause_on_hover` | `true` | Boolean; temporarily pauses Filmstrip autoplay while a mouse or pen is over it. |
-| `filmstrip_arrows` | `true` | Boolean; shows or hides Filmstrip previous/next controls. |
+| `filmstrip_controls` | `true` | Boolean; shows or hides the complete Filmstrip control group without disabling autoplay. |
+| `filmstrip_arrows` | `false` | Boolean; opts into Filmstrip previous/next controls. |
 | `filmstrip_arrow_position` | `below-end` | Positions Filmstrip controls at `overlay`, `above-start`, `above-center`, `above-end`, `below-start`, `below-center`, or `below-end`. |
 | `filmstrip_arrow_style` | `circle` | `circle`, `square`, `minimal`, or `edge`. |
 | `filmstrip_image_mode` | `natural` | `natural`, equal-height `uniform-cover`, or no-crop `logo-contain`. |
 | `filmstrip_height` | `320` | Desktop cell height in pixels from 120 through 800 for uniform and logo modes. |
 | `filmstrip_height_mobile` | `220` | Mobile cell height in pixels from 100 through 600 for uniform and logo modes. |
-| `filmstrip_logo_padding` | `24` | Inner cell padding in pixels from 0 through 120 in logo mode. |
+| `filmstrip_logo_padding` | `24` | Legacy shared padding fallback retained for existing galleries and PHP API calls. |
+| `filmstrip_logo_padding_horizontal` | shared padding | Optional left/right breathing room in pixels from 0 through 120. |
+| `filmstrip_logo_padding_vertical` | shared padding | Optional top/bottom breathing room in pixels from 0 through 120. |
 | `filmstrip_logo_overrides` | empty array | Rows containing an `image` attachment ID and optical `scale` from 50 through 200 percent; the last row for a repeated ID wins. |
 | `slider_navigation` | `arrows` | Primary navigation: `arrows`, `dots`, `counter`, or `none`. The legacy aggregate `arrows-dots` value remains accepted and maps to Arrows + Circles. |
 | `slider_navigation_secondary` | `dots` | Secondary navigation: `arrows`, `dots`, `counter`, or `none`. A duplicate of the primary value is reduced to `none`. |
@@ -188,6 +240,7 @@ echo mai_get_cyber_gallery(
 | `slider_transition` | `native` | `native`, `fade`, `zoom-in`, `zoom-out`, `rise`, `soft-focus`, `reveal`, or `cinematic`. |
 | `slider_transition_speed` | `normal` | `fast`, `normal`, or `slow`; applies to in-place animated transitions while `native` keeps browser scroll timing. |
 | `slider_autoplay` | `false` | Boolean; automatically advances and wraps the Slider when enabled. |
+| `slider_autoplay_control` | `true` | Boolean; shows or hides the Slider Pause / Start button without disabling autoplay. |
 | `slider_autoplay_interval` | `5` | Seconds between automatic slides, clamped from 3 through 30. |
 | `slider_pause_on_hover` | `true` | Boolean; temporarily pauses autoplay while a mouse or pen pointer is over the Slider. |
 | `slider_navigation_hover` | `color` | `color`, `grow`, `nudge`, `glow`, `fill`, or `ring`; shared by interactive Slider and Filmstrip navigation. |
@@ -206,7 +259,7 @@ echo mai_get_cyber_gallery(
 | `columns_md`, `columns_sm`, `columns_xs` | Mai defaults | Explicit breakpoint counts; ignored by Slider. |
 | `align_columns`, `align_columns_vertical` | Mai defaults | Mai column-alignment values; ignored by Slider. |
 | `column_gap`, `row_gap` | Mai defaults | Mai spacing-size slugs or empty for no gap; ignored by Slider. |
-| `margin_top`, `margin_bottom` | Mai defaults | Mai spacing-size slugs or empty. |
+| `margin_top`, `margin_right`, `margin_bottom`, `margin_left` | Mai defaults | Independent outer-margin values using a Mai spacing-size slug or empty. |
 
 For backward compatibility, a PHP API call that explicitly supplies an atomic `slider_navigation` value but omits `slider_navigation_secondary` keeps that original single-control behavior. Pass both arguments to opt into a combination. The legacy `arrows-dots` aggregate continues to map to Arrows + Circles.
 
@@ -273,4 +326,6 @@ Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selec
 
 ## License
 
-GPL-2.0-or-later.
+Copyright © 2026 Aleksandr Oreshkin.
+
+Licensed under the [GNU General Public License, version 2 or any later version](LICENSE). See [NOTICE](NOTICE) for the applied copyright and warranty notice.

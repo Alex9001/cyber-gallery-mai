@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.9.0
+
+- Expanded Editorial Mosaic into configurable image groups with one feature followed by 1–8 secondary images.
+- Added automatic incomplete-group closure plus Fill, Start, Center, and End treatments for an odd final secondary, so intricate groups do not reserve empty cells.
+- Added optional fixed Mosaic tile height while retaining the existing responsive height as the default.
+- Added Balanced and Ordered Masonry packing, Organic/Calm/Dense Tiled patterns, and Start/Center/End Justified last-row alignment.
+- Added independent left and right block margins to every layout using the same Mai spacing scale as the existing top and bottom controls.
+- Preserved existing gallery output through the former five-image Mosaic group, shortest-column Masonry, organic Tiled, start-aligned Justified, and automatic-height defaults.
+- Added the complete GPLv2 license under the existing GPL-2.0-or-later declaration, explicit Aleksandr Oreshkin copyright notice, and links to the related Mai Engine and Mai Grid Gallery repositories.
+
+## 0.8.4
+
+- Added a native editor transform from the original Mai Gallery block to Mai Cyber Gallery's Mai Grid layout.
+- Preserved ordinary and custom-linked image order, lightbox behavior, shadow, orientation, source size, captions, hover behavior, responsive columns, alignment, gaps, margins, and supported block-level presentation settings.
+- Kept galleries with no valid active attachment source unchanged and added coverage for both ordinary ACF gallery data and flattened linked-image repeaters.
+
+## 0.8.3
+
+- Made Filmstrip arrows opt-in and removed them from editor previews unless the block's Filmstrip Arrows setting is selected.
+- Split the shared Logo Padding setting into independent Horizontal Logo Padding and Vertical Logo Padding controls while migrating each unsaved axis from the existing value.
+- Renamed ACF's right-sidebar launcher from Manage Gallery to Open Expanded Editor so its behavior is explicit.
+
+## 0.8.2
+
+- Fixed Logo / Contain Filmstrips using oversized square image boxes that were clipped by the fixed-height rail.
+- Centered each logo at its intrinsic aspect ratio inside an explicit rail-height constraint, so global padding is optional and per-image optical sizing no longer creates misalignment.
+
+## 0.8.1
+
+- Changed Filmstrip autoplay to advance one item by default and added a configurable Items Per Advance setting for larger steps.
+- Toned down manual Filmstrip throws with shorter projection, restrained edge stretch and tilt, and a quicker lightly bouncing settle.
+- Made attachment metadata cache purging tolerant of the updater cleanup request retaining an older deleted-metadata callback in memory.
+
+## 0.8.0
+
+- Added a best-effort Core Gallery transform that carries attachment order, valid IDs, columns, image size, crop orientation, link behavior, alignment, anchor, and custom class into a familiar Mai Grid gallery.
+- Added a direct Manage Gallery action to empty block previews, with progressive access to ACF's expanded editor and an accessible settings fallback.
+- Split frontend and block-editor JavaScript/CSS so ACF controls and editor-only styles are no longer shipped to public pages.
+- Added transform coverage, release-version consistency checks, and reproducibility checks for every generated asset bundle.
+- Deferred frontend behavior without delaying it until user interaction; split packing layouts, carousels, and the lightbox into conditional scripts; and batched dynamic-gallery initialization to avoid repeated DOM rescans.
+- Added LiteSpeed Cache compatibility for runtime UCSS selectors, Guest Mode and delayed-JavaScript handling, on-demand Slider image promotion, and attachment-aware smart cache purging.
+- Primed attachment and metadata caches in bulk before gallery rendering to reduce cold-cache database work.
+- Added a validated release-packaging command that recreates a clean build staging directory and versioned WordPress plugin ZIP from an explicit distribution allowlist.
+- Fixed a fatal error when WordPress passes its array of deleted metadata IDs through `deleted_post_meta`, while retaining strict signatures for the add and update hooks.
+- Fixed Filmstrip autoplay timer churn and corrected the mutually exclusive Pause/Start icons.
+- Added a complete Filmstrip-controls toggle plus momentum-driven touch swipes and mouse/pen throws with visible overshoot, edge stretch, tilt, and elastic snapping.
+- Kept Filmstrip autoplay, arrow, and keyboard movement calm and free of the drag-only overshoot effects.
+- Lowered the Filmstrip autoplay interval floor from 3 seconds to 0.1 seconds with decimal input support.
+- Added an independent Slider Autoplay Control option so rotation can continue without showing its Pause / Start button.
+- Restored clickable Filmstrip and Slider preview controls in the block editor so navigation animations and transition effects can be tested while editing.
+- Preserved the active Slider position across editor preview refreshes so editing slide content no longer jumps the preview back to slide one.
+- Matched Slider CTA Primary, Secondary, Outline, and Link button styles between editor previews and the frontend while retaining Mai Engine theme variables.
+- Kept visited Slider CTA links on their normal editor-preview color, preventing Outline buttons from incorrectly showing their black hover text at rest.
+- Made Slider render only structured Slides and clean up replaced Filmstrip previews, preventing stale layout output and validation state after switching.
+
+## 0.7.2
+
+- Added a compact CYBER BRAND authorship and custom-development link to both gallery settings editors.
+- Added standard CYBER BRAND plugin author metadata and project documentation attribution.
+- Removed the redundant feature summary from the compact block inspector.
+- Kept the credit out of public gallery markup and added no settings screen, dashboard notice, or tracking.
+
 ## 0.7.1
 
 - Moved Filmstrip logo-size overrides into an optional, block-local control beside each image's metadata instead of presenting a separate design repeater.

@@ -1,0 +1,259 @@
+/**
+ * Mai Cyber Gallery block-editor styles.
+ */
+
+/* Empty ACF preview. */
+
+.mai-cyber-gallery-placeholder {
+	display: flex;
+	flex-direction: column;
+	gap: var(--spacing-xs);
+	align-items: center;
+	justify-content: center;
+	margin: 0;
+	padding: var(--spacing-xl);
+	border: 1px dashed currentColor;
+	border-radius: var(--border-radius);
+	text-align: center;
+}
+
+.mai-cyber-gallery-placeholder > :not(.button) {
+	opacity: 0.62;
+}
+
+.mai-cyber-gallery-placeholder .dashicons {
+	width: 32px;
+	height: 32px;
+	font-size: 32px;
+}
+
+
+.editor-styles-wrapper .mai-cyber-gallery a {
+	pointer-events: none;
+}
+
+.editor-styles-wrapper
+	.mai-cyber-gallery-slider-actions
+	.button-secondary {
+	--button-color: var(--button-secondary-color);
+	--button-color-hover: var(
+		--button-secondary-color-hover,
+		var(--button-secondary-color)
+	);
+	--button-background: var(--button-secondary-background, var(--color-secondary));
+	--button-background-hover: var(
+		--button-secondary-background-hover,
+		var(--color-secondary-dark, var(--color-secondary))
+	);
+}
+
+.editor-styles-wrapper
+	.mai-cyber-gallery-slider-actions
+	.button-outline {
+	--button-color: var(--button-outline-color, var(--color-primary));
+	--button-color-hover: var(--button-outline-color-hover, var(--color-white));
+	--button-background: var(--button-outline-background, transparent);
+	--button-background-hover: var(
+		--button-outline-background-hover,
+		var(--button-outline-color, var(--button-color))
+	);
+	--button-border: var(--button-outline-width, 2px) solid
+		var(--button-outline-color, var(--button-color));
+	--button-border-hover: var(--button-border);
+}
+
+.editor-styles-wrapper
+	.mai-cyber-gallery-slider-actions
+	.button:visited:not(:hover, :active, :focus-visible) {
+	color: var(--button-color);
+}
+
+.editor-styles-wrapper
+	.mai-cyber-gallery-slider-actions
+	.button-link {
+	--button-color: var(--button-link-color, var(--color-link));
+	--button-color-hover: var(
+		--button-link-color-hover,
+		var(--color-link-dark, var(--link-color-hover, var(--color-link-dark)))
+	);
+	--button-background: var(--button-link-background, transparent);
+	--button-background-hover: var(--button-link-background-hover, transparent);
+	--button-border: 0;
+	--button-box-shadow: none;
+	--button-box-shadow-hover: none;
+}
+
+.editor-styles-wrapper
+	.mai-cyber-gallery-slider-actions
+	.button-link::after {
+	display: inline-flex;
+	flex: 0 1 auto;
+	width: 0.75em;
+	height: 0.75em;
+	background: currentColor;
+	content: "";
+	-webkit-mask-image: var(--button-link-url, "");
+	mask-image: var(--button-link-url, "");
+	-webkit-mask-position: center;
+	mask-position: center;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: contain;
+	mask-size: contain;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content-layer,
+.editor-styles-wrapper .mai-cyber-gallery-layout-slider .mai-cyber-gallery-slider-content {
+	pointer-events: none;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 78%));
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap.has-slider-arrows-minimal .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--cyber-slider-nav-main-hover, rgb(0 0 0 / 34%));
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap.has-slider-navigation-hover-fill .mai-cyber-gallery-slider-arrow:is(:hover, :active, :focus-visible) {
+	background: var(--button-background);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-dot:is(:hover, :active, :focus-visible) {
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border: var(--button-border-hover);
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-control:is(:hover, :active, :focus-visible) {
+	--button-background-hover: var(--color-primary-dark, var(--color-primary));
+	color: var(--button-color-hover);
+	background: var(--button-background-hover);
+	border-color: var(--color-primary-dark, var(--color-primary));
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-arrow:focus-visible {
+	outline: 2px solid var(--color-white);
+	outline-offset: 3px;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-slider-dot:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: -3px;
+}
+
+.editor-styles-wrapper .mai-cyber-gallery-wrap .mai-cyber-gallery-control:focus-visible {
+	outline: var(--focus-outline, 2px solid var(--color-primary-dark, var(--color-primary)));
+	outline-offset: var(--focus-outline-offset, 3px);
+}
+
+.acf-field.mai-cyber-gallery-credit {
+	padding-block: 10px;
+}
+
+.acf-field.mai-cyber-gallery-credit .acf-input {
+	margin: 0;
+	color: #646970;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.acf-field.mai-cyber-gallery-credit .acf-input a {
+	font-weight: 600;
+}
+
+:is(.acf-block-fields, .acf-block-component, .acf-fields).is-cyber-logo-scale-enhanced
+	.acf-field[data-key="mai_cyber_gallery_filmstrip_logo_overrides"] {
+	display: none !important;
+}
+
+.mai-cyber-gallery-logo-scale-control[hidden],
+.mai-cyber-gallery-logo-scale-range[hidden] {
+	display: none !important;
+}
+
+.mai-cyber-gallery-logo-scale-fields {
+	display: grid;
+	gap: 10px;
+}
+
+.mai-cyber-gallery-logo-scale-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin: 0;
+	font-weight: 500;
+}
+
+.mai-cyber-gallery-logo-scale-toggle input {
+	flex: 0 0 auto;
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-range {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 4.5ch;
+	align-items: center;
+	gap: 10px;
+}
+
+.mai-cyber-gallery-logo-scale-range input[type="range"] {
+	width: 100%;
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-range output {
+	font-variant-numeric: tabular-nums;
+	text-align: end;
+}
+
+.mai-cyber-gallery-logo-scale-fields > .description {
+	margin: 0;
+}
+
+.mai-cyber-gallery-logo-scale-control-inline {
+	padding-top: 12px;
+	margin-top: 12px;
+	border-top: 1px solid #dcdcde;
+}
+
+.mai-cyber-gallery-logo-scale-heading {
+	margin: 0 0 10px;
+}
+
+.mai-cyber-gallery-number-no-spinner input[type="number"] {
+	appearance: textfield;
+	-moz-appearance: textfield;
+}
+
+.mai-cyber-gallery-number-no-spinner input[type="number"]::-webkit-inner-spin-button,
+.mai-cyber-gallery-number-no-spinner input[type="number"]::-webkit-outer-spin-button {
+	margin: 0;
+	-webkit-appearance: none;
+}
+
+.acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+	float: none !important;
+	clear: both !important;
+	width: 100% !important;
+}
+
+@media screen and (min-width: 782px) {
+
+	.acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+		float: left !important;
+		clear: none !important;
+		width: 33.333333% !important;
+	}
+
+	.acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field[data-key="mai_cyber_gallery_slider_width"] {
+		clear: both !important;
+	}
+
+	html[dir="rtl"] .acf-block-form-modal .acf-block-component.acf-block-panel .acf-block-fields .acf-field.mai-cyber-gallery-slider-dimension {
+		float: right !important;
+	}
+}
