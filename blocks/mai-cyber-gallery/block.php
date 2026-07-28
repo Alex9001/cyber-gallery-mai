@@ -1,6 +1,6 @@
 <?php
 /**
- * Mai Cyber Gallery block registration and fields.
+ * Cyber Gallery for Mai Theme block registration and fields.
  *
  * @package MaiCyberGallery
  */
@@ -905,7 +905,7 @@ function mai_cyber_gallery_register_field_group(): void {
 	acf_add_local_field_group(
 		[
 			'key'    => 'mai_cyber_gallery_field_group',
-			'title'  => esc_html__( 'Mai Cyber Gallery', 'mai-cyber-gallery' ),
+			'title'  => esc_html__( 'Cyber Gallery for Mai Theme', 'mai-cyber-gallery' ),
 			'fields' => [
 				[
 					'key'       => 'mai_cyber_gallery_credit',

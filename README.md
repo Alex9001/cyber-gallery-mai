@@ -1,6 +1,6 @@
-# Mai Cyber Gallery
+# Cyber Gallery for Mai Theme
 
-Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
+Cyber Gallery for Mai Theme is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
 
 ## Screenshots
 
@@ -31,7 +31,7 @@ Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layout
 		</td>
 		<td width="50%" valign="top">
 			<a href="docs/images/expanded-options.webp">
-				<img src="docs/images/expanded-options.webp" alt="Expanded Mai Cyber Gallery editor showing layout, packing, columns, gaps, alignment, and margin controls">
+				<img src="docs/images/expanded-options.webp" alt="Expanded Cyber Gallery for Mai Theme editor showing layout, packing, columns, gaps, alignment, and margin controls">
 			</a>
 			<br>
 			<strong>Expanded design controls</strong> — packing, responsive columns, alignment, gaps, and four-sided spacing in one focused editor.
@@ -54,7 +54,7 @@ Mai Engine is a deliberate dependency. It supplies ACF Pro, responsive column co
 - [maithemewp/mai-engine](https://github.com/maithemewp/mai-engine) — the required Mai framework and runtime.
 - [maithemewp/mai-grid-gallery](https://github.com/maithemewp/mai-grid-gallery) — the official Mai gallery project whose conventions and legacy block format are relevant to interoperability and migration.
 
-Mai Cyber Gallery is an independent add-on and is not presented as an official Mai Theme project.
+Cyber Gallery for Mai Theme is an independent add-on and is not presented as an official Mai Theme project.
 
 Version 0.4.0 raises the WordPress and PHP minimums for compatibility-safe typing and development tooling. Saved block content, gallery settings, and public PHP API behavior are unchanged, so no content migration is required.
 
@@ -90,7 +90,7 @@ Run `npm run build:zip` from the plugin directory. The command rebuilds and vali
 
 ## Mai Engine integration boundary
 
-Mai Cyber Gallery intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
+Cyber Gallery for Mai Theme intentionally treats Mai Engine as its framework rather than merely a compatibility dependency. The plugin consumes Mai's ACF field clones, responsive column attributes, palette/color resolvers, image choices, sanitizers, counters, breakpoint and unit helpers, Genesis markup, buttons, utility classes, and CSS variables.
 
 Gallery-specific responsibilities remain local because Mai Engine has no equivalent API: attachment normalization, masonry/justified/tiled placement, slider and filmstrip state, the dialog lightbox, accessibility lifecycle, transitions, and overlays. Cyber's integer `--cyber-columns-*` values are also intentional: Mai's standard `--columns-*` values are CSS fractions such as `1 / 3`, while CSS `column-count` and the packing algorithms require whole-number counts.
 
@@ -111,11 +111,11 @@ Non-Slider layouts use Mai's column/row gap controls. Grid, Masonry, Square, Cir
 ## Editor usage
 
 1. Activate Mai Engine and a Mai child theme.
-2. Activate Mai Cyber Gallery.
-3. Add the **Mai Cyber Gallery** block.
+2. Activate Cyber Gallery for Mai Theme.
+3. Add the **Cyber Gallery for Mai Theme** block.
 4. Choose a layout and use **Open Expanded Editor** to add gallery images or structured Slider rows.
 
-An existing Core Gallery can be changed to **Mai Cyber Gallery** through the block toolbar's Transform menu. Conversion creates a Mai Grid gallery and preserves valid local attachment IDs in source order, columns, image size, crop orientation, supported link behavior, wide/full alignment, anchor, and custom class. Core-only data such as external images without attachment IDs, individual captions, focal points, per-image links, styling, and unsupported nested content is intentionally dropped. The original block remains unchanged when it has no convertible local attachments.
+An existing Core Gallery can be changed to **Cyber Gallery for Mai Theme** through the block toolbar's Transform menu. Conversion creates a Mai Grid gallery and preserves valid local attachment IDs in source order, columns, image size, crop orientation, supported link behavior, wide/full alignment, anchor, and custom class. Core-only data such as external images without attachment IDs, individual captions, focal points, per-image links, styling, and unsupported nested content is intentionally dropped. The original block remains unchanged when it has no convertible local attachments.
 
 For non-Slider layouts, click actions include no link, the built-in dialog lightbox, the original media file, the attachment page, and per-image custom links.
 
@@ -155,7 +155,7 @@ Slider width modes are **Full**, **Contained**, and **Inset**. Full is the defau
 
 ## Converting existing galleries
 
-Select an existing **Mai Gallery** or **Gallery** block in the WordPress editor, open the block-type/Transform menu at the left of its toolbar, and choose **Mai Cyber Gallery**. The selected block is immediately replaced with a Cyber Gallery using the familiar **Mai Grid** layout; WordPress Undo can restore the original until the post is saved.
+Select an existing **Mai Gallery** or **Gallery** block in the WordPress editor, open the block-type/Transform menu at the left of its toolbar, and choose **Cyber Gallery for Mai Theme**. The selected block is immediately replaced with a Cyber Gallery using the familiar **Mai Grid** layout; WordPress Undo can restore the original until the post is saved.
 
 The Mai Gallery conversion preserves the active ordinary-image gallery or custom-linked-image repeater in source order, plus lightbox behavior, shadow, image orientation and custom source size, captions, hover behavior, responsive column counts, column alignment, gaps, margins, wide/full alignment, anchor, and custom class where available. An old custom URL becomes the corresponding Cyber linked-image URL. The original Mai Galleries plugin must be active while its block is loaded in the editor, but it can remain installed alongside Cyber Gallery.
 

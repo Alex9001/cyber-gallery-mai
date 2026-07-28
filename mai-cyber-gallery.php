@@ -1,8 +1,8 @@
 <?php
 /**
- * Mai Cyber Gallery.
+ * Cyber Gallery for Mai Theme.
  *
- * Plugin Name:       Mai Cyber Gallery
+ * Plugin Name:       Cyber Gallery for Mai Theme
  * Description:       Advanced masonry, tiled mosaic, content slider, and lightbox galleries powered by Mai Engine.
  * Version:           0.9.0
  * Requires at least: 6.5
@@ -24,7 +24,7 @@
 defined( 'ABSPATH' ) || die;
 
 /**
- * Main Mai Cyber Gallery plugin class.
+ * Main Cyber Gallery for Mai Theme plugin class.
  *
  * @since 0.1.0
  */
@@ -642,7 +642,7 @@ final class Mai_Cyber_Gallery_Plugin {
 
 		$message = sprintf(
 			/* translators: %s: Minimum Mai Engine version. */
-			esc_html__( 'Mai Cyber Gallery requires Mai Engine %s or later with an active Mai theme.', 'mai-cyber-gallery' ),
+			esc_html__( 'Cyber Gallery for Mai Theme requires Mai Engine %s or later with an active Mai theme.', 'mai-cyber-gallery' ),
 			esc_html( MAI_CYBER_GALLERY_MIN_ENGINE_VERSION )
 		);
 

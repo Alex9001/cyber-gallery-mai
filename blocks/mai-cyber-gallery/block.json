@@ -2,7 +2,7 @@
 	"$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
 	"apiVersion": 3,
 	"name": "acf/mai-cyber-gallery",
-	"title": "Mai Cyber Gallery",
+	"title": "Cyber Gallery for Mai Theme",
 	"category": "widgets",
 	"keywords": ["gallery", "masonry", "slider"],
 	"icon": "format-gallery",

@@ -1,4 +1,4 @@
-=== Mai Cyber Gallery ===
+=== Cyber Gallery for Mai Theme ===
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
@@ -15,9 +15,9 @@ Nine responsive masonry, tiled mosaic, filmstrip, and content-slider layouts pow
 
 Copyright (C) 2026 Aleksandr Oreshkin. Licensed under GPLv2 or any later version.
 
-Related projects: [Mai Engine](https://github.com/maithemewp/mai-engine) and [Mai Grid Gallery](https://github.com/maithemewp/mai-grid-gallery). Mai Cyber Gallery is an independent add-on and is not presented as an official Mai Theme project.
+Related projects: [Mai Engine](https://github.com/maithemewp/mai-engine) and [Mai Grid Gallery](https://github.com/maithemewp/mai-grid-gallery). Cyber Gallery for Mai Theme is an independent add-on and is not presented as an official Mai Theme project.
 
-Mai Cyber Gallery is a deliberate Mai Engine add-on. It adds a dynamic ACF gallery block with nine layouts:
+Cyber Gallery for Mai Theme is a deliberate Mai Engine add-on. It adds a dynamic ACF gallery block with nine layouts:
 
 * Mai Grid
 * Masonry Columns
@@ -59,13 +59,13 @@ Filmstrip supports optional timed movement, a configurable number of items per a
 
 Filmstrip also includes Natural, Uniform Crop, and Logo / Contain image modes. Logo mode preserves each source's intrinsic aspect ratio and centers it within an explicit fixed-height rail. Horizontal and vertical breathing room can be controlled independently and are optional rather than necessary for containment. Logo mode also automatically replaces a selected hard-cropped preset with the uncropped original. Select an image and enable its block-local custom-size checkbox beside the image metadata when unusual transparent whitespace or optical size needs compensation; Linked Images expose the same control below each image. Values above 100 percent intentionally zoom within the cell and can clip if overdone.
 
-Existing Mai Gallery and Core Gallery blocks can be transformed into Mai Cyber Gallery's familiar Mai Grid layout from the block-type/Transform menu in the editor. Mai Gallery conversion preserves the active ordinary or custom-linked image source in order, lightbox behavior, shadow, image orientation and custom source size, captions, hover behavior, responsive columns, alignment, gaps, margins, and supported block presentation settings. Keep Mai Galleries active while loading its blocks for conversion. Core Gallery conversion preserves local attachment order and compatible gallery-level settings. A source gallery without any valid local attachment remains unchanged.
+Existing Mai Gallery and Core Gallery blocks can be transformed into Cyber Gallery for Mai Theme's familiar Mai Grid layout from the block-type/Transform menu in the editor. Mai Gallery conversion preserves the active ordinary or custom-linked image source in order, lightbox behavior, shadow, image orientation and custom source size, captions, hover behavior, responsive columns, alignment, gaps, margins, and supported block presentation settings. Keep Mai Galleries active while loading its blocks for conversion. Core Gallery conversion preserves local attachment order and compatible gallery-level settings. A source gallery without any valid local attachment remains unchanged.
 
 Frontend gallery behavior is natively deferred and divided into conditional packing-layout, carousel, and lightbox scripts. Each page downloads only the behavior used by its galleries. Dynamic gallery updates are batched to avoid repeated document rescans, and attachment data is primed in bulk for faster uncached rendering.
 
 LiteSpeed Cache compatibility preserves runtime-only gallery selectors during UCSS generation, prevents native deferred scripts from being postponed until user interaction, promotes the selected Slider image through LiteSpeed lazy loading, and tags cached pages by attachment for targeted purging when image metadata changes. Offscreen gallery images remain eligible for LiteSpeed lazy loading, VPI, CDN, and WebP/AVIF optimization.
 
-An empty Mai Cyber Gallery preview includes a Manage Gallery action that opens ACF's expanded block editor. The corresponding block-settings launcher is labeled Open Expanded Editor.
+An empty Cyber Gallery for Mai Theme preview includes a Manage Gallery action that opens ACF's expanded block editor. The corresponding block-settings launcher is labeled Open Expanded Editor.
 
 Button-group choices use equal widths throughout the gallery controls. In the compact block inspector, maximum width and the desktop and mobile height fields stack one per row; the expanded editor keeps them together in one row. Browser up/down spinner controls are removed from those Slider dimension inputs while their numeric validation remains.
 
@@ -143,8 +143,8 @@ Slider now uses canonical Slides rows with no legacy Images fallback. Re-add ima
 
 1. Install and activate Genesis, a Mai child theme, and Mai Engine 2.40.0 or later.
 2. Upload the `mai-cyber-gallery` directory to `/wp-content/plugins/`.
-3. Activate Mai Cyber Gallery.
-4. Add the Mai Cyber Gallery block in the block editor.
+3. Activate Cyber Gallery for Mai Theme.
+4. Add the Cyber Gallery for Mai Theme block in the block editor.
 
 == Frequently Asked Questions ==
 
