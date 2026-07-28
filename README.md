@@ -2,6 +2,43 @@
 
 Mai Cyber Gallery is a Mai Engine add-on with nine advanced image gallery layouts. It follows the same dynamic ACF block, responsive columns, image sizes, spacing controls, and Genesis markup APIs used by official Mai add-ons.
 
+## Screenshots
+
+<table>
+	<tr>
+		<td width="50%" valign="top">
+			<a href="docs/images/tiled-mosaic.webp">
+				<img src="docs/images/tiled-mosaic.webp" alt="Tiled Mosaic gallery presenting architectural photography in a close-packed layout">
+			</a>
+			<br>
+			<strong>Tiled Mosaic</strong> — ratio-aware rows and stacks preserve image order while filling the available canvas.
+		</td>
+		<td width="50%" valign="top">
+			<a href="docs/images/filmstrip-logos.webp">
+				<img src="docs/images/filmstrip-logos.webp" alt="Filmstrip gallery presenting differently proportioned client logos in one aligned row">
+			</a>
+			<br>
+			<strong>Filmstrip for logos</strong> — mixed logo proportions align cleanly without forced cropping or empty global padding.
+		</td>
+	</tr>
+	<tr>
+		<td width="50%" valign="top">
+			<a href="docs/images/slider-backend.webp">
+				<img src="docs/images/slider-backend.webp" alt="WordPress editor showing a content Slider preview beside its title, subtext, alignment, and CTA fields">
+			</a>
+			<br>
+			<strong>Live Slider editing</strong> — structured content controls update alongside the active slide preview.
+		</td>
+		<td width="50%" valign="top">
+			<a href="docs/images/expanded-options.webp">
+				<img src="docs/images/expanded-options.webp" alt="Expanded Mai Cyber Gallery editor showing layout, packing, columns, gaps, alignment, and margin controls">
+			</a>
+			<br>
+			<strong>Expanded design controls</strong> — packing, responsive columns, alignment, gaps, and four-sided spacing in one focused editor.
+		</td>
+	</tr>
+</table>
+
 ## Requirements
 
 - WordPress 6.5 or later
