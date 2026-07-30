@@ -39,6 +39,12 @@ const assets = [
 	},
 	{
 		binary: `terser${ executableSuffix }`,
+		source: 'assets/js/mai-cyber-gallery-comparison.js',
+		distribution: 'assets/js/mai-cyber-gallery-comparison.min.js',
+		args: ( source, output ) => [ source, '--compress', '--mangle', '--output', output ],
+	},
+	{
+		binary: `terser${ executableSuffix }`,
 		source: 'assets/js/mai-cyber-gallery-lightbox.js',
 		distribution: 'assets/js/mai-cyber-gallery-lightbox.min.js',
 		args: ( source, output ) => [ source, '--compress', '--mangle', '--output', output ],
@@ -79,6 +85,29 @@ try {
 		);
 	}
 	console.log( 'Verified blocks/mai-cyber-gallery/block.json' );
+
+	const pluginSource = readFileSync(
+		new URL( 'mai-cyber-gallery.php', root ),
+		'utf8'
+	);
+	const pluginReadme = readFileSync(
+		new URL( 'readme.txt', root ),
+		'utf8'
+	);
+	if (
+		! /^[ \t*]*Requires Plugins:\s+mai-engine\s*$/mi.test( pluginSource )
+		|| ! /^Requires Plugins:\s+mai-engine\s*$/mi.test( pluginReadme )
+	) {
+		throw new Error( 'Plugin headers must retain the installed Mai Engine dependency slug.' );
+	}
+	if (
+		! pluginSource.includes(
+			'Update URI:         https://github.com/Alex9001/mai-cyber-gallery'
+		)
+	) {
+		throw new Error( 'mai-cyber-gallery.php must retain its repository-specific Update URI.' );
+	}
+	console.log( 'Verified Mai Engine dependency and update-channel headers' );
 
 	const frontendScript = readFileSync(
 		new URL( 'assets/js/mai-cyber-gallery.js', root ),
@@ -157,6 +186,29 @@ try {
 		if ( ! lightboxScript.includes( requiredToken ) ) {
 			throw new Error(
 				`assets/js/mai-cyber-gallery-lightbox.js is missing "${ requiredToken }".`
+			);
+		}
+	}
+
+	const comparisonScript = readFileSync(
+		new URL( 'assets/js/mai-cyber-gallery-comparison.js', root ),
+		'utf8'
+	);
+	for ( const requiredToken of [
+		'MaiCyberGalleryComparisonRuntime',
+		'data-cyber-comparison-range',
+		'aria-valuetext',
+	] ) {
+		if ( ! comparisonScript.includes( requiredToken ) ) {
+			throw new Error(
+				`assets/js/mai-cyber-gallery-comparison.js is missing "${ requiredToken }".`
+			);
+		}
+	}
+	for ( const unrelatedToken of [ 'initializeFilmstrip', 'initializeSlider', 'HTMLDialogElement' ] ) {
+		if ( comparisonScript.includes( unrelatedToken ) ) {
+			throw new Error(
+				`assets/js/mai-cyber-gallery-comparison.js contains unrelated token "${ unrelatedToken }".`
 			);
 		}
 	}

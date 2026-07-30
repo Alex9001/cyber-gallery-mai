@@ -1,21 +1,23 @@
 {
   "name": "mai-cyber-gallery",
-  "version": "0.9.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "Reproducible asset tooling for Mai Cyber Gallery.",
+  "description": "Reproducible asset tooling for Cyber Gallery for Mai Theme.",
   "engines": {
     "node": "^20.0.0 || >=22.0.0"
   },
   "scripts": {
     "test": "npm run check",
+    "test:browser": "playwright test",
     "build": "npm run build:css && npm run build:js",
     "build:zip": "node scripts/build-release.mjs",
     "build:css": "cleancss -o assets/css/mai-cyber-gallery.min.css assets/css/mai-cyber-gallery.css && cleancss -o assets/css/mai-cyber-gallery-editor.min.css assets/css/mai-cyber-gallery-editor.css",
-    "build:js": "terser assets/js/mai-cyber-gallery.js --compress --mangle --output assets/js/mai-cyber-gallery.min.js && terser assets/js/mai-cyber-gallery-packing.js --compress --mangle --output assets/js/mai-cyber-gallery-packing.min.js && terser assets/js/mai-cyber-gallery-lightbox.js --compress --mangle --output assets/js/mai-cyber-gallery-lightbox.min.js && terser assets/js/mai-cyber-gallery-editor.js --compress --mangle --output assets/js/mai-cyber-gallery-editor.min.js",
+    "build:js": "terser assets/js/mai-cyber-gallery.js --compress --mangle --output assets/js/mai-cyber-gallery.min.js && terser assets/js/mai-cyber-gallery-packing.js --compress --mangle --output assets/js/mai-cyber-gallery-packing.min.js && terser assets/js/mai-cyber-gallery-comparison.js --compress --mangle --output assets/js/mai-cyber-gallery-comparison.min.js && terser assets/js/mai-cyber-gallery-lightbox.js --compress --mangle --output assets/js/mai-cyber-gallery-lightbox.min.js && terser assets/js/mai-cyber-gallery-editor.js --compress --mangle --output assets/js/mai-cyber-gallery-editor.min.js",
     "check": "npm run check:syntax && node --test && node scripts/check-version.mjs && node scripts/check-dist.mjs",
-    "check:syntax": "node --check assets/js/mai-cyber-gallery.js && node --check assets/js/mai-cyber-gallery.min.js && node --check assets/js/mai-cyber-gallery-packing.js && node --check assets/js/mai-cyber-gallery-packing.min.js && node --check assets/js/mai-cyber-gallery-lightbox.js && node --check assets/js/mai-cyber-gallery-lightbox.min.js && node --check assets/js/mai-cyber-gallery-editor.js && node --check assets/js/mai-cyber-gallery-editor.min.js"
+    "check:syntax": "node --check assets/js/mai-cyber-gallery.js && node --check assets/js/mai-cyber-gallery.min.js && node --check assets/js/mai-cyber-gallery-packing.js && node --check assets/js/mai-cyber-gallery-packing.min.js && node --check assets/js/mai-cyber-gallery-comparison.js && node --check assets/js/mai-cyber-gallery-comparison.min.js && node --check assets/js/mai-cyber-gallery-lightbox.js && node --check assets/js/mai-cyber-gallery-lightbox.min.js && node --check assets/js/mai-cyber-gallery-editor.js && node --check assets/js/mai-cyber-gallery-editor.min.js"
   },
   "devDependencies": {
+    "@playwright/test": "1.62.0",
     "clean-css-cli": "5.6.3",
     "terser": "5.49.0"
   },

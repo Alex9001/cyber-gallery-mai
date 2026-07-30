@@ -1,6 +1,6 @@
 {
   "name": "alex9001/mai-cyber-gallery",
-  "description": "Development tooling for the Mai Cyber Gallery WordPress plugin.",
+  "description": "Development tooling for the Cyber Gallery for Mai Theme WordPress plugin.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "require": {
@@ -10,9 +10,10 @@
     "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
     "php-parallel-lint/php-parallel-lint": "^1.4",
     "php-stubs/acf-pro-stubs": "^6.6",
-    "php-stubs/wordpress-stubs": "6.5.5",
+    "php-stubs/wordpress-stubs": "^7.0.1",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
-    "phpstan/phpstan": "^2.1"
+    "phpstan/phpstan": "^2.1",
+    "wp-coding-standards/wpcs": "^3.4.1"
   },
   "config": {
     "allow-plugins": {
@@ -26,16 +27,23 @@
   },
   "scripts": {
     "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
-    "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G",
-    "compat": "phpcs --standard=phpcs.xml.dist",
+    "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G --debug",
+    "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- mai-cyber-gallery.php blocks classes includes",
+    "standards": "phpcs --standard=phpcs.xml.dist",
     "integration": [
       "php tests/meta-hook-signatures.php",
-      "php tests/layout-options.php"
+      "php tests/layout-options.php",
+      "php tests/comparison.php",
+      "php tests/validation.php",
+      "php tests/choices.php",
+      "php tests/asset-detection.php",
+      "php tests/image-size.php"
     ],
     "test": [
       "@lint",
       "@phpstan",
       "@compat",
+      "@standards",
       "@integration"
     ]
   }

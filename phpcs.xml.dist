@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Mai Cyber Gallery PHP compatibility">
-	<description>Verify compatibility with PHP 8.3 and later, accounting for WordPress polyfills.</description>
+<ruleset name="Cyber Gallery for Mai Theme WordPress standards">
+	<description>Enforce high-signal WordPress coding, security, escaping, and internationalization standards.</description>
 
 	<file>mai-cyber-gallery.php</file>
 	<file>blocks</file>
@@ -14,7 +14,32 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 
-	<config name="testVersion" value="8.3-"/>
+	<config name="minimum_wp_version" value="6.5"/>
 
-	<rule ref="PHPCompatibilityWP"/>
+	<rule ref="WordPress">
+		<!-- The project intentionally uses modern short arrays throughout. -->
+		<exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+
+		<!-- Keep established public filenames and the conventional plugin bootstrap. -->
+		<exclude name="WordPress.Files.FileName"/>
+		<exclude name="Universal.Files.SeparateFunctionsFromOO"/>
+
+		<!-- Hook/API signatures sometimes require unused or conventionally named parameters. -->
+		<exclude name="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+		<exclude name="Universal.NamingConventions.NoReservedKeywordParameterNames"/>
+
+		<!-- Avoid a release-wide cosmetic rewrite while retaining correctness sniffs. -->
+		<exclude name="WordPress.Arrays.MultipleStatementAlignment"/>
+		<exclude name="Generic.Formatting.MultipleStatementAlignment"/>
+		<exclude name="WordPress.Arrays.ArrayIndentation"/>
+		<exclude name="Squiz.Commenting.FunctionComment.SpacingAfterParamType"/>
+	</rule>
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="mai-cyber-gallery"/>
+			</property>
+		</properties>
+	</rule>
 </ruleset>

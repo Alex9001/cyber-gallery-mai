@@ -1,0 +1,12 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"core": null,
+	"phpVersion": "8.3",
+	"plugins": [
+		"maithemewp/mai-engine#2.40.0",
+		"https://downloads.wordpress.org/plugin/plugin-check.2.0.0.zip"
+	],
+	"mappings": {
+		"wp-content/plugins/mai-cyber-gallery": "./build/mai-cyber-gallery"
+	}
+}

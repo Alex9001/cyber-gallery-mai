@@ -1,5 +1,5 @@
 /**
- * Mai Cyber Gallery native dialog lightbox.
+ * Cyber Gallery for Mai Theme native dialog lightbox.
  */
 
 ( function () {
@@ -175,6 +175,25 @@
 	}
 
 	/**
+	 * Format the live-region status without interpreting caption dollar signs
+	 * as String.replace substitution patterns.
+	 *
+	 * @param {string} description Visible image description.
+	 * @param {string} position    Localized image position.
+	 * @return {string}
+	 */
+	function formatStatus( description, position ) {
+		if ( ! description ) {
+			return position;
+		}
+
+		return String( settings.status || '%1$s, %2$s' )
+			.replace( /%1\$s|%2\$s/g, function ( token ) {
+				return '%1$s' === token ? description : position;
+			} );
+	}
+
+	/**
 	 * Display one lightbox image.
 	 *
 	 * @param {number} requestedIndex Requested zero-based index.
@@ -224,11 +243,7 @@
 		dialogState.caption.textContent = data.cyberCaption || '';
 		dialogState.caption.hidden = ! data.cyberCaption;
 		dialogState.position.textContent = position;
-		dialogState.status.textContent = description
-			? String( settings.status || '%1$s, %2$s' )
-				.replace( /%1\$s/g, description )
-				.replace( /%2\$s/g, position )
-			: position;
+		dialogState.status.textContent = formatStatus( description, position );
 		dialogState.previous.disabled = 0 === index;
 		dialogState.next.disabled = index === total - 1;
 

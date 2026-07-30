@@ -1,5 +1,5 @@
 /**
- * Mai Cyber Gallery carousel progressive enhancements.
+ * Cyber Gallery for Mai Theme carousel progressive enhancements.
  *
  * - Accessible, native-scroll filmstrip controls.
  * - An accessible, native-scroll slider with arrows, dots, and counters.

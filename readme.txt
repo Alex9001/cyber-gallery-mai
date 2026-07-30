@@ -3,11 +3,12 @@ Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.3
 Requires Plugins: mai-engine
-Stable tag: 0.9.0
+Tags: gallery, masonry, slider, image comparison, filmstrip
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Nine responsive masonry, tiled mosaic, filmstrip, and content-slider layouts powered by Mai Engine.
+Ten responsive gallery layouts, including an accessible Before / After comparison, powered by Mai Engine.
 
 == Description ==
 
@@ -17,7 +18,7 @@ Copyright (C) 2026 Aleksandr Oreshkin. Licensed under GPLv2 or any later version
 
 Related projects: [Mai Engine](https://github.com/maithemewp/mai-engine) and [Mai Grid Gallery](https://github.com/maithemewp/mai-grid-gallery). Cyber Gallery for Mai Theme is an independent add-on and is not presented as an official Mai Theme project.
 
-Cyber Gallery for Mai Theme is a deliberate Mai Engine add-on. It adds a dynamic ACF gallery block with nine layouts:
+Cyber Gallery for Mai Theme is a deliberate Mai Engine add-on. It adds a dynamic ACF gallery block with ten layouts:
 
 * Mai Grid
 * Masonry Columns
@@ -26,12 +27,15 @@ Cyber Gallery for Mai Theme is a deliberate Mai Engine add-on. It adds a dynamic
 * Editorial Mosaic
 * Square Tiles
 * Circle Tiles
+* Before / After
 * Filmstrip
 * Slider
 
 The block reuses Mai Engine's ACF Pro integration, responsive columns, image sizes, gap and margin fields, color formatting, configured breakpoints, controls, utility classes, Genesis markup API, and design tokens. Mai Engine 2.40.0 or later is required.
 
-For non-Slider layouts, click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
+Mai Engine is proprietary and distributed separately from this plugin. The dependency header prevents activation when Engine is not active, but WordPress.org cannot download the missing dependency. Install and activate it manually from the Mai Theme distribution or the [Mai Engine GitHub project](https://github.com/maithemewp/mai-engine). Cyber Gallery consumes Mai Engine's supported APIs but does not vendor, fork, or modify Engine.
+
+For ordinary image layouts other than Slider and Before / After, click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
 
 Editorial Mosaic can place 1–8 secondary images after each feature, close incomplete groups without blank cells, align an odd final image, alternate feature sides by group, and use automatic or fixed tile heights.
 
@@ -45,23 +49,27 @@ Slider has independent Primary and Secondary Navigation selectors, so arrows, ci
 
 Switching layouts preserves ordinary Images, Linked Images, structured Slides, and dormant layout settings. Slider renders only structured Slides, so an empty Slider shows its setup prompt rather than stale content from the previous layout. Returning to another layout restores its retained images and settings.
 
+Filmstrip, Slider, and Before / After have an optional accessibility label for distinguishing multiple regions on one page. Slider titles can use Heading 2 through Heading 6, or Paragraph when they should not enter the page heading outline.
+
+Before / After uses two dedicated images and never falls back to retained ordinary gallery or Slider sources. It provides editable labels, a configurable starting position, Mai orientation/source-size integration, and an RTL-aware native range control for pointer, touch, keyboard, and assistive technology. It ignores responsive columns, gallery alignment, inter-item gaps, captions, links, overlays, and hover effects; its independent four-sided block margins still apply. Without JavaScript, the inactive range is not exposed and the configured split remains visible as a static comparison. Print output also keeps the split without the divider control.
+
 Slider transitions include Smooth Slide (`native`), Fade, Zoom In, Zoom Out, Rise, Soft Focus, Reveal, and Cinematic. Smooth Slide keeps native horizontal movement. Controls and autoplay render the other presets as in-place crossfades with their selected entrance treatment; direct touch and trackpad gestures remain native. Navigation hover effects include Color Shift, Grow, Nudge, Glow, Fill, and Ring while retaining stable hit targets. Motion effects honor the visitor's reduced-motion preference.
 
-Optional Slider autoplay has a configurable 3–30 second interval, mouse-over pause, and an optional accessible Pause/Start control.
+Optional Slider autoplay has a configurable 3–30 second interval, mouse-over pause, and an optional Pause/Start control. The control can be hidden without disabling rotation.
 
 Slider navigation background, border, and inner colors have independent normal and hover settings. Each reuses the Mai Engine palette and supports a custom color.
 
-Image overlays now work across every layout and support None, Solid, four directional gradients, and Vignette styles with Mai palette/custom color and 0–100 opacity controls. In Slider the image overlay remains separate from the content-legibility scrim behind slide copy.
+Image overlays work across the ordinary image layouts and Slider, and support None, Solid, four directional gradients, and Vignette styles with Mai palette/custom color and 0–100 opacity controls. Before / After intentionally omits overlays so neither source is obscured. In Slider the image overlay remains separate from the content-legibility scrim behind slide copy.
 
-Hover treatments also work across every layout. Desaturate removes a configurable 0–100 percent of color at rest and restores full color on mouse-over or keyboard focus. Slider defaults to None so existing Sliders remain motionless until a treatment is selected.
+Hover treatments work across the ordinary image layouts and Slider. Before / After forces None so dragging remains its only image interaction. Desaturate removes a configurable 0–100 percent of color at rest and restores full color on mouse-over or keyboard focus. Slider defaults to None so existing Sliders remain motionless until a treatment is selected.
 
-Filmstrip supports optional timed movement, a configurable number of items per advance, a complete controls toggle, an accessible Pause/Start control, optional mouse-over pause, and opt-in arrows that can be overlaid or aligned above or below the images. Autoplay advances one item by default, continues when controls are hidden, and accepts intervals from 0.1 through 30 seconds. Touch swipes and mouse/pen throws use restrained momentum and a light elastic snap; autoplay, arrows, and keyboard navigation use a calm no-overshoot glide. Controls hide when every item fits. Filmstrip arrow design, navigation hover effects, and Mai palette/custom colors are shared with Slider.
+Filmstrip supports optional timed movement, a configurable number of items per advance, a complete controls toggle, an optional Pause/Start control, optional mouse-over pause, and opt-in arrows that can be overlaid or aligned above or below the images. Autoplay advances one item by default, continues when controls are hidden, and accepts intervals from 0.1 through 30 seconds. This intentionally supports moving logo rails and similar presentations that do not need playback controls. Touch swipes and mouse/pen throws use restrained momentum and a light elastic snap; autoplay, arrows, and keyboard navigation use a calm no-overshoot glide. Controls hide when every item fits. Filmstrip arrow design, navigation hover effects, and Mai palette/custom colors are shared with Slider.
 
 Filmstrip also includes Natural, Uniform Crop, and Logo / Contain image modes. Logo mode preserves each source's intrinsic aspect ratio and centers it within an explicit fixed-height rail. Horizontal and vertical breathing room can be controlled independently and are optional rather than necessary for containment. Logo mode also automatically replaces a selected hard-cropped preset with the uncropped original. Select an image and enable its block-local custom-size checkbox beside the image metadata when unusual transparent whitespace or optical size needs compensation; Linked Images expose the same control below each image. Values above 100 percent intentionally zoom within the cell and can clip if overdone.
 
-Existing Mai Gallery and Core Gallery blocks can be transformed into Cyber Gallery for Mai Theme's familiar Mai Grid layout from the block-type/Transform menu in the editor. Mai Gallery conversion preserves the active ordinary or custom-linked image source in order, lightbox behavior, shadow, image orientation and custom source size, captions, hover behavior, responsive columns, alignment, gaps, margins, and supported block presentation settings. Keep Mai Galleries active while loading its blocks for conversion. Core Gallery conversion preserves local attachment order and compatible gallery-level settings. A source gallery without any valid local attachment remains unchanged.
+Existing Mai Gallery and Core Gallery blocks can be transformed into Cyber Gallery for Mai Theme's familiar Mai Grid layout from the block-type/Transform menu in the editor. Mai Gallery conversion preserves the active ordinary or custom-linked image source in order, lightbox behavior, shadow, image orientation and custom source size, responsive columns, alignment, gaps, margins, and supported block presentation settings. Because Mai Gallery has no caption or hover fields, conversion applies Cyber's Below Captions and Zoom defaults. Keep Mai Galleries active while loading its blocks for conversion. Core Gallery conversion preserves local attachment order and compatible gallery-level settings. Uncropped Core galleries retain their selected source size; cropped galleries map to the closest Mai orientation and retain the old size only as a dormant Custom-orientation value. A source gallery without any valid local attachment remains unchanged.
 
-Frontend gallery behavior is natively deferred and divided into conditional packing-layout, carousel, and lightbox scripts. Each page downloads only the behavior used by its galleries. Dynamic gallery updates are batched to avoid repeated document rescans, and attachment data is primed in bulk for faster uncached rendering.
+Frontend gallery behavior is natively deferred and divided into packing-layout, carousel, comparison, and lightbox scripts. An early scan requests the requirements visible in queried block content, including nested and synced/reusable blocks, while applying the same layout exclusions as the renderer. The renderer supplies a safety net for PHP/API output and content the scan cannot see. The split prevents every gallery from inherently depending on every enhancement. Dynamic gallery updates are batched to avoid repeated document rescans, and attachment data is primed in bulk for faster uncached rendering.
 
 LiteSpeed Cache compatibility preserves runtime-only gallery selectors during UCSS generation, prevents native deferred scripts from being postponed until user interaction, promotes the selected Slider image through LiteSpeed lazy loading, and tags cached pages by attachment for targeted purging when image metadata changes. Offscreen gallery images remain eligible for LiteSpeed lazy loading, VPI, CDN, and WebP/AVIF optimization.
 
@@ -74,6 +82,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 1.0.0 =
+
+Adds a Before / After comparison layout with dedicated image sources, Mai image sizing, editable labels, an interactive RTL/keyboard/touch enhancement, and static no-JavaScript and print fallbacks.
 
 = 0.9.0 =
 
@@ -141,16 +153,21 @@ Slider now uses canonical Slides rows with no legacy Images fallback. Re-add ima
 
 == Installation ==
 
-1. Install and activate Genesis, a Mai child theme, and Mai Engine 2.40.0 or later.
-2. Upload the `mai-cyber-gallery` directory to `/wp-content/plugins/`.
-3. Activate Cyber Gallery for Mai Theme.
-4. Add the Cyber Gallery for Mai Theme block in the block editor.
+1. Obtain Mai Engine separately from the Mai Theme distribution or its GitHub project. If installing a GitHub archive directly, ensure its final plugin directory is named `mai-engine`, not a versioned archive name.
+2. Install and activate Genesis, a Mai child theme, and Mai Engine 2.40.0 or later.
+3. Upload the `mai-cyber-gallery` directory to `/wp-content/plugins/`.
+4. Activate Cyber Gallery for Mai Theme.
+5. Add the Cyber Gallery for Mai Theme block in the block editor.
 
 == Frequently Asked Questions ==
 
 = Does this replace Mai Engine? =
 
-No. Mai Engine is required and intentionally supplies the plugin's core block, image, responsive-layout, spacing, and theme infrastructure.
+No. Mai Engine is a separately maintained, proprietary requirement and intentionally supplies the plugin's core block, image, responsive-layout, spacing, and theme infrastructure. Cyber Gallery uses Engine's APIs and does not edit Engine.
+
+= Why does WordPress.org not install Mai Engine automatically? =
+
+Mai Engine is not a WordPress.org plugin. WordPress can enforce its installed `mai-engine` dependency slug but cannot download it or enforce the required version. Obtain, install, and activate Mai Engine 2.40.0 or later separately from the Mai Theme distribution or its GitHub project before activating Cyber Gallery for Mai Theme. WordPress matches the installed directory slug, so a manually extracted GitHub archive must use `wp-content/plugins/mai-engine/`, not a versioned directory such as `mai-engine-2.40.0/`.
 
 = Can Mai Galleries remain active? =
 
@@ -170,13 +187,26 @@ Full fills the available block or parent canvas and is the default. Contained re
 
 = Does the filmstrip autoplay? =
 
-Optionally. It always retains native touch, mouse, trackpad, keyboard scrolling, and scroll snap. Timed movement advances one item by default, or a user-selected number of items, and includes Pause/Start whenever movement is available, plus reduced-motion, visibility, focus, and manual-interaction safeguards.
+Optionally. It always retains native touch, mouse, trackpad, keyboard scrolling, and scroll snap. Timed movement advances one item by default, or a user-selected number of items. The complete control group, including Pause/Start, can intentionally be hidden for logo rails and similar presentations without disabling timed movement. Reduced-motion, visibility, focus, and manual-interaction safeguards still apply.
 
 = Does the Slider autoplay? =
 
 Autoplay is optional. Set the time between slides from 3 through 30 seconds, optionally pause while the pointer is over the Slider, and choose whether to show its Pause/Start control. Reduced-motion preferences disable autoplay.
 
 == Changelog ==
+
+= 1.0.0 =
+
+* Added a strict, full-width Before / After comparison layout with dedicated Before and After image fields.
+* Added editable labels and a configurable initial divider position.
+* Added an RTL-aware native range control for pointer, touch, keyboard, and assistive technology.
+* Reused Mai Engine image orientations, large crop sizes, responsive WordPress image markup, icons, shadows, radii, spacing, and design tokens.
+* Kept a static configured split without JavaScript and in print, without exposing the inactive divider control.
+* Added layout-aware required-field validation while preserving dormant gallery and cloned Mai column values across layout changes.
+* Added distinct accessibility labels, selectable Slider title semantics, registered-size fallback, synced-block asset discovery, cache tags for both attachments, and expanded release/test coverage.
+* Hardened filtered choice lists, filtered defaults, and incomplete argument-filter results so extension points cannot leave unusable editor or runtime state.
+* Moved public behavior scripts to safe late footer output for galleries rendered through the PHP API.
+* Preserved literal dollar sequences in comparison labels and lightbox captions when formatting accessible status text.
 
 = 0.9.0 =
 
@@ -190,7 +220,7 @@ Autoplay is optional. Set the time between slides from 3 through 30 seconds, opt
 
 = 0.8.4 =
 
-* Added a native block-toolbar transform from Mai Gallery to Mai Cyber Gallery.
+* Added a native block-toolbar transform from Mai Gallery to Cyber Gallery for Mai Theme.
 * Preserved ordinary and custom-linked image order, URLs, lightbox behavior, shadow, orientation, image size, responsive columns, alignment, gaps, margins, and supported block presentation settings.
 * Left galleries without a valid active attachment source unchanged.
 

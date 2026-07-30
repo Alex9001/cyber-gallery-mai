@@ -1,12 +1,92 @@
 <?php
 /**
- * Public Mai Cyber Gallery functions.
+ * Public Cyber Gallery for Mai Theme functions.
  *
  * @package MaiCyberGallery
  */
 
 // Prevent direct file access.
 defined( 'ABSPATH' ) || die;
+
+/**
+ * Normalize a filtered slug-to-label choice list.
+ *
+ * Invalid filtered values are discarded. If a filter removes every usable
+ * choice, the normalized fallback list is returned so fields and runtime
+ * validation always retain at least their core choices.
+ *
+ * @since 1.0.0
+ *
+ * @param mixed                $choices  Filtered choices.
+ * @param array<string,string> $fallback Trusted fallback choices.
+ *
+ * @return array<string,string>
+ */
+function mai_cyber_gallery_normalize_choices( $choices, array $fallback ): array {
+	$normalize = static function ( $values ): array {
+		if ( ! is_array( $values ) ) {
+			return [];
+		}
+
+		$normalized = [];
+
+		foreach ( $values as $slug => $label ) {
+			if ( ! is_scalar( $label ) ) {
+				continue;
+			}
+
+			$slug  = sanitize_key( (string) $slug );
+			$label = sanitize_text_field( (string) $label );
+
+			if ( $slug && $label ) {
+				$normalized[ $slug ] = $label;
+			}
+		}
+
+		return $normalized;
+	};
+
+	$choices = $normalize( $choices );
+
+	return $choices ? $choices : $normalize( $fallback );
+}
+
+/**
+ * Get a valid default from a normalized choice list.
+ *
+ * The preferred slug wins while it remains registered. Otherwise, the first
+ * registered choice becomes the deterministic default.
+ *
+ * @since 1.0.0
+ *
+ * @param array<string,string> $choices   Normalized choices.
+ * @param string               $preferred Preferred choice slug.
+ * @param string               $exclude   Choice to avoid when an alternative exists.
+ *
+ * @return string
+ */
+function mai_cyber_gallery_get_choice_default( array $choices, $preferred, $exclude = '' ): string {
+	$preferred = sanitize_key( (string) $preferred );
+	$exclude   = sanitize_key( (string) $exclude );
+
+	if (
+		$preferred
+		&& $preferred !== $exclude
+		&& array_key_exists( $preferred, $choices )
+	) {
+		return $preferred;
+	}
+
+	foreach ( $choices as $slug => $label ) {
+		$slug = (string) $slug;
+
+		if ( $slug !== $exclude ) {
+			return $slug;
+		}
+	}
+
+	return $exclude && array_key_exists( $exclude, $choices ) ? $exclude : '';
+}
 
 /**
  * Get gallery layout choices.
@@ -16,7 +96,7 @@ defined( 'ABSPATH' ) || die;
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_layout_choices(): array {
-	$layouts = [
+	$core_layouts = [
 		'grid'      => esc_html__( 'Mai Grid', 'mai-cyber-gallery' ),
 		'masonry'   => esc_html__( 'Masonry Columns', 'mai-cyber-gallery' ),
 		'justified' => esc_html__( 'Justified Rows', 'mai-cyber-gallery' ),
@@ -24,6 +104,7 @@ function mai_cyber_gallery_get_layout_choices(): array {
 		'mosaic'    => esc_html__( 'Editorial Mosaic', 'mai-cyber-gallery' ),
 		'square'    => esc_html__( 'Square Tiles', 'mai-cyber-gallery' ),
 		'circle'    => esc_html__( 'Circle Tiles', 'mai-cyber-gallery' ),
+		'comparison' => esc_html__( 'Before / After', 'mai-cyber-gallery' ),
 		'filmstrip' => esc_html__( 'Filmstrip', 'mai-cyber-gallery' ),
 		'slider'    => esc_html__( 'Slider', 'mai-cyber-gallery' ),
 	];
@@ -37,7 +118,9 @@ function mai_cyber_gallery_get_layout_choices(): array {
 	 *
 	 * @param array<string,string> $layouts Layout slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_layouts', $layouts );
+	$layouts = apply_filters( 'mai_cyber_gallery_layouts', $core_layouts );
+
+	return mai_cyber_gallery_normalize_choices( $layouts, $core_layouts );
 }
 
 /**
@@ -48,7 +131,7 @@ function mai_cyber_gallery_get_layout_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_arrow_style_choices(): array {
-	$styles = [
+	$core_styles = [
 		'circle'  => esc_html__( 'Frosted Circle', 'mai-cyber-gallery' ),
 		'square'  => esc_html__( 'Rounded Square', 'mai-cyber-gallery' ),
 		'minimal' => esc_html__( 'Minimal Chevron', 'mai-cyber-gallery' ),
@@ -62,7 +145,9 @@ function mai_cyber_gallery_get_arrow_style_choices(): array {
 	 *
 	 * @param array<string,string> $styles Arrow style slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_arrow_styles', $styles );
+	$styles = apply_filters( 'mai_cyber_gallery_arrow_styles', $core_styles );
+
+	return mai_cyber_gallery_normalize_choices( $styles, $core_styles );
 }
 
 /**
@@ -73,7 +158,7 @@ function mai_cyber_gallery_get_arrow_style_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_navigation_choices(): array {
-	$choices = [
+	$core_choices = [
 		'arrows'  => esc_html__( 'Arrows', 'mai-cyber-gallery' ),
 		'dots'    => esc_html__( 'Circles', 'mai-cyber-gallery' ),
 		'counter' => esc_html__( 'Slide Counter', 'mai-cyber-gallery' ),
@@ -83,11 +168,19 @@ function mai_cyber_gallery_get_slider_navigation_choices(): array {
 	/**
 	 * Filter the slider navigation choices.
 	 *
+	 * The renderer implements the core atomic control slugs. Filters may
+	 * remove, reorder, or relabel those controls; unsupported slugs are
+	 * discarded.
+	 *
 	 * @since 0.2.0
 	 *
-	 * @param array<string,string> $choices Navigation slug and label pairs.
+	 * @param array<string,string> $choices Core navigation slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_slider_navigation_choices', $choices );
+	$choices = apply_filters( 'mai_cyber_gallery_slider_navigation_choices', $core_choices );
+	$choices = mai_cyber_gallery_normalize_choices( $choices, $core_choices );
+	$choices = array_intersect_key( $choices, $core_choices );
+
+	return $choices ? $choices : $core_choices;
 }
 
 /**
@@ -98,7 +191,7 @@ function mai_cyber_gallery_get_slider_navigation_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_transition_choices(): array {
-	$choices = [
+	$core_choices = [
 		'native'     => esc_html__( 'Smooth Slide', 'mai-cyber-gallery' ),
 		'fade'       => esc_html__( 'Fade', 'mai-cyber-gallery' ),
 		'zoom-in'    => esc_html__( 'Zoom In', 'mai-cyber-gallery' ),
@@ -116,7 +209,9 @@ function mai_cyber_gallery_get_slider_transition_choices(): array {
 	 *
 	 * @param array<string,string> $choices Transition slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_slider_transition_choices', $choices );
+	$choices = apply_filters( 'mai_cyber_gallery_slider_transition_choices', $core_choices );
+
+	return mai_cyber_gallery_normalize_choices( $choices, $core_choices );
 }
 
 /**
@@ -127,7 +222,7 @@ function mai_cyber_gallery_get_slider_transition_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
-	$choices = [
+	$core_choices = [
 		'fast'   => esc_html__( 'Fast', 'mai-cyber-gallery' ),
 		'normal' => esc_html__( 'Normal', 'mai-cyber-gallery' ),
 		'slow'   => esc_html__( 'Slow', 'mai-cyber-gallery' ),
@@ -140,7 +235,9 @@ function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
 	 *
 	 * @param array<string,string> $choices Speed slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_slider_transition_speed_choices', $choices );
+	$choices = apply_filters( 'mai_cyber_gallery_slider_transition_speed_choices', $core_choices );
+
+	return mai_cyber_gallery_normalize_choices( $choices, $core_choices );
 }
 
 /**
@@ -151,7 +248,7 @@ function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
-	$choices = [
+	$core_choices = [
 		'color' => esc_html__( 'Color Shift', 'mai-cyber-gallery' ),
 		'grow'  => esc_html__( 'Grow', 'mai-cyber-gallery' ),
 		'nudge' => esc_html__( 'Nudge', 'mai-cyber-gallery' ),
@@ -167,7 +264,9 @@ function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
 	 *
 	 * @param array<string,string> $choices Hover effect slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_slider_navigation_hover_choices', $choices );
+	$choices = apply_filters( 'mai_cyber_gallery_slider_navigation_hover_choices', $core_choices );
+
+	return mai_cyber_gallery_normalize_choices( $choices, $core_choices );
 }
 
 /**
@@ -178,7 +277,7 @@ function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
-	$choices = [
+	$core_choices = [
 		'none'            => esc_html__( 'None', 'mai-cyber-gallery' ),
 		'solid'           => esc_html__( 'Solid', 'mai-cyber-gallery' ),
 		'gradient-bottom' => esc_html__( 'Gradient from Bottom', 'mai-cyber-gallery' ),
@@ -195,7 +294,9 @@ function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
 	 *
 	 * @param array<string,string> $choices Overlay style slug and label pairs.
 	 */
-	return (array) apply_filters( 'mai_cyber_gallery_slider_overlay_style_choices', $choices );
+	$choices = apply_filters( 'mai_cyber_gallery_slider_overlay_style_choices', $core_choices );
+
+	return mai_cyber_gallery_normalize_choices( $choices, $core_choices );
 }
 
 /**
@@ -225,19 +326,9 @@ function mai_cyber_gallery_get_button_style_choices(): array {
 	 *
 	 * @param array<string,string> $choices Style slug and label pairs.
 	 */
-	$choices = (array) apply_filters( 'mai_cyber_gallery_button_style_choices', $core_choices );
-	$choices = array_filter( $choices, 'is_scalar' );
+	$choices = apply_filters( 'mai_cyber_gallery_button_style_choices', $core_choices );
 
-	$sanitized = [];
-	foreach ( $choices as $style => $label ) {
-		$style = sanitize_key( (string) $style );
-
-		if ( $style ) {
-			$sanitized[ $style ] = sanitize_text_field( (string) $label );
-		}
-	}
-
-	return $sanitized ? $sanitized : [ 'button' => $core_choices['button'] ];
+	return mai_cyber_gallery_normalize_choices( $choices, $core_choices );
 }
 
 /**
@@ -253,7 +344,7 @@ function mai_cyber_gallery_get_button_style_choices(): array {
 function mai_cyber_gallery_get_default_button_style() {
 	$choices = mai_cyber_gallery_get_button_style_choices();
 
-	return isset( $choices['button'] ) ? 'button' : array_key_first( $choices );
+	return mai_cyber_gallery_get_choice_default( $choices, 'button' );
 }
 
 /**

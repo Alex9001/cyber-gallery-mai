@@ -4,5 +4,6 @@
 /.phpstan-cache/
 /.phpcs-cache
 /.phpunit.result.cache
+/.wp-env.json
 /coverage/
 /npm-debug.log*

@@ -305,6 +305,21 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 	$slider_autoplay_control     = array_key_exists( 'slider_autoplay_control', $block_data )
 		? get_field( 'slider_autoplay_control' )
 		: true;
+	$slider_title_tag           = array_key_exists( 'slider_title_tag', $block_data )
+		? get_field( 'slider_title_tag' )
+		: 'h2';
+	$aria_label                 = array_key_exists( 'aria_label', $block_data )
+		? get_field( 'aria_label' )
+		: '';
+	$comparison_before_label    = array_key_exists( 'comparison_before_label', $block_data )
+		? get_field( 'comparison_before_label' )
+		: esc_html__( 'Before', 'mai-cyber-gallery' );
+	$comparison_after_label     = array_key_exists( 'comparison_after_label', $block_data )
+		? get_field( 'comparison_after_label' )
+		: esc_html__( 'After', 'mai-cyber-gallery' );
+	$comparison_position        = array_key_exists( 'comparison_position', $block_data )
+		? get_field( 'comparison_position' )
+		: 50;
 
 	// Preserve explicit pre-0.6.0 single-navigation choices. A block with no
 	// stored primary value used the former Arrows + Circles default, while an
@@ -329,12 +344,18 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'align'                  => isset( $block['align'] ) ? $block['align'] : '',
 		'anchor'                 => isset( $block['anchor'] ) ? $block['anchor'] : '',
 		'class'                  => isset( $block['className'] ) ? $block['className'] : '',
+		'aria_label'             => $aria_label,
 		'layout'                 => $layout,
 		'click_action'           => get_field( 'click_action' ),
 		'lightbox_arrow_style'   => get_field( 'lightbox_arrow_style' ),
 		'images'                 => get_field( 'images' ),
 		'images_links'           => get_field( 'images_links' ),
 		'slides'                 => get_field( 'slides' ),
+		'comparison_before_image' => get_field( 'comparison_before_image' ),
+		'comparison_after_image'  => get_field( 'comparison_after_image' ),
+		'comparison_before_label' => $comparison_before_label,
+		'comparison_after_label'  => $comparison_after_label,
+		'comparison_position'     => $comparison_position,
 		'image_orientation'      => get_field( 'image_orientation' ),
 		'image_size'             => get_field( 'image_size' ),
 		'image_radius'           => get_field( 'image_radius' ),
@@ -392,6 +413,7 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 		'slider_height'               => get_field( 'slider_height' ),
 		'slider_height_mobile'        => get_field( 'slider_height_mobile' ),
 		'slider_image_fit'            => get_field( 'slider_image_fit' ),
+		'slider_title_tag'            => $slider_title_tag,
 		'columns'                => get_field( 'columns' ),
 		'columns_responsive'     => get_field( 'columns_responsive' ),
 		'columns_md'             => get_field( 'columns_md' ),
@@ -412,7 +434,232 @@ function mai_cyber_gallery_render_block( $block, $content = '', $is_preview = fa
 }
 
 add_action( 'acf/init', 'mai_cyber_gallery_register_field_group', 12 );
+add_filter( 'acf/clone_field', 'mai_cyber_gallery_prepare_columns_clone_field', 20, 2 );
 add_filter( 'acf/validate_value/key=mai_cyber_gallery_slide_button_link', 'mai_cyber_gallery_validate_slide_button_link', 10, 4 );
+foreach (
+	[
+		'mai_cyber_gallery_comparison_before_image',
+		'mai_cyber_gallery_comparison_after_image',
+		'mai_cyber_gallery_slide_image',
+		'mai_cyber_gallery_filmstrip_logo_override_image',
+	] as $mai_cyber_gallery_conditional_required_field_key
+) {
+	add_filter(
+		"acf/validate_value/key={$mai_cyber_gallery_conditional_required_field_key}",
+		'mai_cyber_gallery_validate_conditional_required_value',
+		10,
+		4
+	);
+}
+unset( $mai_cyber_gallery_conditional_required_field_key );
+
+/**
+ * Hide cloned column controls where only Mai Engine's gap fields apply.
+ *
+ * Keeping one clone avoids rendering the same Engine gap fields under two ACF
+ * parents, which could serialize competing values. Existing Engine conditions
+ * (such as responsive-column toggles) are retained and combined with the
+ * gallery-layout rules.
+ *
+ * @since 1.0.0
+ *
+ * @param array<string,mixed> $field       Field being cloned.
+ * @param array<string,mixed> $clone_field Clone field settings.
+ *
+ * @return array<string,mixed>
+ */
+function mai_cyber_gallery_prepare_columns_clone_field( $field, $clone_field ): array {
+	if (
+		'mai_cyber_gallery_columns_clone' !== ( $clone_field['key'] ?? '' )
+		|| ! in_array(
+			$field['key'] ?? '',
+			[
+				'mai_columns',
+				'mai_columns_responsive',
+				'mai_columns_md',
+				'mai_columns_sm',
+				'mai_columns_xs',
+				'mai_align_columns',
+				'mai_align_columns_vertical',
+			],
+			true
+		)
+	) {
+		return $field;
+	}
+
+	$excluded_layouts = [ 'justified', 'mosaic' ];
+
+	if (
+		in_array(
+			$field['key'] ?? '',
+			[ 'mai_align_columns', 'mai_align_columns_vertical' ],
+			true
+		)
+	) {
+		$excluded_layouts = array_merge(
+			$excluded_layouts,
+			[ 'masonry', 'tiled', 'filmstrip' ]
+		);
+	}
+
+	$layout_rules = array_map(
+		static fn( string $layout ): array => [
+			'field'    => 'mai_cyber_gallery_layout',
+			'operator' => '!=',
+			'value'    => $layout,
+		],
+		$excluded_layouts
+	);
+	$conditions   = isset( $field['conditional_logic'] ) && is_array( $field['conditional_logic'] )
+		? $field['conditional_logic']
+		: [];
+
+	if ( ! $conditions ) {
+		$field['conditional_logic'] = [ $layout_rules ];
+		return $field;
+	}
+
+	$field['conditional_logic'] = [];
+	foreach ( $conditions as $condition ) {
+		if ( is_array( $condition ) ) {
+			$field['conditional_logic'][] = array_merge( $condition, $layout_rules );
+		}
+	}
+
+	if ( ! $field['conditional_logic'] ) {
+		$field['conditional_logic'] = [ $layout_rules ];
+	}
+
+	return $field;
+}
+
+/**
+ * Get the ACF block ID that owns a field being validated.
+ *
+ * ACF block-v3 validation prefixes every input with `acf-{$block_id}`. Using
+ * that ID instead of ACF's mutable global "current" meta context keeps
+ * validation deterministic when one request contains multiple gallery blocks.
+ *
+ * @since 1.0.0
+ *
+ * @param mixed $input ACF input name.
+ *
+ * @return string|false
+ */
+function mai_cyber_gallery_get_validation_block_id( $input ) {
+	if ( ! is_string( $input ) || ! str_starts_with( $input, 'acf-' ) ) {
+		return false;
+	}
+
+	$separator = strpos( $input, '[' );
+	if ( false === $separator || 4 >= $separator ) {
+		return false;
+	}
+
+	$block_id = substr( $input, 4, $separator - 4 );
+
+	return preg_match( '/^[A-Za-z0-9_-]+$/D', $block_id ) ? $block_id : false;
+}
+
+/**
+ * Read an unformatted field from the block currently being validated.
+ *
+ * ACF calls `acf_setup_meta()` before validating block-v3 request data, so the
+ * submitted values are available through the normal field API under the block
+ * ID parsed from the input name.
+ *
+ * @since 1.0.0
+ *
+ * @param string $name  Field name.
+ * @param mixed  $input ACF input name.
+ *
+ * @return string
+ */
+function mai_cyber_gallery_get_validation_context_value( string $name, $input ): string {
+	if ( ! function_exists( 'get_field' ) ) {
+		return '';
+	}
+
+	$block_id = mai_cyber_gallery_get_validation_block_id( $input );
+	$value    = get_field( $name, $block_id ? $block_id : false, false );
+
+	return is_scalar( $value ) ? sanitize_key( (string) $value ) : '';
+}
+
+/**
+ * Check whether a conditionally required field is active for this block.
+ *
+ * The editor intentionally serializes hidden Cyber fields so values survive a
+ * layout switch. ACF does not apply conditional logic during validation, so
+ * requirements must be scoped to the submitted layout on the server.
+ *
+ * @since 1.0.0
+ *
+ * @param array<string,mixed> $field ACF field settings.
+ * @param mixed               $input ACF input name.
+ *
+ * @return bool
+ */
+function mai_cyber_gallery_is_required_field_active( array $field, $input ): bool {
+	$key    = isset( $field['key'] ) && is_scalar( $field['key'] ) ? (string) $field['key'] : '';
+	$layout = mai_cyber_gallery_get_validation_context_value( 'layout', $input );
+
+	if (
+		in_array(
+			$key,
+			[
+				'mai_cyber_gallery_comparison_before_image',
+				'mai_cyber_gallery_comparison_after_image',
+			],
+			true
+		)
+	) {
+		return 'comparison' === $layout;
+	}
+
+	if (
+		in_array(
+			$key,
+			[
+				'mai_cyber_gallery_slide_image',
+				'mai_cyber_gallery_slide_button_link',
+			],
+			true
+		)
+	) {
+		return 'slider' === $layout;
+	}
+
+	if ( 'mai_cyber_gallery_filmstrip_logo_override_image' === $key ) {
+		return 'filmstrip' === $layout
+			&& 'logo-contain' === mai_cyber_gallery_get_validation_context_value( 'filmstrip_image_mode', $input );
+	}
+
+	return true;
+}
+
+/**
+ * Ignore required errors for fields preserved from an inactive layout.
+ *
+ * Active fields retain the validation result produced by ACF and other
+ * validators. Inactive fields return true because their saved value is dormant
+ * configuration, not part of the gallery currently being authored.
+ *
+ * @since 1.0.0
+ *
+ * @param bool|string          $valid Whether the current value is valid.
+ * @param mixed                $value Submitted field value.
+ * @param array<string,mixed>  $field ACF field settings.
+ * @param mixed                $input ACF input name.
+ *
+ * @return bool|string
+ */
+function mai_cyber_gallery_validate_conditional_required_value( $valid, $value, $field, $input ) {
+	return mai_cyber_gallery_is_required_field_active( (array) $field, $input )
+		? $valid
+		: true;
+}
 
 /**
  * Require visible text for Slider CTA links.
@@ -430,6 +677,10 @@ add_filter( 'acf/validate_value/key=mai_cyber_gallery_slide_button_link', 'mai_c
  * @return bool|string
  */
 function mai_cyber_gallery_validate_slide_button_link( $valid, $value, $field, $input ) {
+	if ( ! mai_cyber_gallery_is_required_field_active( (array) $field, $input ) ) {
+		return true;
+	}
+
 	if ( true !== $valid ) {
 		return $valid;
 	}
@@ -455,10 +706,24 @@ function mai_cyber_gallery_register_field_group(): void {
 		return;
 	}
 
-	$orientations = (array) mai_get_image_orientation_choices();
-	$image_sizes  = (array) mai_get_image_size_choices();
-	$slider_width = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
-	$hover_choices = [
+	$orientations              = (array) mai_get_image_orientation_choices();
+	$image_sizes               = (array) mai_get_image_size_choices();
+	$slider_width              = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
+	$layout_choices            = mai_cyber_gallery_get_layout_choices();
+	$arrow_style_choices       = mai_cyber_gallery_get_arrow_style_choices();
+	$button_style_choices      = mai_cyber_gallery_get_button_style_choices();
+	$slider_navigation_choices = mai_cyber_gallery_get_slider_navigation_choices();
+	$slider_transition_choices = mai_cyber_gallery_get_slider_transition_choices();
+	$slider_speed_choices      = mai_cyber_gallery_get_slider_transition_speed_choices();
+	$slider_hover_choices      = mai_cyber_gallery_get_slider_navigation_hover_choices();
+	$slider_overlay_choices    = mai_cyber_gallery_get_slider_overlay_style_choices();
+	$slider_navigation_default = mai_cyber_gallery_get_choice_default( $slider_navigation_choices, 'arrows' );
+	$slider_navigation_secondary_default = mai_cyber_gallery_get_choice_default(
+		$slider_navigation_choices,
+		'dots',
+		$slider_navigation_default
+	);
+	$hover_choices             = [
 		'none'       => esc_html__( 'None', 'mai-cyber-gallery' ),
 		'zoom'       => esc_html__( 'Zoom', 'mai-cyber-gallery' ),
 		'lift'       => esc_html__( 'Lift', 'mai-cyber-gallery' ),
@@ -476,6 +741,15 @@ function mai_cyber_gallery_register_field_group(): void {
 				'field'    => 'mai_cyber_gallery_layout',
 				'operator' => '==',
 				'value'    => 'slider',
+			],
+		],
+	];
+	$comparison_condition = [
+		[
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => 'comparison',
 			],
 		],
 	];
@@ -515,6 +789,17 @@ function mai_cyber_gallery_register_field_group(): void {
 			],
 		],
 	];
+	$columns_condition = [];
+	foreach ( [ 'grid', 'masonry', 'tiled', 'square', 'circle', 'filmstrip' ] as $layout ) {
+		$columns_condition[] = [
+			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '==',
+				'value'    => $layout,
+			],
+		];
+	}
+	$columns_and_gaps_condition = array_merge( $columns_condition, $justified_condition, $mosaic_condition );
 	$filmstrip_condition = [
 		[
 			[
@@ -524,6 +809,7 @@ function mai_cyber_gallery_register_field_group(): void {
 			],
 		],
 	];
+	$region_condition = array_merge( $filmstrip_condition, $slider_condition, $comparison_condition );
 	$filmstrip_autoplay_condition = [
 		[
 			[
@@ -804,6 +1090,11 @@ function mai_cyber_gallery_register_field_group(): void {
 	$slider_overlay_condition = [
 		[
 			[
+				'field'    => 'mai_cyber_gallery_layout',
+				'operator' => '!=',
+				'value'    => 'comparison',
+			],
+			[
 				'field'    => 'mai_cyber_gallery_slider_overlay_style',
 				'operator' => '!=',
 				'value'    => 'none',
@@ -945,8 +1236,66 @@ function mai_cyber_gallery_register_field_group(): void {
 								'operator' => '!=',
 								'value'    => 'slider',
 							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
 						],
 					],
+				],
+				[
+					'key'               => 'mai_cyber_gallery_comparison_before_image',
+					'label'             => esc_html__( 'Before Image', 'mai-cyber-gallery' ),
+					'name'              => 'comparison_before_image',
+					'type'              => 'image',
+					'required'          => 1,
+					'return_format'     => 'id',
+					'preview_size'      => 'medium',
+					'library'           => 'all',
+					'conditional_logic' => $comparison_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_comparison_after_image',
+					'label'             => esc_html__( 'After Image', 'mai-cyber-gallery' ),
+					'name'              => 'comparison_after_image',
+					'type'              => 'image',
+					'required'          => 1,
+					'return_format'     => 'id',
+					'preview_size'      => 'medium',
+					'library'           => 'all',
+					'conditional_logic' => $comparison_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_comparison_before_label',
+					'label'             => esc_html__( 'Before Label', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Leave blank to hide this badge.', 'mai-cyber-gallery' ),
+					'name'              => 'comparison_before_label',
+					'type'              => 'text',
+					'default_value'     => esc_html__( 'Before', 'mai-cyber-gallery' ),
+					'conditional_logic' => $comparison_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_comparison_after_label',
+					'label'             => esc_html__( 'After Label', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Leave blank to hide this badge.', 'mai-cyber-gallery' ),
+					'name'              => 'comparison_after_label',
+					'type'              => 'text',
+					'default_value'     => esc_html__( 'After', 'mai-cyber-gallery' ),
+					'conditional_logic' => $comparison_condition,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_comparison_position',
+					'label'             => esc_html__( 'Starting Position', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Percentage of the Before image visible from the inline start edge.', 'mai-cyber-gallery' ),
+					'name'              => 'comparison_position',
+					'type'              => 'range',
+					'default_value'     => 50,
+					'min'               => 0,
+					'max'               => 100,
+					'step'              => 1,
+					'append'            => '%',
+					'conditional_logic' => $comparison_condition,
 				],
 				[
 					'key'          => 'mai_cyber_gallery_slides',
@@ -1044,8 +1393,8 @@ function mai_cyber_gallery_register_field_group(): void {
 									'label'           => esc_html__( 'Style', 'mai-cyber-gallery' ),
 									'name'            => 'style',
 									'type'            => 'select',
-									'default_value'   => mai_cyber_gallery_get_default_button_style(),
-									'choices'         => mai_cyber_gallery_get_button_style_choices(),
+									'default_value'   => mai_cyber_gallery_get_choice_default( $button_style_choices, 'button' ),
+									'choices'         => $button_style_choices,
 									'ui'              => 1,
 									'parent_repeater' => 'mai_cyber_gallery_slide_buttons',
 								],
@@ -1083,6 +1432,11 @@ function mai_cyber_gallery_register_field_group(): void {
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '!=',
 								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
 							],
 						],
 					],
@@ -1128,13 +1482,18 @@ function mai_cyber_gallery_register_field_group(): void {
 								'operator' => '!=',
 								'value'    => 'slider',
 							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
 						],
 					],
 				],
 				[
 					'key'           => 'mai_cyber_gallery_image_orientation',
 					'label'         => esc_html__( 'Image Orientation', 'mai-cyber-gallery' ),
-					'instructions'  => esc_html__( 'Used by Mai Grid and Filmstrip Natural/Uniform Crop modes. Natural-ratio layouts use the selected image size below.', 'mai-cyber-gallery' ),
+					'instructions'  => esc_html__( 'Used by Mai Grid, Before / After, and Filmstrip Natural/Uniform Crop modes. Natural-ratio layouts use the selected image size below.', 'mai-cyber-gallery' ),
 					'name'          => 'image_orientation',
 					'type'          => 'select',
 					'default_value' => 'landscape',
@@ -1159,6 +1518,13 @@ function mai_cyber_gallery_register_field_group(): void {
 								'value'    => 'logo-contain',
 							],
 						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'comparison',
+							],
+						],
 					],
 				],
 				[
@@ -1181,6 +1547,23 @@ function mai_cyber_gallery_register_field_group(): void {
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '!=',
 								'value'    => 'filmstrip',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
+						],
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '==',
+								'value'    => 'comparison',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_image_orientation',
+								'operator' => '==',
+								'value'    => 'custom',
 							],
 						],
 						[
@@ -1226,9 +1609,18 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'         => esc_html__( 'Image Overlay', 'mai-cyber-gallery' ),
 					'name'          => 'slider_overlay_style',
 					'type'          => 'select',
-					'default_value' => 'none',
-					'choices'       => mai_cyber_gallery_get_slider_overlay_style_choices(),
+					'default_value' => mai_cyber_gallery_get_choice_default( $slider_overlay_choices, 'none' ),
+					'choices'       => $slider_overlay_choices,
 					'ui'            => 1,
+					'conditional_logic' => [
+						[
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
+						],
+					],
 				],
 				...$slider_overlay_color_fields,
 				[
@@ -1264,6 +1656,11 @@ function mai_cyber_gallery_register_field_group(): void {
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '!=',
 								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
 							],
 						],
 					],
@@ -1309,17 +1706,26 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'         => esc_html__( 'Gallery Layout', 'mai-cyber-gallery' ),
 					'name'          => 'layout',
 					'type'          => 'select',
-					'default_value' => 'masonry',
-					'choices'       => mai_cyber_gallery_get_layout_choices(),
+					'default_value' => mai_cyber_gallery_get_choice_default( $layout_choices, 'masonry' ),
+					'choices'       => $layout_choices,
 					'ui'            => 1,
+				],
+				[
+					'key'               => 'mai_cyber_gallery_aria_label',
+					'label'             => esc_html__( 'Accessible Label', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Optional name that distinguishes this gallery region from other galleries on the page. Leave blank to use the built-in layout label.', 'mai-cyber-gallery' ),
+					'name'              => 'aria_label',
+					'type'              => 'text',
+					'default_value'     => '',
+					'conditional_logic' => $region_condition,
 				],
 				[
 					'key'           => 'mai_cyber_gallery_lightbox_arrow_style',
 					'label'         => esc_html__( 'Lightbox Arrow Design', 'mai-cyber-gallery' ),
 					'name'          => 'lightbox_arrow_style',
 					'type'          => 'select',
-					'default_value' => 'circle',
-					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
+					'default_value' => mai_cyber_gallery_get_choice_default( $arrow_style_choices, 'circle' ),
+					'choices'       => $arrow_style_choices,
 					'ui'            => 1,
 					'conditional_logic' => [
 						[
@@ -1332,6 +1738,11 @@ function mai_cyber_gallery_register_field_group(): void {
 								'field'    => 'mai_cyber_gallery_layout',
 								'operator' => '!=',
 								'value'    => 'slider',
+							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
 							],
 						],
 					],
@@ -1430,8 +1841,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'             => esc_html__( 'Filmstrip Arrow Design', 'mai-cyber-gallery' ),
 					'name'              => 'filmstrip_arrow_style',
 					'type'              => 'select',
-					'default_value'     => 'circle',
-					'choices'           => mai_cyber_gallery_get_arrow_style_choices(),
+					'default_value'     => mai_cyber_gallery_get_choice_default( $arrow_style_choices, 'circle' ),
+					'choices'           => $arrow_style_choices,
 					'ui'                => 1,
 					'conditional_logic' => $filmstrip_arrows_condition,
 				],
@@ -1547,13 +1958,31 @@ function mai_cyber_gallery_register_field_group(): void {
 					],
 				],
 				[
+					'key'               => 'mai_cyber_gallery_slider_title_tag',
+					'label'             => esc_html__( 'Slider Title Element', 'mai-cyber-gallery' ),
+					'instructions'      => esc_html__( 'Choose a heading level that fits the surrounding page structure, or Paragraph to keep the title styling without adding a heading.', 'mai-cyber-gallery' ),
+					'name'              => 'slider_title_tag',
+					'type'              => 'select',
+					'default_value'     => 'h2',
+					'choices'           => [
+						'h2' => esc_html__( 'Heading 2', 'mai-cyber-gallery' ),
+						'h3' => esc_html__( 'Heading 3', 'mai-cyber-gallery' ),
+						'h4' => esc_html__( 'Heading 4', 'mai-cyber-gallery' ),
+						'h5' => esc_html__( 'Heading 5', 'mai-cyber-gallery' ),
+						'h6' => esc_html__( 'Heading 6', 'mai-cyber-gallery' ),
+						'p'  => esc_html__( 'Paragraph', 'mai-cyber-gallery' ),
+					],
+					'ui'                => 1,
+					'conditional_logic' => $slider_condition,
+				],
+				[
 					'key'           => 'mai_cyber_gallery_slider_navigation',
 					'label'         => esc_html__( 'Primary Navigation', 'mai-cyber-gallery' ),
 					'instructions'  => esc_html__( 'Choose the first navigation type.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_navigation',
 					'type'          => 'select',
-					'default_value' => 'arrows',
-					'choices'       => mai_cyber_gallery_get_slider_navigation_choices(),
+					'default_value' => $slider_navigation_default,
+					'choices'       => $slider_navigation_choices,
 					'ui'            => 1,
 					'conditional_logic' => [
 						[
@@ -1571,8 +2000,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'instructions'  => esc_html__( 'Optionally add another navigation type. Duplicate selections render only once.', 'mai-cyber-gallery' ),
 					'name'          => 'slider_navigation_secondary',
 					'type'          => 'select',
-					'default_value' => 'dots',
-					'choices'       => mai_cyber_gallery_get_slider_navigation_choices(),
+					'default_value' => $slider_navigation_secondary_default,
+					'choices'       => $slider_navigation_choices,
 					'ui'            => 1,
 					'conditional_logic' => [
 						[
@@ -1604,8 +2033,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'         => esc_html__( 'Slider Arrow Design', 'mai-cyber-gallery' ),
 					'name'          => 'slider_arrow_style',
 					'type'          => 'select',
-					'default_value' => 'circle',
-					'choices'       => mai_cyber_gallery_get_arrow_style_choices(),
+					'default_value' => mai_cyber_gallery_get_choice_default( $arrow_style_choices, 'circle' ),
+					'choices'       => $arrow_style_choices,
 					'ui'            => 1,
 					'conditional_logic' => $slider_arrows_condition,
 				],
@@ -1630,8 +2059,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'             => esc_html__( 'Slide Transition', 'mai-cyber-gallery' ),
 					'name'              => 'slider_transition',
 					'type'              => 'select',
-					'default_value'     => 'native',
-					'choices'           => mai_cyber_gallery_get_slider_transition_choices(),
+					'default_value'     => mai_cyber_gallery_get_choice_default( $slider_transition_choices, 'native' ),
+					'choices'           => $slider_transition_choices,
 					'ui'                => 1,
 					'conditional_logic' => $slider_condition,
 				],
@@ -1640,8 +2069,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'             => esc_html__( 'Transition Speed', 'mai-cyber-gallery' ),
 					'name'              => 'slider_transition_speed',
 					'type'              => 'button_group',
-					'default_value'     => 'normal',
-					'choices'           => mai_cyber_gallery_get_slider_transition_speed_choices(),
+					'default_value'     => mai_cyber_gallery_get_choice_default( $slider_speed_choices, 'normal' ),
+					'choices'           => $slider_speed_choices,
 					'wrapper'           => [
 						'class' => 'mai-acf-button-group',
 					],
@@ -1698,8 +2127,8 @@ function mai_cyber_gallery_register_field_group(): void {
 					'label'             => esc_html__( 'Navigation Hover Effect', 'mai-cyber-gallery' ),
 					'name'              => 'slider_navigation_hover',
 					'type'              => 'select',
-					'default_value'     => 'color',
-					'choices'           => mai_cyber_gallery_get_slider_navigation_hover_choices(),
+					'default_value'     => mai_cyber_gallery_get_choice_default( $slider_hover_choices, 'color' ),
+					'choices'           => $slider_hover_choices,
 					'ui'                => 1,
 					'conditional_logic' => $navigation_interactive_condition,
 				],
@@ -1990,6 +2419,11 @@ function mai_cyber_gallery_register_field_group(): void {
 								'operator' => '!=',
 								'value'    => 'slider',
 							],
+							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
 						],
 					],
 				],
@@ -2021,6 +2455,11 @@ function mai_cyber_gallery_register_field_group(): void {
 								'value'    => 'slider',
 							],
 							[
+								'field'    => 'mai_cyber_gallery_layout',
+								'operator' => '!=',
+								'value'    => 'comparison',
+							],
+							[
 								'field'    => 'mai_cyber_gallery_hover',
 								'operator' => '==',
 								'value'    => 'desaturate',
@@ -2043,7 +2482,7 @@ function mai_cyber_gallery_register_field_group(): void {
 				[
 					'key'          => 'mai_cyber_gallery_columns_clone',
 					'label'        => esc_html__( 'Responsive Columns & Gaps', 'mai-cyber-gallery' ),
-					'instructions' => esc_html__( 'Available for non-Slider layouts. Tiled Mosaic uses the column count as a visual-group limit capped at four.', 'mai-cyber-gallery' ),
+					'instructions' => esc_html__( 'Justified and Editorial Mosaic expose gaps only because they calculate their own item arrangement. Tiled Mosaic caps its visual-group column count at four.', 'mai-cyber-gallery' ),
 					'name'         => 'columns_clone',
 					'type'         => 'clone',
 					'display'      => 'group',
@@ -2058,15 +2497,7 @@ function mai_cyber_gallery_register_field_group(): void {
 						'mai_column_gap',
 						'mai_row_gap',
 					],
-					'conditional_logic' => [
-						[
-							[
-								'field'    => 'mai_cyber_gallery_layout',
-								'operator' => '!=',
-								'value'    => 'slider',
-							],
-						],
-					],
+					'conditional_logic' => $columns_and_gaps_condition,
 				],
 				[
 					'key'          => 'mai_cyber_gallery_margins_clone',

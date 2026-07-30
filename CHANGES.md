@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.0
+
+- Added a strict, full-width Before / After comparison layout with dedicated Before and After image fields.
+- Added editable labels and a configurable initial divider position.
+- Added an RTL-aware native range control for pointer, touch, keyboard, and assistive technology.
+- Reused Mai Engine image orientations, large crop sizes, responsive WordPress image markup, icons, shadows, radii, spacing, and design tokens.
+- Kept a static configured split without JavaScript and in print, without exposing the inactive divider control.
+- Scoped ACF requirements to the active layout while retaining dormant gallery and cloned Mai column values across layout changes.
+- Added distinct accessibility labels, selectable Slider title semantics, registered-image-size fallback, synced/reusable-block asset discovery, and attachment-aware cache tagging.
+- Normalized filtered choice lists and defaults, constrained navigation to implemented controls, restored core choices after malformed filters, and completed argument-filter results before sanitization.
+- Registered public behavior scripts in the footer so galleries rendered through the PHP API after `wp_head` still receive their required enhancements.
+- Preserved literal dollar sequences in user-authored comparison labels and lightbox captions when formatting accessible status text.
+- Added clean-source release enforcement plus expanded integration, browser, standards, distribution, and real Genesis/Mai rendering coverage across all ten layouts.
+
 ## 0.9.0
 
 - Expanded Editorial Mosaic into configurable image groups with one feature followed by 1–8 secondary images.
@@ -12,8 +26,8 @@
 
 ## 0.8.4
 
-- Added a native editor transform from the original Mai Gallery block to Mai Cyber Gallery's Mai Grid layout.
-- Preserved ordinary and custom-linked image order, lightbox behavior, shadow, orientation, source size, captions, hover behavior, responsive columns, alignment, gaps, margins, and supported block-level presentation settings.
+- Added a native editor transform from the original Mai Gallery block to Cyber Gallery for Mai Theme's Mai Grid layout.
+- Preserved ordinary and custom-linked image order, lightbox behavior, shadow, orientation, source size, responsive columns, alignment, gaps, margins, and supported block-level presentation settings while applying Cyber's caption and hover defaults.
 - Kept galleries with no valid active attachment source unchanged and added coverage for both ordinary ACF gallery data and flattened linked-image repeaters.
 
 ## 0.8.3
@@ -35,7 +49,7 @@
 
 ## 0.8.0
 
-- Added a best-effort Core Gallery transform that carries attachment order, valid IDs, columns, image size, crop orientation, link behavior, alignment, anchor, and custom class into a familiar Mai Grid gallery.
+- Added a best-effort Core Gallery transform that carries attachment order, valid IDs, columns, link behavior, alignment, anchor, and custom class into a familiar Mai Grid gallery; uncropped galleries retain source size while cropped galleries map to the nearest Mai orientation and keep the old size dormant for Custom orientation.
 - Added a direct Manage Gallery action to empty block previews, with progressive access to ACF's expanded editor and an accessible settings fallback.
 - Split frontend and block-editor JavaScript/CSS so ACF controls and editor-only styles are no longer shipped to public pages.
 - Added transform coverage, release-version consistency checks, and reproducibility checks for every generated asset bundle.

@@ -4,7 +4,7 @@
 	"name": "acf/mai-cyber-gallery",
 	"title": "Cyber Gallery for Mai Theme",
 	"category": "widgets",
-	"keywords": ["gallery", "masonry", "slider"],
+	"keywords": ["gallery", "masonry", "slider", "comparison", "before after", "filmstrip", "mosaic"],
 	"icon": "format-gallery",
 	"textdomain": "mai-cyber-gallery",
 	"editorStyle": "mai-cyber-gallery-editor",

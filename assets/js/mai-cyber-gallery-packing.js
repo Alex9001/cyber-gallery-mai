@@ -1,5 +1,5 @@
 /**
- * Mai Cyber Gallery source-ordered packing layouts.
+ * Cyber Gallery for Mai Theme source-ordered packing layouts.
  *
  * - Shortest-column Masonry.
  * - Exact Justified rows.
@@ -41,24 +41,6 @@
 	function positiveNumber( value, fallback ) {
 		const parsed = Number.parseFloat( value );
 		return Number.isFinite( parsed ) && 0 < parsed ? parsed : fallback;
-	}
-
-	/**
-	 * Parse one computed CSS time into milliseconds.
-	 *
-	 * @param {*}      value    CSS time such as 560ms or 0.56s.
-	 * @param {number} fallback Fallback milliseconds.
-	 * @return {number}
-	 */
-	function cssTimeMilliseconds( value, fallback ) {
-		const string = String( value || '' ).trim().toLowerCase();
-		const parsed = Number.parseFloat( string );
-
-		if ( ! Number.isFinite( parsed ) || 0 > parsed ) {
-			return fallback;
-		}
-
-		return string.endsWith( 'ms' ) ? parsed : ( string.endsWith( 's' ) ? parsed * 1000 : parsed );
 	}
 
 	/**

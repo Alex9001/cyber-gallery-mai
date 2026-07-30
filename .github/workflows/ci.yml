@@ -58,3 +58,86 @@ jobs:
 
       - name: Verify JavaScript, assets, and block JSON
         run: npm test
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser regressions
+        run: npm run test:browser
+
+  plugin-check:
+    name: Staged distribution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install development tools
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+
+      - name: Build release artifact
+        run: npm run build:zip
+
+      # The official Plugin Check action installs every Requires Plugins slug
+      # from WordPress.org. Mai Engine is distributed from its own repository,
+      # so make the exact minimum release available to WordPress while checking
+      # the staged Cyber build. The separately distributed Genesis/Mai theme
+      # runtime is covered by tests/runtime-smoke.php on an authorized site.
+      - name: Install WordPress test environment
+        run: |
+          npm install --global @wordpress/env@11.12.0
+          cp tests/fixtures/plugin-check.wp-env.json .wp-env.json
+
+      - name: Start staged-distribution environment
+        run: wp-env start --update
+
+      - name: Activate staged plugin
+        run: |
+          wp-env run cli wp plugin activate mai-engine
+          wp-env run cli wp plugin activate mai-cyber-gallery
+          wp-env run cli wp plugin status mai-cyber-gallery
+
+      - name: Run strict Plugin Check against staged release
+        shell: bash
+        run: |
+          plugin_check_output="$(
+            wp-env run cli wp \
+              --no-color \
+              --require=wp-content/plugins/plugin-check/cli.php \
+              plugin check mai-cyber-gallery \
+              --format=strict-json \
+              --ignore-codes=plugin_updater_detected 2>&1
+          )"
+          printf '%s\n' "$plugin_check_output"
+
+          # Plugin Check reserves Update URI for non-directory distribution but
+          # reports it as a WordPress.org-policy error. It is required here to
+          # prevent update collisions for this externally distributed add-on.
+          # An empty strict JSON array means no other findings remain.
+          if \
+            ! grep -Fxq '[]' <<< "$plugin_check_output" \
+            && ! grep -Fq 'Checks complete. No errors found.' <<< "$plugin_check_output"
+          then
+            echo 'Plugin Check reported one or more errors or warnings.' >&2
+            exit 1
+          fi
+
+      - name: Stop WordPress test environment
+        if: always()
+        run: wp-env stop

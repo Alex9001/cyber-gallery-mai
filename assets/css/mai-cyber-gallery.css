@@ -1,5 +1,5 @@
 /**
- * Mai Cyber Gallery.
+ * Cyber Gallery for Mai Theme.
  *
  * Layout is intentionally built on Mai Engine's responsive column variables,
  * spacing scale, image radius, shadow, colors, and transitions.
@@ -2649,7 +2649,166 @@ html[dir="rtl"] .mai-cyber-gallery-dialog-button svg {
 	}
 }
 
+/* Before / After comparison. */
+.mai-cyber-gallery-comparison {
+	--cyber-comparison-position: 50%;
+	--cyber-comparison-aspect: 1.5;
+	--cyber-comparison-control-size: max(44px, var(--spacing-xl, 48px));
+	position: relative;
+	isolation: isolate;
+	width: 100%;
+	aspect-ratio: var(--cyber-comparison-aspect);
+	overflow: hidden;
+	background: var(--color-background, #fff);
+	touch-action: pan-y pinch-zoom;
+}
+
+.has-image-radius-rounded .mai-cyber-gallery-comparison {
+	border-radius: var(--border-radius, 6px);
+}
+
+.mai-cyber-gallery-comparison-layer {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	overflow: hidden;
+}
+
+.mai-cyber-gallery-comparison-layer.is-before {
+	z-index: 2;
+	clip-path: inset(0 calc(100% - var(--cyber-comparison-position)) 0 0);
+}
+
+[dir="rtl"] .mai-cyber-gallery-comparison-layer.is-before {
+	clip-path: inset(0 0 0 calc(100% - var(--cyber-comparison-position)));
+}
+
+.mai-cyber-gallery-comparison-image-frame,
+.mai-cyber-gallery-comparison-image-frame .mai-cyber-gallery-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.mai-cyber-gallery-comparison-image-frame .mai-cyber-gallery-image {
+	object-fit: cover;
+}
+
+.mai-cyber-gallery-comparison-label {
+	position: absolute;
+	inset-block-start: var(--spacing-sm, 12px);
+	z-index: 3;
+	margin: 0;
+	padding: var(--spacing-xxs, 4px) var(--spacing-xs, 8px);
+	color: #fff;
+	font-size: var(--font-size-sm, 0.875rem);
+	font-weight: 600;
+	line-height: 1.2;
+	background: rgb(0 0 0 / 68%);
+	border-radius: var(--border-radius, 4px);
+}
+
+.mai-cyber-gallery-comparison-label.is-before {
+	inset-inline-start: var(--spacing-sm, 12px);
+}
+
+.mai-cyber-gallery-comparison-label.is-after {
+	inset-inline-end: var(--spacing-sm, 12px);
+}
+
+.mai-cyber-gallery-comparison-range {
+	position: absolute;
+	inset: 0;
+	z-index: 5;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	opacity: 0;
+	cursor: ew-resize;
+	pointer-events: none;
+	appearance: none;
+	touch-action: pan-y pinch-zoom;
+}
+
+.mai-cyber-gallery-comparison-range[hidden] {
+	display: none;
+}
+
+.is-cyber-comparison-ready .mai-cyber-gallery-comparison-range {
+	pointer-events: auto;
+}
+
+.mai-cyber-gallery-comparison-divider {
+	position: absolute;
+	inset-block: 0;
+	inset-inline-start: var(--cyber-comparison-position);
+	z-index: 4;
+	width: 2px;
+	background: #fff;
+	box-shadow: 0 0 0 1px rgb(0 0 0 / 25%);
+	transform: translateX(-50%);
+	pointer-events: none;
+}
+
+[dir="rtl"] .mai-cyber-gallery-comparison-divider {
+	transform: translateX(50%);
+}
+
+.mai-cyber-gallery-comparison-handle {
+	position: absolute;
+	inset-block-start: 50%;
+	inset-inline-start: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--cyber-comparison-control-size);
+	height: var(--cyber-comparison-control-size);
+	color: var(--color-primary, #111);
+	background: var(--color-background, #fff);
+	border: 2px solid currentColor;
+	border-radius: 50%;
+	box-shadow: var(--box-shadow, 0 2px 12px rgb(0 0 0 / 30%));
+	transform: translate(-50%, -50%);
+}
+
+[dir="rtl"] .mai-cyber-gallery-comparison-handle {
+	transform: translate(50%, -50%);
+}
+
+.mai-cyber-gallery-comparison-handle > span {
+	display: inline-flex;
+	width: 0.8em;
+}
+
+.mai-cyber-gallery-comparison-handle svg {
+	width: 100%;
+	height: auto;
+	fill: currentColor;
+}
+
+.mai-cyber-gallery-comparison-divider {
+	visibility: hidden;
+}
+
+.is-cyber-comparison-ready .mai-cyber-gallery-comparison-divider {
+	visibility: visible;
+}
+
+.mai-cyber-gallery-comparison-range:focus-visible + .mai-cyber-gallery-comparison-divider .mai-cyber-gallery-comparison-handle {
+	outline: 3px solid var(--color-primary, #111);
+	outline-offset: 3px;
+}
+
 @media print {
+	.mai-cyber-gallery-comparison-range,
+	.mai-cyber-gallery-comparison-divider {
+		display: none !important;
+	}
+
 	.mai-cyber-gallery-layout-masonry.is-cyber-masonry-ready .mai-cyber-gallery.has-columns,
 	.mai-cyber-gallery-layout-tiled.is-cyber-tiled-ready .mai-cyber-gallery.has-columns {
 		display: flex;

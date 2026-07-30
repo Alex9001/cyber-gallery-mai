@@ -33,7 +33,6 @@ const releaseFiles = [
 	'mai-cyber-gallery.php',
 	'readme.txt',
 	'README.md',
-	'CHANGES.md',
 	'LICENSE',
 	'NOTICE',
 	'assets',
@@ -50,6 +49,7 @@ const requiredArchiveFiles = [
 	`${ pluginSlug }/assets/css/mai-cyber-gallery.min.css`,
 	`${ pluginSlug }/assets/js/mai-cyber-gallery.min.js`,
 	`${ pluginSlug }/assets/js/mai-cyber-gallery-packing.min.js`,
+	`${ pluginSlug }/assets/js/mai-cyber-gallery-comparison.min.js`,
 	`${ pluginSlug }/assets/js/mai-cyber-gallery-lightbox.min.js`,
 ];
 const forbiddenSegments = new Set( [
@@ -85,6 +85,20 @@ function run( command, args ) {
 		cwd: root,
 		stdio: 'inherit',
 	} );
+}
+
+/**
+ * Get command output from the repository.
+ *
+ * @param {string}   command Executable.
+ * @param {string[]} args    Arguments.
+ * @return {string} Trimmed output.
+ */
+function output( command, args ) {
+	return execFileSync( command, args, {
+		cwd: root,
+		encoding: 'utf8',
+	} ).trim();
 }
 
 /**
@@ -132,6 +146,26 @@ console.log( `Building ${ pluginSlug } ${ version } release...` );
 run( 'npm', [ 'run', 'build' ] );
 run( 'npm', [ 'run', 'check' ] );
 run( 'composer', [ 'test' ] );
+
+const sourceRevision = output( 'git', [ 'rev-parse', '--verify', 'HEAD' ] );
+const sourceStatus = output( 'git', [
+	'status',
+	'--porcelain',
+	'--untracked-files=all',
+] );
+const allowDirtyBuild = '1' === process.env.MAI_CYBER_GALLERY_ALLOW_DIRTY_BUILD;
+
+if ( sourceStatus && ! allowDirtyBuild ) {
+	throw new Error(
+		'Refusing to create a release from uncommitted source. '
+		+ 'Commit all source and generated assets first. '
+		+ 'For local staging only, set MAI_CYBER_GALLERY_ALLOW_DIRTY_BUILD=1.'
+	);
+}
+
+if ( sourceStatus ) {
+	console.warn( 'Warning: creating a local-only artifact from uncommitted source.' );
+}
 
 rmSync( buildDirectory, { force: true, recursive: true } );
 mkdirSync( stageDirectory, { recursive: true } );
@@ -201,4 +235,5 @@ const checksum = createHash( 'sha256' ).update( zipBuffer ).digest( 'hex' );
 
 console.log( `Staged ${ archiveFiles.length } files in ${ stageDirectory }` );
 console.log( `Created ${ zipPath } (${ zipBuffer.length } bytes)` );
+console.log( `Source revision ${ sourceRevision }${ sourceStatus ? ' (dirty local staging)' : '' }` );
 console.log( `SHA-256 ${ checksum }` );

@@ -1,5 +1,5 @@
 /**
- * Mai Cyber Gallery block-editor integrations.
+ * Cyber Gallery for Mai Theme block-editor integrations.
  */
 
 ( function () {
@@ -41,8 +41,14 @@
 
 			if ( primary.value === secondary.value && 'none' !== primary.value ) {
 				const reset = changed === secondary ? primary : secondary;
-				reset.value = 'none';
-				reset.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+				const none = Array.from( reset.options ).find( function ( option ) {
+					return 'none' === option.value;
+				} );
+
+				if ( none ) {
+					reset.value = 'none';
+					reset.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+				}
 			}
 
 			[ primary, secondary ].forEach( function ( select ) {
@@ -90,12 +96,24 @@
 		const key = 'function' === typeof field.get
 			? String( field.get( 'key' ) || '' )
 			: String( field.$el.data ? field.$el.data( 'key' ) || '' : '' );
+		const element = field.$el[0] || null;
+		const insideColumnsClone = Boolean(
+			element
+			&& element.closest
+			&& element.closest(
+				'.acf-field[data-key="mai_cyber_gallery_columns_clone"]'
+			)
+		);
 		const conditions = field.conditions || null;
 		const hidden = 'function' === typeof field.prop
 			? Boolean( field.prop( 'hidden' ) )
 			: field.$el.hasClass( 'acf-hidden' );
 
-		if ( ! key.startsWith( 'mai_cyber_gallery_' ) || ! conditions || ! hidden ) {
+		if (
+			( ! key.startsWith( 'mai_cyber_gallery_' ) && ! insideColumnsClone )
+			|| ! conditions
+			|| ! hidden
+		) {
 			return;
 		}
 
@@ -1423,6 +1441,7 @@
 				[
 					window.MaiCyberGalleryPackingRuntime,
 					window.MaiCyberGalleryRuntime,
+					window.MaiCyberGalleryComparisonRuntime,
 				].forEach( function ( runtime ) {
 					if ( runtime && 'function' === typeof runtime.initialize ) {
 						runtime.initialize( element );

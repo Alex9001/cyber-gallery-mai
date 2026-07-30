@@ -11,14 +11,17 @@ const source = readFileSync(
 /**
  * Load the editor source with small WordPress, ACF, and DOM test doubles.
  *
- * @return {{ filter: Function, createCalls: Object[] }} Captured transform API.
+ * @return {{ actions: Map, createCalls: Object[], document: Object, filter: Function, listeners: Map, window: Object }} Captured editor API.
  */
 function loadEditorTransform() {
 	let filter = null;
 	const createCalls = [];
 	const actions = new Map();
+	const listeners = new Map();
 	const document = {
-		addEventListener() {},
+		addEventListener( name, callback ) {
+			listeners.set( name, callback );
+		},
 		querySelectorAll() {
 			return [];
 		},
@@ -68,7 +71,7 @@ function loadEditorTransform() {
 
 	assert.equal( typeof filter, 'function' );
 
-	return { actions, createCalls, document, filter, window };
+	return { actions, createCalls, document, filter, listeners, window };
 }
 
 /**
@@ -104,6 +107,109 @@ test( 'adds Core and Mai Gallery transforms without replacing existing transform
 		plain( result.transforms.from[2].blocks ),
 		[ 'acf/mai-gallery' ]
 	);
+} );
+
+test( 'preserves hidden Mai column values inside the Cyber clone wrapper', () => {
+	const { actions, window } = loadEditorTransform();
+	const enableCalls = [];
+	const propertyWrites = [];
+	const wrapper = {};
+	const fieldElement = {
+		closest( selector ) {
+			return '.acf-field[data-key="mai_cyber_gallery_columns_clone"]' === selector
+				? wrapper
+				: null;
+		},
+	};
+	const fieldCollection = {
+		0: fieldElement,
+		hasClass() {
+			return false;
+		},
+	};
+	const field = {
+		$el: fieldCollection,
+		conditions: { cid: 'columns-layout-condition' },
+		get( name ) {
+			return 'key' === name ? 'mai_columns' : '';
+		},
+		prop( name, value ) {
+			if ( 1 === arguments.length ) {
+				return 'hidden' === name;
+			}
+			propertyWrites.push( [ name, value ] );
+			return value;
+		},
+	};
+
+	window.acf.enable = function ( element, conditionId ) {
+		enableCalls.push( [ element, conditionId ] );
+	};
+
+	actions.get( 'hide_field' )( field, 'conditional_logic' );
+
+	assert.deepEqual( enableCalls, [
+		[ fieldCollection, 'columns-layout-condition' ],
+	] );
+	assert.deepEqual( propertyWrites, [ [ 'disabled', false ] ] );
+} );
+
+test( 'leaves duplicate navigation selected when a filtered list has no None choice', () => {
+	const { listeners } = loadEditorTransform();
+	const option = {
+		dataset: {},
+		disabled: false,
+		selected: true,
+		value: 'counter',
+	};
+	const primary = {
+		options: [ { ...option, dataset: {} } ],
+		querySelectorAll() {
+			return [];
+		},
+		value: 'counter',
+	};
+	const secondary = {
+		closest() {
+			return fields;
+		},
+		matches( selector ) {
+			return selector.includes( 'slider_navigation' );
+		},
+		options: [ { ...option, dataset: {} } ],
+		querySelectorAll() {
+			return [];
+		},
+		value: 'counter',
+	};
+	const primaryField = {
+		closest() {
+			return fields;
+		},
+		querySelector() {
+			return primary;
+		},
+	};
+	const secondaryField = {
+		querySelector() {
+			return secondary;
+		},
+	};
+	const fields = {
+		querySelector() {
+			return secondaryField;
+		},
+		querySelectorAll() {
+			return [ primaryField ];
+		},
+	};
+
+	listeners.get( 'change' )( { target: secondary } );
+
+	assert.equal( primary.value, 'counter' );
+	assert.equal( secondary.value, 'counter' );
+	assert.equal( primary.options[0].disabled, false );
+	assert.equal( secondary.options[0].disabled, false );
 } );
 
 test( 'converts modern Core Gallery image blocks in source order', () => {
