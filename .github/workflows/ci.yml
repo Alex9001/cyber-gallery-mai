@@ -129,11 +129,10 @@ jobs:
           # Plugin Check reserves Update URI for non-directory distribution but
           # reports it as a WordPress.org-policy error. It is required here to
           # prevent update collisions for this externally distributed add-on.
-          # An empty strict JSON array means no other findings remain.
-          if \
-            ! grep -Fxq '[]' <<< "$plugin_check_output" \
-            && ! grep -Fq 'Checks complete. No errors found.' <<< "$plugin_check_output"
-          then
+          # An empty strict JSON array means no other findings remain. wp-env
+          # appends its own success marker to that same output line, so match
+          # the JSON token at the beginning rather than requiring a bare line.
+          if ! grep -Eq '^\[\]' <<< "$plugin_check_output"; then
             echo 'Plugin Check reported one or more errors or warnings.' >&2
             exit 1
           fi
