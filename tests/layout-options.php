@@ -12,21 +12,25 @@ define( 'ABSPATH', __DIR__ . '/' );
 /**
  * Minimal Mai class-list helper.
  *
- * @param string|array<int, string> $new     New classes.
- * @param string                   $existing Existing classes.
+ * @param string|array<int, string> $new_classes New classes.
+ * @param string                    $existing    Existing classes.
  *
  * @return string
  */
-function mai_add_classes( $new, $existing = '' ): string {
+function mai_add_classes( $new_classes, $existing = '' ): string {
+	$existing_classes = preg_split( '/\s+/', trim( $existing ) );
+	$existing_classes = false === $existing_classes ? array() : $existing_classes;
+	$new_classes      = is_array( $new_classes ) ? $new_classes : preg_split( '/\s+/', trim( $new_classes ) );
+
 	$classes = array_merge(
-		preg_split( '/\s+/', trim( $existing ) ) ?: [],
-		is_array( $new ) ? $new : preg_split( '/\s+/', trim( $new ) )
+		$existing_classes,
+		false === $new_classes ? array() : $new_classes
 	);
 
 	return implode( ' ', array_values( array_unique( array_filter( $classes ) ) ) );
 }
 
-require dirname( __DIR__ ) . '/classes/class-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
 
 $reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
@@ -49,10 +53,10 @@ $method->setAccessible( true );
 function cyber_mosaic_atts( $gallery, $method, $index, $total ): array {
 	return $method->invoke(
 		$gallery,
-		[
+		array(
 			'class' => 'mai-cyber-gallery-item',
 			'style' => '',
-		],
+		),
 		$index,
 		$total
 	);
@@ -60,17 +64,17 @@ function cyber_mosaic_atts( $gallery, $method, $index, $total ): array {
 
 $args->setValue(
 	$gallery,
-	[
+	array(
 		'mosaic_items_after_feature' => 3,
 		'mosaic_feature_side'        => 'left',
 		'mosaic_alternate'           => true,
-	]
+	)
 );
 
 $first_feature = cyber_mosaic_atts( $gallery, $method, 0, 9 );
 $first_odd     = cyber_mosaic_atts( $gallery, $method, 3, 9 );
-$next_feature = cyber_mosaic_atts( $gallery, $method, 4, 9 );
-$solo_feature = cyber_mosaic_atts( $gallery, $method, 8, 9 );
+$next_feature  = cyber_mosaic_atts( $gallery, $method, 4, 9 );
+$solo_feature  = cyber_mosaic_atts( $gallery, $method, 8, 9 );
 
 if (
 	! str_contains( (string) $first_feature['class'], 'is-mosaic-feature-left' )
@@ -85,11 +89,11 @@ if (
 
 $args->setValue(
 	$gallery,
-	[
+	array(
 		'mosaic_items_after_feature' => 5,
 		'mosaic_feature_side'        => 'right',
 		'mosaic_alternate'           => false,
-	]
+	)
 );
 
 $five_feature = cyber_mosaic_atts( $gallery, $method, 0, 6 );
@@ -104,11 +108,11 @@ if (
 
 $args->setValue(
 	$gallery,
-	[
+	array(
 		'mosaic_items_after_feature' => 4,
 		'mosaic_feature_side'        => 'left',
 		'mosaic_alternate'           => false,
-	]
+	)
 );
 
 $short_first  = cyber_mosaic_atts( $gallery, $method, 1, 3 );

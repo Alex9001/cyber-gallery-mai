@@ -9,8 +9,8 @@ declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-$mai_cyber_gallery_test_hooks  = [];
-$mai_cyber_gallery_test_purges = [];
+$mai_cyber_gallery_test_hooks  = array();
+$mai_cyber_gallery_test_purges = array();
 
 /**
  * Minimal WordPress action registration test double.
@@ -25,11 +25,11 @@ $mai_cyber_gallery_test_purges = [];
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ): void {
 	global $mai_cyber_gallery_test_hooks;
 
-	$mai_cyber_gallery_test_hooks[ $hook ] = [
+	$mai_cyber_gallery_test_hooks[ $hook ] = array(
 		'callback'      => $callback,
 		'priority'      => $priority,
 		'accepted_args' => $accepted_args,
-	];
+	);
 }
 
 /**
@@ -121,14 +121,22 @@ function absint( $value ): int {
 
 require dirname( __DIR__ ) . '/mai-cyber-gallery.php';
 
-$plugin = mai_cyber_gallery_plugin();
-$source = file_get_contents( dirname( __DIR__ ) . '/mai-cyber-gallery.php' );
+$plugin                             = mai_cyber_gallery_plugin();
+$mai_cyber_gallery_test_plugin_root = dirname( __DIR__ ) . '/';
+$source                             = file_get_contents( $mai_cyber_gallery_test_plugin_root . 'classes/class-mai-cyber-gallery-plugin.php' );
+
+if (
+	MAI_CYBER_GALLERY_PLUGIN_FILE !== $mai_cyber_gallery_test_plugin_root . 'mai-cyber-gallery.php'
+	|| MAI_CYBER_GALLERY_PLUGIN_DIR !== $mai_cyber_gallery_test_plugin_root
+) {
+	throw new RuntimeException( 'Bootstrap constants must resolve to the plugin root, not the classes directory.' );
+}
 
 if (
 	false === $source
 	|| ! str_contains(
 		$source,
-		"add_action( 'deleted_post_meta', [ \$this, 'purge_deleted_attachment_meta_cache' ]"
+		"add_action( 'deleted_post_meta', array( \$this, 'purge_deleted_attachment_meta_cache' )"
 	)
 ) {
 	throw new RuntimeException( 'deleted_post_meta must use its array-aware callback.' );
@@ -141,19 +149,19 @@ $plugin->purge_attachment_meta_cache(
 	'Alt text'
 );
 $plugin->purge_attachment_meta_cache(
-	[ 102 ],
+	array( 102 ),
 	123,
 	'_wp_attachment_image_alt',
 	'Updated alt text'
 );
 $plugin->purge_deleted_attachment_meta_cache(
-	[ 101 ],
+	array( 101 ),
 	123,
 	'_wp_attachment_metadata',
-	[]
+	array()
 );
 
-if ( [ 'MCG.A.123', 'MCG.A.123', 'MCG.A.123' ] !== $mai_cyber_gallery_test_purges ) {
+if ( array( 'MCG.A.123', 'MCG.A.123', 'MCG.A.123' ) !== $mai_cyber_gallery_test_purges ) {
 	throw new RuntimeException( 'Metadata callbacks did not emit the expected cache tags.' );
 }
 

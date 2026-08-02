@@ -15,7 +15,7 @@ define( 'ABSPATH', __DIR__ . '/' );
  * @return array{0: string, 1: int, 2: int}
  */
 function wp_get_attachment_image_src(): array {
-	return [ 'fixture.jpg', 1200, 800 ];
+	return array( 'fixture.jpg', 1200, 800 );
 }
 
 /**
@@ -95,7 +95,7 @@ function mai_get_svg_icon( $icon ): string {
 	return sprintf( '<svg aria-hidden="true" data-icon="%s"></svg>', esc_attr( $icon ) );
 }
 
-require dirname( __DIR__, 2 ) . '/classes/class-gallery.php';
+require dirname( __DIR__, 2 ) . '/classes/class-mai-cyber-gallery.php';
 
 $reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
@@ -109,32 +109,32 @@ $method->setAccessible( true );
 
 $args->setValue(
 	$gallery,
-	[
+	array(
 		'comparison_position'     => 35,
 		'comparison_before_label' => 'Original',
 		'comparison_after_label'  => 'Updated',
 		'shadow'                  => false,
 		'aria_label'              => 'Product redesign comparison',
 		'slider_title_tag'        => 'h3',
-	]
+	)
 );
 $image_size->setValue( $gallery, 'large' );
 
-$items = [
-	[
+$items = array(
+	array(
 		'id'     => 10,
 		'image'  => '<img src="before.jpg" alt="Original design">',
 		'width'  => 1200,
 		'height' => 800,
 		'ratio'  => 1.5,
-	],
-	[
+	),
+	array(
 		'id'     => 11,
 		'image'  => '<img src="after.jpg" alt="Updated design">',
 		'width'  => 1200,
 		'height' => 800,
 		'ratio'  => 1.5,
-	],
-];
+	),
+);
 
 echo $method->invoke( $gallery, $items, 'fixture-gallery' );

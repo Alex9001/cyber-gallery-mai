@@ -10,7 +10,7 @@ declare( strict_types=1 );
 define( 'ABSPATH', __DIR__ . '/' );
 
 $mai_cyber_gallery_test_filter = null;
-$mai_cyber_gallery_test_sizes  = [];
+$mai_cyber_gallery_test_sizes  = array();
 
 /**
  * Minimal Mai orientation check.
@@ -20,7 +20,7 @@ $mai_cyber_gallery_test_sizes  = [];
  * @return bool
  */
 function mai_has_image_orientiation( $orientation ): bool {
-	return in_array( $orientation, [ 'landscape', 'portrait', 'square' ], true );
+	return in_array( $orientation, array( 'landscape', 'portrait', 'square' ), true );
 }
 
 /**
@@ -58,7 +58,7 @@ function wp_get_registered_image_subsizes(): array {
 	return $mai_cyber_gallery_test_sizes;
 }
 
-require dirname( __DIR__ ) . '/classes/class-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
 
 $reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
@@ -69,11 +69,11 @@ $args->setAccessible( true );
 /**
  * Resolve one image-size test case.
  *
- * @param Mai_Cyber_Gallery                  $gallery Gallery instance.
- * @param ReflectionProperty                 $args    Argument property.
- * @param array<string, mixed>               $values  Gallery arguments.
+ * @param Mai_Cyber_Gallery                   $gallery Gallery instance.
+ * @param ReflectionProperty                  $args    Argument property.
+ * @param array<string, mixed>                $values  Gallery arguments.
  * @param array<string, array<string, mixed>> $sizes  Registered sizes.
- * @param string|null                        $filter  Filtered size.
+ * @param string|null                         $filter  Filtered size.
  *
  * @return string
  */
@@ -85,12 +85,12 @@ function cyber_image_size( $gallery, $args, array $values, array $sizes, ?string
 	$args->setValue(
 		$gallery,
 		array_merge(
-			[
+			array(
 				'layout'               => 'mosaic',
 				'image_orientation'    => 'custom',
 				'image_size'           => 'medium',
 				'filmstrip_image_mode' => 'natural',
-			],
+			),
 			$values
 		)
 	);
@@ -98,12 +98,12 @@ function cyber_image_size( $gallery, $args, array $values, array $sizes, ?string
 	return $gallery->get_image_size();
 }
 
-$registered = [
-	'medium' => [ 'crop' => false ],
-	'large'  => [ 'crop' => false ],
-];
+$registered = array(
+	'medium' => array( 'crop' => false ),
+	'large'  => array( 'crop' => false ),
+);
 
-if ( 'medium' !== cyber_image_size( $gallery, $args, [], $registered, 'not-registered' ) ) {
+if ( 'medium' !== cyber_image_size( $gallery, $args, array(), $registered, 'not-registered' ) ) {
 	throw new RuntimeException( 'An invalid filtered size did not fall back to the requested registered size.' );
 }
 
@@ -111,8 +111,8 @@ if (
 	'large' !== cyber_image_size(
 		$gallery,
 		$args,
-		[ 'image_size' => 'not-registered' ],
-		[ 'large' => [ 'crop' => false ] ],
+		array( 'image_size' => 'not-registered' ),
+		array( 'large' => array( 'crop' => false ) ),
 		'also-invalid'
 	)
 ) {
@@ -123,8 +123,8 @@ if (
 	'full' !== cyber_image_size(
 		$gallery,
 		$args,
-		[ 'image_size' => 'not-registered' ],
-		[],
+		array( 'image_size' => 'not-registered' ),
+		array(),
 		'also-invalid'
 	)
 ) {
@@ -135,12 +135,12 @@ if (
 	'full' !== cyber_image_size(
 		$gallery,
 		$args,
-		[
+		array(
 			'layout'               => 'filmstrip',
 			'image_size'           => 'logo-hard',
 			'filmstrip_image_mode' => 'logo-contain',
-		],
-		[ 'logo-hard' => [ 'crop' => true ] ],
+		),
+		array( 'logo-hard' => array( 'crop' => true ) ),
 		null
 	)
 ) {
@@ -151,12 +151,12 @@ if (
 	'logo-soft' !== cyber_image_size(
 		$gallery,
 		$args,
-		[
+		array(
 			'layout'               => 'filmstrip',
 			'image_size'           => 'logo-soft',
 			'filmstrip_image_mode' => 'logo-contain',
-		],
-		[ 'logo-soft' => [ 'crop' => false ] ],
+		),
+		array( 'logo-soft' => array( 'crop' => false ) ),
 		null
 	)
 ) {

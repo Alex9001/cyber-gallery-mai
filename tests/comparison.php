@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-require dirname( __DIR__ ) . '/classes/class-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
 
 $reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
@@ -17,29 +17,29 @@ $method     = $reflection->getMethod( 'get_comparison_items' );
 
 $method->setAccessible( true );
 
-$before = [
+$before    = array(
 	'image'           => '<img alt="Before">',
 	'comparison_side' => 'before',
-];
-$after = [
+);
+$after     = array(
 	'image'           => '<img alt="After">',
 	'comparison_side' => 'after',
-];
-$duplicate = [
+);
+$duplicate = array(
 	'image'           => '<img alt="Duplicate">',
 	'comparison_side' => 'before',
-];
+);
 
-$complete = $method->invoke( $gallery, [ $after, $duplicate, $before ] );
-$missing  = $method->invoke( $gallery, [ $before ] );
+$complete = $method->invoke( $gallery, array( $after, $duplicate, $before ) );
+$missing  = $method->invoke( $gallery, array( $before ) );
 $ordinary = $method->invoke(
 	$gallery,
-	[
-		[
+	array(
+		array(
 			'image'           => '<img alt="Gallery">',
 			'comparison_side' => '',
-		],
-	]
+		),
+	)
 );
 
 if (

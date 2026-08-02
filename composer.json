@@ -28,8 +28,11 @@
   "scripts": {
     "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
     "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G --debug",
-    "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- mai-cyber-gallery.php blocks classes includes",
-    "standards": "phpcs --standard=phpcs.xml.dist",
+    "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- mai-cyber-gallery.php blocks classes includes tests stubs",
+    "standards": [
+      "phpcs --standard=phpcs.xml.dist",
+      "phpcs --standard=phpcs-tests.xml.dist"
+    ],
     "integration": [
       "php tests/meta-hook-signatures.php",
       "php tests/layout-options.php",

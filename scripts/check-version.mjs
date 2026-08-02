@@ -64,9 +64,9 @@ const checks = [
 		),
 	],
 	[
-		'mai-cyber-gallery.php MAI_CYBER_GALLERY_VERSION',
+		'class-mai-cyber-gallery-plugin.php MAI_CYBER_GALLERY_VERSION',
 		capture(
-			'mai-cyber-gallery.php',
+			'classes/class-mai-cyber-gallery-plugin.php',
 			/MAI_CYBER_GALLERY_VERSION',\s*'(\d+\.\d+\.\d+)'/,
 			'MAI_CYBER_GALLERY_VERSION'
 		),

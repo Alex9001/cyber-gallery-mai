@@ -44,17 +44,17 @@ class WP_Query {
 	/**
 	 * Construct a query fixture.
 	 *
-	 * @param list<WP_Post> $posts Query posts.
+	 * @param array<int,WP_Post> $posts Query posts.
 	 */
 	public function __construct( array $posts ) {
 		$this->posts = $posts;
 	}
 }
 
-$mai_cyber_gallery_test_posts = [];
-$mai_cyber_gallery_test_styles = [];
-$mai_cyber_gallery_test_scripts = [];
-$mai_cyber_gallery_test_registered_scripts = [];
+$mai_cyber_gallery_test_posts              = array();
+$mai_cyber_gallery_test_styles             = array();
+$mai_cyber_gallery_test_scripts            = array();
+$mai_cyber_gallery_test_registered_scripts = array();
 
 /**
  * Minimal WordPress action registration test double.
@@ -114,7 +114,7 @@ function wp_json_encode( $value ) {
  */
 function parse_blocks( $content ): array {
 	$blocks = json_decode( $content, true );
-	return is_array( $blocks ) ? $blocks : [];
+	return is_array( $blocks ) ? $blocks : array();
 }
 
 /**
@@ -192,15 +192,15 @@ function wp_style_add_data(): void {}
 /**
  * Capture registered script placement.
  *
- * @param string              $handle Script handle.
- * @param string              $src Script source.
- * @param array<int,string>   $deps Script dependencies.
- * @param string|false|null   $version Script version.
+ * @param string                   $handle Script handle.
+ * @param string                   $src Script source.
+ * @param array<int,string>        $deps Script dependencies.
+ * @param string|false|null        $version Script version.
  * @param array<string,mixed>|bool $args Registration arguments.
  *
  * @return void
  */
-function wp_register_script( $handle, $src, $deps = [], $version = false, $args = [] ): void {
+function wp_register_script( $handle, $src, $deps = array(), $version = false, $args = array() ): void {
 	global $mai_cyber_gallery_test_registered_scripts;
 	unset( $src, $deps, $version );
 
@@ -266,12 +266,12 @@ $method->setAccessible( true );
 $plugin->register_assets();
 
 foreach (
-	[
+	array(
 		'mai-cyber-gallery',
 		'mai-cyber-gallery-packing',
 		'mai-cyber-gallery-lightbox',
 		'mai-cyber-gallery-comparison',
-	] as $runtime_handle
+	) as $runtime_handle
 ) {
 	$registration = $mai_cyber_gallery_test_registered_scripts[ $runtime_handle ] ?? null;
 
@@ -294,19 +294,19 @@ function cyber_detect_assets( $method, $plugin, array $blocks ): array {
 }
 
 $gallery_block = static function ( string $layout, string $click = 'none' ): array {
-	return [
+	return array(
 		'blockName'   => 'acf/mai-cyber-gallery',
-		'attrs'       => [
-			'data' => [
+		'attrs'       => array(
+			'data' => array(
 				'layout'       => $layout,
 				'click_action' => $click,
-			],
-		],
-		'innerBlocks' => [],
-	];
+			),
+		),
+		'innerBlocks' => array(),
+	);
 };
 
-$plain_grid = cyber_detect_assets( $method, $plugin, [ $gallery_block( 'grid' ) ] );
+$plain_grid = cyber_detect_assets( $method, $plugin, array( $gallery_block( 'grid' ) ) );
 if (
 	! $plain_grid['gallery']
 	|| $plain_grid['packing']
@@ -317,16 +317,16 @@ if (
 	throw new RuntimeException( 'A plain Grid did not request base gallery CSS alone.' );
 }
 
-$wp_query = new WP_Query( [ new WP_Post( [ $gallery_block( 'grid' ) ] ) ] );
+$wp_query = new WP_Query( array( new WP_Post( array( $gallery_block( 'grid' ) ) ) ) );
 $plugin->enqueue_detected_block_assets();
 if (
-	[ 'mai-cyber-gallery' ] !== $mai_cyber_gallery_test_styles
-	|| [] !== $mai_cyber_gallery_test_scripts
+	array( 'mai-cyber-gallery' ) !== $mai_cyber_gallery_test_styles
+	|| array() !== $mai_cyber_gallery_test_scripts
 ) {
 	throw new RuntimeException( 'A plain Grid did not enqueue base CSS without behavior scripts.' );
 }
 
-$slider = cyber_detect_assets( $method, $plugin, [ $gallery_block( 'slider', 'lightbox' ) ] );
+$slider = cyber_detect_assets( $method, $plugin, array( $gallery_block( 'slider', 'lightbox' ) ) );
 if (
 	! $slider['gallery']
 	|| ! $slider['carousel']
@@ -337,7 +337,7 @@ if (
 	throw new RuntimeException( 'Slider asset detection did not suppress its inapplicable lightbox.' );
 }
 
-$comparison = cyber_detect_assets( $method, $plugin, [ $gallery_block( 'comparison', 'lightbox' ) ] );
+$comparison = cyber_detect_assets( $method, $plugin, array( $gallery_block( 'comparison', 'lightbox' ) ) );
 if (
 	! $comparison['gallery']
 	|| ! $comparison['comparison']
@@ -351,10 +351,10 @@ if (
 $combined = cyber_detect_assets(
 	$method,
 	$plugin,
-	[
+	array(
 		$gallery_block( 'masonry', 'lightbox' ),
 		$gallery_block( 'filmstrip' ),
-	]
+	)
 );
 if (
 	! $combined['gallery']
@@ -369,49 +369,49 @@ if (
 $nested = cyber_detect_assets(
 	$method,
 	$plugin,
-	[
-		[
+	array(
+		array(
 			'blockName'   => 'core/group',
-			'attrs'       => [],
-			'innerBlocks' => [ $gallery_block( 'tiled' ) ],
-		],
-	]
+			'attrs'       => array(),
+			'innerBlocks' => array( $gallery_block( 'tiled' ) ),
+		),
+	)
 );
 if ( ! $nested['gallery'] || ! $nested['packing'] ) {
 	throw new RuntimeException( 'Nested innerBlocks were not scanned recursively.' );
 }
 
 $mai_cyber_gallery_test_posts[101] = new WP_Post(
-	[
-		[
+	array(
+		array(
 			'blockName'   => 'core/block',
-			'attrs'       => [ 'ref' => 102 ],
-			'innerBlocks' => [],
-		],
+			'attrs'       => array( 'ref' => 102 ),
+			'innerBlocks' => array(),
+		),
 		$gallery_block( 'grid' ),
-	]
+	)
 );
 $mai_cyber_gallery_test_posts[102] = new WP_Post(
-	[
-		[
+	array(
+		array(
 			'blockName'   => 'core/block',
-			'attrs'       => [ 'ref' => 101 ],
-			'innerBlocks' => [],
-		],
+			'attrs'       => array( 'ref' => 101 ),
+			'innerBlocks' => array(),
+		),
 		$gallery_block( 'comparison' ),
-	]
+	)
 );
 
 $reusable = cyber_detect_assets(
 	$method,
 	$plugin,
-	[
-		[
+	array(
+		array(
 			'blockName'   => 'core/block',
-			'attrs'       => [ 'ref' => 101 ],
-			'innerBlocks' => [],
-		],
-	]
+			'attrs'       => array( 'ref' => 101 ),
+			'innerBlocks' => array(),
+		),
+	)
 );
 if ( ! $reusable['gallery'] || ! $reusable['comparison'] ) {
 	throw new RuntimeException( 'Reusable block references were not followed with cycle protection.' );

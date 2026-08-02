@@ -16,7 +16,7 @@ const blockSource = readFileSync(
 	'utf8'
 );
 const gallerySource = readFileSync(
-	new URL( '../classes/class-gallery.php', import.meta.url ),
+	new URL( '../classes/class-mai-cyber-gallery.php', import.meta.url ),
 	'utf8'
 );
 const bridgeMarker = '\t// Internal bridge used by the editor bundle';
@@ -98,7 +98,7 @@ test( 'Every layout receives independent four-sided block margins', () => {
 
 	assert.match(
 		gallerySource,
-		/foreach \( \[ 'top', 'right', 'bottom', 'left' \] as \$side \)/
+		/foreach \( array\( 'top', 'right', 'bottom', 'left' \) as \$side \)/
 	);
 } );
 

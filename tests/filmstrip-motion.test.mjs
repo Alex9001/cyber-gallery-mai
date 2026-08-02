@@ -16,7 +16,7 @@ const blockSource = readFileSync(
 	'utf8'
 );
 const gallerySource = readFileSync(
-	new URL( '../classes/class-gallery.php', import.meta.url ),
+	new URL( '../classes/class-mai-cyber-gallery.php', import.meta.url ),
 	'utf8'
 );
 const blockMetadata = JSON.parse(

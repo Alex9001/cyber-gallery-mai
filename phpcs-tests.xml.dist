@@ -1,0 +1,88 @@
+<?xml version="1.0"?>
+<ruleset
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	name="Cyber Gallery for Mai Theme test and stub standards"
+	xsi:noNamespaceSchemaLocation="https://schema.phpcodesniffer.com/phpcs.xsd"
+>
+	<description>Apply WordPress coding standards to development-only PHP while preserving intentional test doubles and static-analysis declarations.</description>
+
+	<file>tests</file>
+	<file>stubs</file>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="parallel" value="8"/>
+	<arg name="cache" value=".phpcs-cache"/>
+	<arg value="ps"/>
+
+	<config name="minimum_wp_version" value="6.5"/>
+
+	<rule ref="WordPress"/>
+
+	<!-- Test doubles intentionally redeclare WordPress, Genesis, Mai Engine, and ACF globals. -->
+	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+		<properties>
+			<property name="prefixes" type="array">
+				<element value="mai_cyber_gallery"/>
+				<element value="mai_get_cyber_gallery"/>
+				<element value="mai_do_cyber_gallery"/>
+			</property>
+		</properties>
+		<exclude-pattern>*/tests/*</exclude-pattern>
+		<exclude-pattern>*/stubs/*</exclude-pattern>
+	</rule>
+
+	<!-- This standalone integration test intentionally declares two WordPress class doubles and API functions together. -->
+	<rule ref="Generic.Files.OneObjectStructurePerFile.MultipleFound">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+	</rule>
+	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/stubs/mai-engine.stub.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+	</rule>
+
+	<!-- PHPStan recognizes the *.stub.php suffix; those files mirror external Mai/Genesis declarations. -->
+	<rule ref="WordPress.Files.FileName">
+		<exclude-pattern>*/stubs/*.stub.php</exclude-pattern>
+	</rule>
+	<rule ref="Squiz.Commenting.FunctionComment.InvalidNoReturn">
+		<exclude-pattern>*/stubs/*.stub.php</exclude-pattern>
+	</rule>
+	<rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames.newFound">
+		<exclude-pattern>*/stubs/mai-engine.stub.php</exclude-pattern>
+	</rule>
+
+	<!-- Standalone fixtures deliberately populate variables whose names are globals in WordPress. -->
+	<rule ref="WordPress.WP.GlobalVariablesOverride.Prohibited">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/meta-hook-signatures.php</exclude-pattern>
+		<exclude-pattern>*/tests/runtime-smoke.php</exclude-pattern>
+	</rule>
+
+	<!-- CLI assertions and render fixtures report already-generated diagnostic/plugin markup, not HTTP responses. -->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/choices.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.Security.EscapeOutput.OutputNotEscaped">
+		<exclude-pattern>*/tests/fixtures/render-comparison.php</exclude-pattern>
+	</rule>
+
+	<!-- Local-only test I/O and API doubles intentionally use native PHP primitives. -->
+	<rule ref="WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents">
+		<exclude-pattern>*/tests/meta-hook-signatures.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.file_system_operations_fwrite">
+		<exclude-pattern>*/tests/validation.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.json_encode_json_encode">
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+	</rule>
+	<rule ref="WordPress.WP.AlternativeFunctions.strip_tags_strip_tags">
+		<exclude-pattern>*/tests/choices.php</exclude-pattern>
+		<exclude-pattern>*/tests/validation.php</exclude-pattern>
+	</rule>
+</ruleset>

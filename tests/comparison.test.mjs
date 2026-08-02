@@ -12,7 +12,7 @@ const styles = readFileSync(
 	'utf8'
 );
 const gallerySource = readFileSync(
-	new URL( '../classes/class-gallery.php', import.meta.url ),
+	new URL( '../classes/class-mai-cyber-gallery.php', import.meta.url ),
 	'utf8'
 );
 const document = {
@@ -75,6 +75,6 @@ test( 'landmark labels and Slider title elements are explicitly configurable', (
 	assert.match( gallerySource, /'slider_title_tag'\s*=>\s*'h2'/ );
 	assert.match(
 		gallerySource,
-		/\[ 'h2', 'h3', 'h4', 'h5', 'h6', 'p' \]/
+		/array\( 'h2', 'h3', 'h4', 'h5', 'h6', 'p' \)/
 	);
 } );

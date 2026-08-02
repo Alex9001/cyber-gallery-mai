@@ -207,6 +207,8 @@ Autoplay is optional. Set the time between slides from 3 through 30 seconds, opt
 * Hardened filtered choice lists, filtered defaults, and incomplete argument-filter results so extension points cannot leave unusable editor or runtime state.
 * Moved public behavior scripts to safe late footer output for galleries rendered through the PHP API.
 * Preserved literal dollar sequences in comparison labels and lightbox captions when formatting accessible status text.
+* Brought all shipped PHP onto the complete WordPress Coding Standards ruleset and conventionally named class files without changing the public API or Mai Engine integration.
+* Added explicit coding-standards and PHP-compatibility coverage for repository-only tests and external API stubs.
 
 = 0.9.0 =
 

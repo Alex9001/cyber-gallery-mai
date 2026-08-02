@@ -14,7 +14,7 @@ if ( ! defined( 'WP_CLI' ) || ! WP_CLI ) {
 	throw new RuntimeException( 'This smoke test must run through WP-CLI.' );
 }
 
-$failures = [];
+$failures = array();
 $check    = static function ( bool $condition, string $message ) use ( &$failures ): void {
 	if ( ! $condition ) {
 		$failures[] = $message;
@@ -58,12 +58,12 @@ $check(
 
 $scripts = wp_scripts();
 foreach (
-	[
+	array(
 		'mai-cyber-gallery',
 		'mai-cyber-gallery-packing',
 		'mai-cyber-gallery-lightbox',
 		'mai-cyber-gallery-comparison',
-	] as $runtime_handle
+	) as $runtime_handle
 ) {
 	$registration = $scripts->registered[ $runtime_handle ] ?? null;
 	$check(
@@ -83,10 +83,10 @@ $check(
 
 $preview = function_exists( 'mai_get_cyber_gallery' )
 	? mai_get_cyber_gallery(
-		[
+		array(
 			'layout'  => 'comparison',
 			'preview' => true,
-		]
+		)
 	)
 	: '';
 $check(
@@ -95,7 +95,7 @@ $check(
 );
 
 $image_ids = get_posts(
-	[
+	array(
 		'post_type'              => 'attachment',
 		'post_status'            => 'inherit',
 		'post_mime_type'         => 'image',
@@ -106,7 +106,7 @@ $image_ids = get_posts(
 		'no_found_rows'          => true,
 		'update_post_meta_cache' => false,
 		'update_post_term_cache' => false,
-	]
+	)
 );
 $image_ids = array_values( array_filter( array_map( 'absint', $image_ids ) ) );
 $check(
@@ -115,7 +115,7 @@ $check(
 );
 
 if ( 2 <= count( $image_ids ) ) {
-	$ordinary_layouts = [
+	$ordinary_layouts = array(
 		'grid',
 		'masonry',
 		'justified',
@@ -124,15 +124,15 @@ if ( 2 <= count( $image_ids ) ) {
 		'square',
 		'circle',
 		'filmstrip',
-	];
-	$rendered         = [];
+	);
+	$rendered         = array();
 
 	foreach ( $ordinary_layouts as $layout ) {
-		$args = [
+		$args = array(
 			'layout'       => $layout,
 			'images'       => $image_ids,
 			'click_action' => 'lightbox',
-		];
+		);
 
 		if ( 'filmstrip' === $layout ) {
 			$args['filmstrip_autoplay'] = true;
@@ -147,21 +147,21 @@ if ( 2 <= count( $image_ids ) ) {
 	}
 
 	$rendered['slider'] = mai_get_cyber_gallery(
-		[
+		array(
 			'layout'           => 'slider',
 			'slider_title_tag' => 'h3',
-			'slides'           => [
-				[
+			'slides'           => array(
+				array(
 					'image'   => $image_ids[0],
 					'title'   => 'Runtime slide',
 					'subtext' => 'Mai integration smoke test',
-				],
-				[
+				),
+				array(
 					'image' => $image_ids[1],
 					'title' => 'Second runtime slide',
-				],
-			],
-		]
+				),
+			),
+		)
 	);
 	$check(
 		str_contains( $rendered['slider'], 'data-cyber-layout="slider"' )
@@ -170,11 +170,11 @@ if ( 2 <= count( $image_ids ) ) {
 	);
 
 	$rendered['comparison'] = mai_get_cyber_gallery(
-		[
+		array(
 			'layout'                  => 'comparison',
 			'comparison_before_image' => $image_ids[0],
 			'comparison_after_image'  => $image_ids[1],
-		]
+		)
 	);
 	$check(
 		str_contains( $rendered['comparison'], 'data-cyber-layout="comparison"' )
@@ -190,12 +190,12 @@ if ( 2 <= count( $image_ids ) ) {
 
 	$check( wp_style_is( 'mai-cyber-gallery', 'enqueued' ), 'Runtime rendering did not enqueue the base style.' );
 	foreach (
-		[
+		array(
 			'mai-cyber-gallery',
 			'mai-cyber-gallery-packing',
 			'mai-cyber-gallery-lightbox',
 			'mai-cyber-gallery-comparison',
-		] as $runtime_handle
+		) as $runtime_handle
 	) {
 		$check(
 			wp_script_is( $runtime_handle, 'enqueued' ),

@@ -25,10 +25,10 @@ defined( 'ABSPATH' ) || die;
 function mai_cyber_gallery_normalize_choices( $choices, array $fallback ): array {
 	$normalize = static function ( $values ): array {
 		if ( ! is_array( $values ) ) {
-			return [];
+			return array();
 		}
 
-		$normalized = [];
+		$normalized = array();
 
 		foreach ( $values as $slug => $label ) {
 			if ( ! is_scalar( $label ) ) {
@@ -96,18 +96,18 @@ function mai_cyber_gallery_get_choice_default( array $choices, $preferred, $excl
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_layout_choices(): array {
-	$core_layouts = [
-		'grid'      => esc_html__( 'Mai Grid', 'mai-cyber-gallery' ),
-		'masonry'   => esc_html__( 'Masonry Columns', 'mai-cyber-gallery' ),
-		'justified' => esc_html__( 'Justified Rows', 'mai-cyber-gallery' ),
-		'tiled'     => esc_html__( 'Tiled Mosaic', 'mai-cyber-gallery' ),
-		'mosaic'    => esc_html__( 'Editorial Mosaic', 'mai-cyber-gallery' ),
-		'square'    => esc_html__( 'Square Tiles', 'mai-cyber-gallery' ),
-		'circle'    => esc_html__( 'Circle Tiles', 'mai-cyber-gallery' ),
+	$core_layouts = array(
+		'grid'       => esc_html__( 'Mai Grid', 'mai-cyber-gallery' ),
+		'masonry'    => esc_html__( 'Masonry Columns', 'mai-cyber-gallery' ),
+		'justified'  => esc_html__( 'Justified Rows', 'mai-cyber-gallery' ),
+		'tiled'      => esc_html__( 'Tiled Mosaic', 'mai-cyber-gallery' ),
+		'mosaic'     => esc_html__( 'Editorial Mosaic', 'mai-cyber-gallery' ),
+		'square'     => esc_html__( 'Square Tiles', 'mai-cyber-gallery' ),
+		'circle'     => esc_html__( 'Circle Tiles', 'mai-cyber-gallery' ),
 		'comparison' => esc_html__( 'Before / After', 'mai-cyber-gallery' ),
-		'filmstrip' => esc_html__( 'Filmstrip', 'mai-cyber-gallery' ),
-		'slider'    => esc_html__( 'Slider', 'mai-cyber-gallery' ),
-	];
+		'filmstrip'  => esc_html__( 'Filmstrip', 'mai-cyber-gallery' ),
+		'slider'     => esc_html__( 'Slider', 'mai-cyber-gallery' ),
+	);
 
 	/**
 	 * Filter the registered gallery layouts.
@@ -131,12 +131,12 @@ function mai_cyber_gallery_get_layout_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_arrow_style_choices(): array {
-	$core_styles = [
+	$core_styles = array(
 		'circle'  => esc_html__( 'Frosted Circle', 'mai-cyber-gallery' ),
 		'square'  => esc_html__( 'Rounded Square', 'mai-cyber-gallery' ),
 		'minimal' => esc_html__( 'Minimal Chevron', 'mai-cyber-gallery' ),
 		'edge'    => esc_html__( 'Edge Tab', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter the registered arrow design choices.
@@ -158,12 +158,12 @@ function mai_cyber_gallery_get_arrow_style_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_navigation_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'arrows'  => esc_html__( 'Arrows', 'mai-cyber-gallery' ),
 		'dots'    => esc_html__( 'Circles', 'mai-cyber-gallery' ),
 		'counter' => esc_html__( 'Slide Counter', 'mai-cyber-gallery' ),
 		'none'    => esc_html__( 'None', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter the slider navigation choices.
@@ -191,7 +191,7 @@ function mai_cyber_gallery_get_slider_navigation_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_transition_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'native'     => esc_html__( 'Smooth Slide', 'mai-cyber-gallery' ),
 		'fade'       => esc_html__( 'Fade', 'mai-cyber-gallery' ),
 		'zoom-in'    => esc_html__( 'Zoom In', 'mai-cyber-gallery' ),
@@ -200,7 +200,7 @@ function mai_cyber_gallery_get_slider_transition_choices(): array {
 		'soft-focus' => esc_html__( 'Soft Focus', 'mai-cyber-gallery' ),
 		'reveal'     => esc_html__( 'Reveal', 'mai-cyber-gallery' ),
 		'cinematic'  => esc_html__( 'Cinematic', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter Slider transition choices.
@@ -222,11 +222,11 @@ function mai_cyber_gallery_get_slider_transition_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'fast'   => esc_html__( 'Fast', 'mai-cyber-gallery' ),
 		'normal' => esc_html__( 'Normal', 'mai-cyber-gallery' ),
 		'slow'   => esc_html__( 'Slow', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter Slider transition speed choices.
@@ -248,14 +248,14 @@ function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'color' => esc_html__( 'Color Shift', 'mai-cyber-gallery' ),
 		'grow'  => esc_html__( 'Grow', 'mai-cyber-gallery' ),
 		'nudge' => esc_html__( 'Nudge', 'mai-cyber-gallery' ),
 		'glow'  => esc_html__( 'Glow', 'mai-cyber-gallery' ),
 		'fill'  => esc_html__( 'Fill', 'mai-cyber-gallery' ),
 		'ring'  => esc_html__( 'Ring', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter Slider navigation hover choices.
@@ -277,7 +277,7 @@ function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'none'            => esc_html__( 'None', 'mai-cyber-gallery' ),
 		'solid'           => esc_html__( 'Solid', 'mai-cyber-gallery' ),
 		'gradient-bottom' => esc_html__( 'Gradient from Bottom', 'mai-cyber-gallery' ),
@@ -285,7 +285,7 @@ function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
 		'gradient-left'   => esc_html__( 'Gradient from Left', 'mai-cyber-gallery' ),
 		'gradient-right'  => esc_html__( 'Gradient from Right', 'mai-cyber-gallery' ),
 		'vignette'        => esc_html__( 'Vignette', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter Slider image overlay choices.
@@ -309,12 +309,12 @@ function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
  * @return array<string,string>
  */
 function mai_cyber_gallery_get_button_style_choices(): array {
-	$core_choices = [
+	$core_choices = array(
 		'button'           => esc_html__( 'Primary Button', 'mai-cyber-gallery' ),
 		'button_secondary' => esc_html__( 'Secondary Button', 'mai-cyber-gallery' ),
 		'button_outline'   => esc_html__( 'Outline Button', 'mai-cyber-gallery' ),
 		'button_link'      => esc_html__( 'Link Button', 'mai-cyber-gallery' ),
-	];
+	);
 
 	/**
 	 * Filter Slider CTA button style choices.
@@ -357,12 +357,12 @@ function mai_cyber_gallery_get_default_button_style() {
  * @return string
  */
 function mai_cyber_gallery_get_button_style_classes( $style ): string {
-	$styles = [
-		'button'           => [ 'button' ],
-		'button_secondary' => [ 'button', 'button-secondary' ],
-		'button_outline'   => [ 'button', 'button-outline' ],
-		'button_link'      => [ 'button', 'button-link' ],
-	];
+	$styles = array(
+		'button'           => array( 'button' ),
+		'button_secondary' => array( 'button', 'button-secondary' ),
+		'button_outline'   => array( 'button', 'button-outline' ),
+		'button_link'      => array( 'button', 'button-link' ),
+	);
 
 	/**
 	 * Filter Slider CTA style-to-class mappings.
@@ -373,11 +373,11 @@ function mai_cyber_gallery_get_button_style_classes( $style ): string {
 	 */
 	$styles  = (array) apply_filters( 'mai_cyber_gallery_button_style_classes', $styles );
 	$style   = sanitize_key( (string) $style );
-	$classes = isset( $styles[ $style ] ) ? (array) $styles[ $style ] : [ 'button' ];
+	$classes = isset( $styles[ $style ] ) ? (array) $styles[ $style ] : array( 'button' );
 	$classes = array_filter( $classes, 'is_scalar' );
 	$classes = array_map(
-		static function ( $class ) {
-			return sanitize_html_class( (string) $class );
+		static function ( $css_class ) {
+			return sanitize_html_class( (string) $css_class );
 		},
 		$classes
 	);
@@ -395,7 +395,7 @@ function mai_cyber_gallery_get_button_style_classes( $style ): string {
  *
  * @return string
  */
-function mai_get_cyber_gallery( $args = [] ): string {
+function mai_get_cyber_gallery( $args = array() ): string {
 	$gallery = new Mai_Cyber_Gallery( $args );
 	return $gallery->get();
 }
@@ -409,7 +409,7 @@ function mai_get_cyber_gallery( $args = [] ): string {
  *
  * @return void
  */
-function mai_do_cyber_gallery( $args = [] ): void {
+function mai_do_cyber_gallery( $args = array() ): void {
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Rendered gallery markup is escaped at its sources.
 	echo mai_get_cyber_gallery( $args );
 }

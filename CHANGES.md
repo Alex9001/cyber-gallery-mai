@@ -12,6 +12,8 @@
 - Normalized filtered choice lists and defaults, constrained navigation to implemented controls, restored core choices after malformed filters, and completed argument-filter results before sanitization.
 - Registered public behavior scripts in the footer so galleries rendered through the PHP API after `wp_head` still receive their required enhancements.
 - Preserved literal dollar sequences in user-authored comparison labels and lightbox captions when formatting accessible status text.
+- Brought all shipped PHP onto the complete WordPress Coding Standards ruleset, activated global-prefix enforcement, and moved both runtime classes into conventionally named files without changing the public API or Mai Engine integration.
+- Added a dedicated standards and PHP-compatibility gate for repository-only tests and external API stubs.
 - Added clean-source release enforcement plus expanded integration, browser, standards, distribution, and real Genesis/Mai rendering coverage across all ten layouts.
 
 ## 0.9.0
