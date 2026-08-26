@@ -5,9 +5,28 @@
 ( function () {
 	'use strict';
 
-	const targetBlock = 'acf/mai-cyber-gallery';
+	const targetBlock = 'acf/cyber-gallery-mai';
+	const legacyBlock = 'acf/mai-cyber-gallery';
 	const manageButtonStates = new WeakSet();
+	const editorCanvasFrames = new WeakMap();
 	const logoScaleControlStates = new WeakMap();
+
+	/**
+	 * Get the browsing context that owns an editor element.
+	 *
+	 * WordPress 7.1 always iframes the post editor canvas. Native events must
+	 * therefore be constructed by the same window that owns their target.
+	 *
+	 * @param {Element|null} element Editor element.
+	 * @return {Window} Owning window.
+	 */
+	function getElementView( element ) {
+		return element
+			&& element.ownerDocument
+			&& element.ownerDocument.defaultView
+			? element.ownerDocument.defaultView
+			: window;
+	}
 
 	/**
 	 * Keep the two Slider navigation selects from choosing the same control.
@@ -47,7 +66,8 @@
 
 				if ( none ) {
 					reset.value = 'none';
-					reset.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+					const EventConstructor = getElementView( reset ).Event;
+					reset.dispatchEvent( new EventConstructor( 'change', { bubbles: true } ) );
 				}
 			}
 
@@ -320,7 +340,8 @@
 			input.value = next;
 		}
 
-		input.dispatchEvent( new window.Event( 'change', { bubbles: true } ) );
+		const EventConstructor = getElementView( input ).Event;
+		input.dispatchEvent( new EventConstructor( 'change', { bubbles: true } ) );
 	}
 
 	/**
@@ -758,6 +779,34 @@
 		}
 
 		return target;
+	}
+
+	/**
+	 * Convert the former saved block name without altering its ACF schema.
+	 *
+	 * @param {Object}   attributes  Legacy ACF block attributes.
+	 * @param {Object[]} innerBlocks Nested blocks, when present.
+	 * @return {Object} Canonical Cyber Gallery block.
+	 */
+	function transformLegacyGallery( attributes, innerBlocks ) {
+		const nextAttributes = Object.assign( {}, attributes || {}, {
+			name: targetBlock,
+		} );
+
+		if (
+			attributes
+			&& attributes.data
+			&& 'object' === typeof attributes.data
+			&& ! Array.isArray( attributes.data )
+		) {
+			nextAttributes.data = Object.assign( {}, attributes.data );
+		}
+
+		return window.wp.blocks.createBlock(
+			targetBlock,
+			nextAttributes,
+			Array.isArray( innerBlocks ) ? innerBlocks : []
+		);
 	}
 
 	/**
@@ -1210,6 +1259,11 @@
 				from: from.concat( [
 					{
 						type: 'block',
+						blocks: [ legacyBlock ],
+						transform: transformLegacyGallery,
+					},
+					{
+						type: 'block',
 						blocks: [ 'core/gallery' ],
 						isMatch: function ( attributes, innerBlocks ) {
 							return 0 < getCoreGalleryIds( attributes, innerBlocks ).length;
@@ -1389,6 +1443,157 @@
 	}
 
 	/**
+	 * Reinitialize progressive enhancements after an ACF preview render.
+	 *
+	 * Runtime objects may live in the parent editor window or in the canvas
+	 * window. Supporting both keeps this bridge compatible with the always-
+	 * iframed WordPress 7.1 post editor and older editor configurations.
+	 *
+	 * @param {Object|Element} block ACF preview wrapper or element.
+	 * @return {void}
+	 */
+	function initializeBlockPreview( block ) {
+		const element = block && block[0] ? block[0] : block;
+		const previewView = getElementView( element );
+		const runtimes = [
+			previewView.CyberGalleryMaiPackingRuntime,
+			previewView.CyberGalleryMaiRuntime,
+			previewView.CyberGalleryMaiComparisonRuntime,
+			window.CyberGalleryMaiPackingRuntime,
+			window.CyberGalleryMaiRuntime,
+			window.CyberGalleryMaiComparisonRuntime,
+			previewView.MaiCyberGalleryPackingRuntime,
+			previewView.MaiCyberGalleryRuntime,
+			previewView.MaiCyberGalleryComparisonRuntime,
+			window.MaiCyberGalleryPackingRuntime,
+			window.MaiCyberGalleryRuntime,
+			window.MaiCyberGalleryComparisonRuntime,
+		];
+
+		Array.from( new Set( runtimes.filter( Boolean ) ) ).forEach( function ( runtime ) {
+			if ( 'function' === typeof runtime.initialize ) {
+				runtime.initialize( element );
+			}
+		} );
+		preserveCyberFields();
+		bindManageGalleryButtons( element );
+	}
+
+	/**
+	 * Initialize every Cyber Gallery preview already present in one scope.
+	 *
+	 * ACF can finish the first server-rendered previews before this bundle adds
+	 * its render_block_preview actions. WordPress 7.1 also keeps those previews
+	 * in a separate canvas document, outside observers attached to the editor
+	 * parent. An explicit initial scan closes both timing gaps.
+	 *
+	 * @param {Document|Element} scope Editor canvas document or added subtree.
+	 * @return {void}
+	 */
+	function initializeExistingBlockPreviews( scope ) {
+		if ( ! scope || ! scope.querySelectorAll ) {
+			return;
+		}
+
+		const selector = '[data-type="acf/cyber-gallery-mai"],'
+			+ '[data-type="acf/mai-cyber-gallery"]';
+		const blocks = new Set( scope.querySelectorAll( selector ) );
+
+		if ( scope.matches && scope.matches( selector ) ) {
+			blocks.add( scope );
+		}
+
+		blocks.forEach( initializeBlockPreview );
+	}
+
+	/**
+	 * Connect one WordPress editor-canvas iframe to the parent editor bridge.
+	 *
+	 * @param {HTMLIFrameElement} frame Editor canvas iframe.
+	 * @return {void}
+	 */
+	function connectEditorCanvas( frame ) {
+		if ( ! frame || ! frame.addEventListener ) {
+			return;
+		}
+
+		let state = editorCanvasFrames.get( frame );
+
+		if ( ! state ) {
+			state = {
+				document: null,
+				observer: null,
+			};
+			editorCanvasFrames.set( frame, state );
+			frame.addEventListener( 'load', function () {
+				connectEditorCanvas( frame );
+			} );
+		}
+
+		let editorDocument = null;
+		try {
+			editorDocument = frame.contentDocument;
+		} catch ( error ) {
+			return;
+		}
+
+		if ( ! editorDocument || ! editorDocument.querySelectorAll ) {
+			return;
+		}
+
+		if ( state.document !== editorDocument ) {
+			if ( state.observer ) {
+				state.observer.disconnect();
+			}
+
+			state.document = editorDocument;
+			state.observer = null;
+
+			const editorView = editorDocument.defaultView;
+			const target = editorDocument.body || editorDocument.documentElement;
+
+			if ( editorView && target && 'MutationObserver' in editorView ) {
+				state.observer = new editorView.MutationObserver( function ( mutations ) {
+					mutations.forEach( function ( mutation ) {
+						mutation.addedNodes.forEach( function ( node ) {
+							if ( 1 === node.nodeType ) {
+								initializeExistingBlockPreviews( node );
+							}
+						} );
+					} );
+				} );
+				state.observer.observe( target, {
+					childList: true,
+					subtree: true,
+				} );
+			}
+		}
+
+		initializeExistingBlockPreviews( editorDocument );
+	}
+
+	/**
+	 * Discover WordPress editor canvas iframes in one parent-document scope.
+	 *
+	 * @param {Document|Element} scope Parent document or added subtree.
+	 * @return {void}
+	 */
+	function initializeEditorCanvases( scope ) {
+		if ( ! scope || ! scope.querySelectorAll ) {
+			return;
+		}
+
+		const selector = 'iframe[name="editor-canvas"], iframe.editor-canvas__iframe';
+		const frames = new Set( scope.querySelectorAll( selector ) );
+
+		if ( scope.matches && scope.matches( selector ) ) {
+			frames.add( scope );
+		}
+
+		frames.forEach( connectEditorCanvas );
+	}
+
+	/**
 	 * Register ACF integrations once.
 	 *
 	 * @return {void}
@@ -1434,23 +1639,12 @@
 				initializeLogoScaleEditors( field.$el ? field.$el : document );
 			}
 		} );
-		window.acf.addAction(
+		[
+			'render_block_preview/type=cyber-gallery-mai',
 			'render_block_preview/type=mai-cyber-gallery',
-			function ( block ) {
-				const element = block && block[0] ? block[0] : block;
-				[
-					window.MaiCyberGalleryPackingRuntime,
-					window.MaiCyberGalleryRuntime,
-					window.MaiCyberGalleryComparisonRuntime,
-				].forEach( function ( runtime ) {
-					if ( runtime && 'function' === typeof runtime.initialize ) {
-						runtime.initialize( element );
-					}
-				} );
-				preserveCyberFields();
-				bindManageGalleryButtons( element );
-			}
-		);
+		].forEach( function ( action ) {
+			window.acf.addAction( action, initializeBlockPreview );
+		} );
 
 		preserveCyberFields();
 		initializeLogoScaleEditors( document );
@@ -1459,7 +1653,7 @@
 	if ( window.wp && window.wp.hooks && window.wp.blocks ) {
 		window.wp.hooks.addFilter(
 			'blocks.registerBlockType',
-			'mai-cyber-gallery/gallery-transforms',
+			'cyber-gallery-mai/gallery-transforms',
 			addGalleryTransforms
 		);
 	}
@@ -1502,6 +1696,7 @@
 						syncSliderNavigationSelects( node, null );
 						initializeLogoScaleEditors( node );
 						bindManageGalleryButtons( node );
+						initializeEditorCanvases( node );
 					}
 				} );
 			} );
@@ -1514,4 +1709,5 @@
 
 	syncSliderNavigationSelects( document, null );
 	initializeAcf();
+	initializeEditorCanvases( document );
 }() );

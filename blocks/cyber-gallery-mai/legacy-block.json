@@ -6,19 +6,20 @@
 	"category": "widgets",
 	"keywords": ["gallery", "masonry", "slider", "comparison", "before after", "filmstrip", "mosaic"],
 	"icon": "format-gallery",
-	"textdomain": "mai-cyber-gallery",
-	"editorStyle": "mai-cyber-gallery-editor",
-	"editorScript": "mai-cyber-gallery-editor",
+	"textdomain": "cyber-gallery-mai",
+	"editorStyle": "cyber-gallery-mai-editor",
+	"editorScript": "cyber-gallery-mai-editor",
 	"acf": {
 		"blockVersion": 3,
 		"mode": "preview",
-		"renderCallback": "mai_cyber_gallery_render_block",
+		"renderCallback": "cyber_gallery_mai_render_block",
 		"validate": true,
 		"expandedEditorButtonText": "Open Expanded Editor"
 	},
 	"supports": {
 		"align": ["wide", "full"],
 		"anchor": true,
-		"customClassName": true
+		"customClassName": true,
+		"inserter": false
 	}
 }

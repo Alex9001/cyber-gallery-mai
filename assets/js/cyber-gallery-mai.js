@@ -8,11 +8,70 @@
 ( function () {
 	'use strict';
 
-	const settings = window.MaiCyberGallerySettings || {};
+	const settings = window.CyberGalleryMaiSettings
+		|| window.MaiCyberGallerySettings
+		|| {};
 	const filmstripStates = new WeakMap();
 	const sliderStates = new WeakMap();
 	const managedEditorRoots = new WeakMap();
 	const managedEditorBlocks = new Map();
+	const managedEditorObservers = new WeakMap();
+
+	// Keep the former globals as aliases for third-party integrations while the
+	// canonical public namespace follows the renamed plugin.
+	window.CyberGalleryMaiSettings = settings;
+	window.MaiCyberGallerySettings = settings;
+
+	/**
+	 * Get the document which owns a runtime scope.
+	 *
+	 * WordPress may render block previews in an editor iframe while this bridge
+	 * remains loaded in the parent window. DOM state must therefore come from the
+	 * gallery, not from this script's global document.
+	 *
+	 * @param {Document|Element} scope Runtime scope.
+	 * @return {Document}
+	 */
+	function getOwnerDocument( scope ) {
+		if ( scope && 9 === scope.nodeType ) {
+			return scope;
+		}
+
+		return scope && scope.ownerDocument ? scope.ownerDocument : document;
+	}
+
+	/**
+	 * Get the view which owns a runtime scope.
+	 *
+	 * @param {Document|Element} scope Runtime scope.
+	 * @return {Window}
+	 */
+	function getOwnerView( scope ) {
+		return getOwnerDocument( scope ).defaultView || window;
+	}
+
+	/**
+	 * Check whether a scope and its owning iframe remain connected.
+	 *
+	 * A node can remain connected to its own Document after WordPress replaces
+	 * the iframe element which contains that document.
+	 *
+	 * @param {Document|Element} scope Runtime scope.
+	 * @return {boolean}
+	 */
+	function isRuntimeConnected( scope ) {
+		if ( ! scope || ! scope.isConnected ) {
+			return false;
+		}
+
+		const view = getOwnerView( scope );
+
+		try {
+			return ! view.frameElement || view.frameElement.isConnected;
+		} catch {
+			return true;
+		}
+	}
 
 	/**
 	 * Run a callback once in the next animation frame.
@@ -23,10 +82,10 @@
 	 */
 	function scheduleFrame( state, callback ) {
 		if ( state.frame ) {
-			window.cancelAnimationFrame( state.frame );
+			state.view.cancelAnimationFrame( state.frame );
 		}
 
-		state.frame = window.requestAnimationFrame( function () {
+		state.frame = state.view.requestAnimationFrame( function () {
 			state.frame = 0;
 			callback();
 		} );
@@ -219,7 +278,7 @@
 		const delta = itemBounds.left - trackBounds.left;
 		const target = state.track.scrollLeft + delta;
 		const maximum = Math.max( 0, state.track.scrollWidth - state.track.clientWidth );
-		const isRtl = window.getComputedStyle( state.track ).direction === 'rtl';
+		const isRtl = state.view.getComputedStyle( state.track ).direction === 'rtl';
 
 		return isRtl
 			? Math.max( -maximum, Math.min( 0, target ) )
@@ -235,7 +294,7 @@
 	 */
 	function clampFilmstripScrollLeft( state, value ) {
 		const maximum = Math.max( 0, state.track.scrollWidth - state.track.clientWidth );
-		const isRtl = window.getComputedStyle( state.track ).direction === 'rtl';
+		const isRtl = state.view.getComputedStyle( state.track ).direction === 'rtl';
 
 		return isRtl
 			? Math.max( -maximum, Math.min( 0, value ) )
@@ -285,7 +344,7 @@
 	 */
 	function cancelFilmstripMotion( state ) {
 		if ( state.motionFrame ) {
-			window.cancelAnimationFrame( state.motionFrame );
+			state.view.cancelAnimationFrame( state.motionFrame );
 			state.motionFrame = 0;
 		}
 
@@ -333,7 +392,7 @@
 			return;
 		}
 
-		const startedAt = window.performance.now();
+		const startedAt = state.view.performance.now();
 		const duration = Math.min( 650, Math.max( 420, Math.abs( distance ) * 0.45 ) );
 
 		state.root.classList.add( 'is-cyber-filmstrip-gliding' );
@@ -353,10 +412,10 @@
 				return;
 			}
 
-			state.motionFrame = window.requestAnimationFrame( glide );
+			state.motionFrame = state.view.requestAnimationFrame( glide );
 		};
 
-		state.motionFrame = window.requestAnimationFrame( glide );
+		state.motionFrame = state.view.requestAnimationFrame( glide );
 	}
 
 	/**
@@ -381,7 +440,7 @@
 
 		let position = startingPosition;
 		let velocity = Number.isFinite( initialVelocity ) ? initialVelocity : 0;
-		let previousTime = window.performance.now();
+		let previousTime = state.view.performance.now();
 		const startedAt = previousTime;
 		const startingDistance = target - position;
 
@@ -413,10 +472,10 @@
 				return;
 			}
 
-			state.motionFrame = window.requestAnimationFrame( settle );
+			state.motionFrame = state.view.requestAnimationFrame( settle );
 		};
 
-		state.motionFrame = window.requestAnimationFrame( settle );
+		state.motionFrame = state.view.requestAnimationFrame( settle );
 	}
 
 	/**
@@ -473,7 +532,7 @@
 		}
 
 		state.suppressClick = true;
-		window.setTimeout( function () {
+		state.view.setTimeout( function () {
 			state.suppressClick = false;
 		}, 0 );
 
@@ -582,7 +641,7 @@
 	 * @return {boolean}
 	 */
 	function canFilmstripAutoplay( state ) {
-		const focusPauses = state.focused && document.activeElement !== state.autoplayToggle;
+		const focusPauses = state.focused && state.document.activeElement !== state.autoplayToggle;
 
 		return 0 < state.autoplayInterval
 			&& 1 < state.items.length
@@ -591,7 +650,7 @@
 			&& null === state.dragPointerId
 			&& ! state.motionFrame
 			&& ! state.motionQuery.matches
-			&& ! document.hidden
+			&& ! state.document.hidden
 			&& state.inViewport
 			&& ! focusPauses
 			&& ! ( state.pauseOnHover && state.hovered );
@@ -605,7 +664,7 @@
 	 */
 	function clearFilmstripAutoplay( state ) {
 		if ( state.autoplayTimer ) {
-			window.clearTimeout( state.autoplayTimer );
+			state.view.clearTimeout( state.autoplayTimer );
 			state.autoplayTimer = 0;
 		}
 	}
@@ -641,7 +700,7 @@
 			return;
 		}
 
-		state.autoplayTimer = window.setTimeout( function () {
+		state.autoplayTimer = state.view.setTimeout( function () {
 			state.autoplayTimer = 0;
 			if ( ! canFilmstripAutoplay( state ) ) {
 				syncFilmstripAutoplay( state );
@@ -696,6 +755,8 @@
 	 * @return {void}
 	 */
 	function initializeFilmstrip( root ) {
+		const ownerDocument = getOwnerDocument( root );
+		const view = getOwnerView( root );
 		const track = root.querySelector( '.mai-cyber-gallery' );
 		const previous = root.querySelector( '[data-cyber-filmstrip-previous]' );
 		const next = root.querySelector( '[data-cyber-filmstrip-next]' );
@@ -732,7 +793,7 @@
 
 			cleanupFilmstripRuntime( existing );
 			if ( existing.frame ) {
-				window.cancelAnimationFrame( existing.frame );
+				existing.view.cancelAnimationFrame( existing.frame );
 			}
 
 			if ( existing.resizeObserver ) {
@@ -752,6 +813,8 @@
 
 		const rootBounds = root.getBoundingClientRect();
 		const state = {
+			document: ownerDocument,
+			view: view,
 			root: root,
 			track: track,
 			previous: previous,
@@ -764,7 +827,7 @@
 			motionPosition: null,
 			resizeObserver: null,
 			intersectionObserver: null,
-			controller: 'AbortController' in window ? new window.AbortController() : null,
+			controller: 'AbortController' in view ? new view.AbortController() : null,
 			autoplayInterval: Math.max(
 				0,
 				Number.parseInt( root.dataset.cyberFilmstripAutoplay || '0', 10 ) || 0
@@ -779,7 +842,7 @@
 			autoplayPointerFocus: false,
 			hovered: false,
 			focused: false,
-			inViewport: 0 < rootBounds.bottom && rootBounds.top < window.innerHeight,
+			inViewport: 0 < rootBounds.bottom && rootBounds.top < view.innerHeight,
 			canMove: true,
 			dragPointerId: null,
 			dragStartX: 0,
@@ -790,7 +853,7 @@
 			dragVelocity: 0,
 			dragMoved: false,
 			suppressClick: false,
-			motionQuery: window.matchMedia( '(prefers-reduced-motion: reduce)' ),
+			motionQuery: view.matchMedia( '(prefers-reduced-motion: reduce)' ),
 			motionHandler: null,
 		};
 
@@ -831,7 +894,7 @@
 		if ( autoplayToggle ) {
 			autoplayToggle.addEventListener( 'pointerdown', function () {
 				state.autoplayPointerFocus = true;
-				window.setTimeout( function () {
+				state.view.setTimeout( function () {
 					state.autoplayPointerFocus = false;
 				}, 0 );
 			}, listenerOptions );
@@ -923,7 +986,7 @@
 				return;
 			}
 
-			const isRtl = window.getComputedStyle( track ).direction === 'rtl';
+			const isRtl = state.view.getComputedStyle( track ).direction === 'rtl';
 			let direction = 0;
 
 			if ( 'ArrowRight' === event.key ) {
@@ -982,7 +1045,7 @@
 				syncFilmstripAutoplay( state );
 			}
 		}, listenerOptions );
-		document.addEventListener( 'visibilitychange', function () {
+		state.document.addEventListener( 'visibilitychange', function () {
 			syncFilmstripAutoplay( state );
 		}, listenerOptions );
 
@@ -997,13 +1060,13 @@
 		};
 		state.motionQuery.addEventListener( 'change', state.motionHandler );
 
-		if ( 'ResizeObserver' in window ) {
-			state.resizeObserver = new window.ResizeObserver( scheduleUpdate );
+		if ( 'ResizeObserver' in state.view ) {
+			state.resizeObserver = new state.view.ResizeObserver( scheduleUpdate );
 			state.resizeObserver.observe( track );
 		}
 
-		if ( 'IntersectionObserver' in window ) {
-			state.intersectionObserver = new window.IntersectionObserver( function ( entries ) {
+		if ( 'IntersectionObserver' in state.view ) {
+			state.intersectionObserver = new state.view.IntersectionObserver( function ( entries ) {
 				const entry = entries[0];
 				state.inViewport = Boolean( entry && entry.isIntersecting && 0.1 <= entry.intersectionRatio );
 				syncFilmstripAutoplay( state );
@@ -1108,7 +1171,7 @@
 	function commitSliderIndex( state, index, updateStatus ) {
 		const previousIndex = state.index;
 		const total = state.items.length;
-		const focusedControl = document.activeElement;
+		const focusedControl = state.document.activeElement;
 
 		state.index = Math.max( 0, Math.min( total - 1, index ) );
 
@@ -1177,7 +1240,7 @@
 		}
 
 		const focusedItem = state.items.find( function ( item ) {
-			return item.contains( document.activeElement );
+			return item.contains( state.document.activeElement );
 		} );
 
 		if ( focusedItem && focusedItem !== state.items[ state.index ] ) {
@@ -1260,6 +1323,8 @@
 	 * @return {void}
 	 */
 	function requestSliderImage( image ) {
+		const view = getOwnerView( image );
+
 		image.loading = 'eager';
 
 		if ( ! image.hasAttribute( 'data-lazyloaded' ) ) {
@@ -1267,10 +1332,10 @@
 		}
 
 		if (
-			window.LazyLoad
-			&& 'function' === typeof window.LazyLoad.load
+			view.LazyLoad
+			&& 'function' === typeof view.LazyLoad.load
 		) {
-			window.LazyLoad.load( image );
+			view.LazyLoad.load( image );
 			return;
 		}
 
@@ -1296,6 +1361,7 @@
 	 * @return {Promise<void>}
 	 */
 	function prepareSliderItem( item ) {
+		const view = getOwnerView( item );
 		const images = Array.from( item.querySelectorAll( 'img' ) );
 
 		if ( ! images.length ) {
@@ -1322,7 +1388,7 @@
 		return Promise.race( [
 			Promise.all( decoding ).then( function () {} ),
 			new Promise( function ( resolve ) {
-				window.setTimeout( resolve, 1200 );
+				view.setTimeout( resolve, 1200 );
 			} ),
 		] );
 	}
@@ -1370,9 +1436,9 @@
 		state.track.style.scrollBehavior = scrollBehavior;
 
 		if ( state.unlockFrame ) {
-			window.cancelAnimationFrame( state.unlockFrame );
+			state.view.cancelAnimationFrame( state.unlockFrame );
 		}
-		state.unlockFrame = window.requestAnimationFrame( function () {
+		state.unlockFrame = state.view.requestAnimationFrame( function () {
 			state.unlockFrame = 0;
 			state.suppressUpdate = false;
 		} );
@@ -1387,11 +1453,11 @@
 	 */
 	function finishSliderTransition( state, updateStatus ) {
 		if ( state.transitionTimer ) {
-			window.clearTimeout( state.transitionTimer );
+			state.view.clearTimeout( state.transitionTimer );
 			state.transitionTimer = 0;
 		}
 		if ( state.transitionWatchFrame ) {
-			window.cancelAnimationFrame( state.transitionWatchFrame );
+			state.view.cancelAnimationFrame( state.transitionWatchFrame );
 			state.transitionWatchFrame = 0;
 		}
 
@@ -1438,7 +1504,7 @@
 			return;
 		}
 
-		const layer = document.createElement( 'div' );
+		const layer = state.document.createElement( 'div' );
 		const outgoing = cloneSliderItem( current, 'is-cyber-slide-outgoing' );
 		const incoming = cloneSliderItem( target, 'is-cyber-slide-incoming' );
 
@@ -1455,7 +1521,7 @@
 		commitSliderIndex( state, targetIndex, false );
 
 		const duration = cssTimeMilliseconds(
-			window.getComputedStyle( state.root ).getPropertyValue( '--cyber-slider-transition-duration' ),
+			state.view.getComputedStyle( state.root ).getPropertyValue( '--cyber-slider-transition-duration' ),
 			560
 		);
 		const complete = function () {
@@ -1464,7 +1530,7 @@
 			}
 		};
 
-		state.transitionWatchFrame = window.requestAnimationFrame( function () {
+		state.transitionWatchFrame = state.view.requestAnimationFrame( function () {
 			state.transitionWatchFrame = 0;
 
 			if (
@@ -1484,7 +1550,7 @@
 				).then( complete );
 			}
 		} );
-		state.transitionTimer = window.setTimeout( function () {
+		state.transitionTimer = state.view.setTimeout( function () {
 			complete();
 		}, duration + ( 'cinematic' === state.transition ? 320 : 200 ) );
 	}
@@ -1496,14 +1562,14 @@
 	 * @return {boolean}
 	 */
 	function canSliderAutoplay( state ) {
-		const focusPauses = state.focused && document.activeElement !== state.autoplayToggle;
+		const focusPauses = state.focused && state.document.activeElement !== state.autoplayToggle;
 
 		return 0 < state.autoplayInterval
 			&& 1 < state.items.length
 			&& ! state.autoplayPaused
 			&& ! state.transitionLayer
 			&& ! state.motionQuery.matches
-			&& ! document.hidden
+			&& ! state.document.hidden
 			&& state.inViewport
 			&& ! focusPauses
 			&& ! ( state.pauseOnHover && state.hovered );
@@ -1517,7 +1583,7 @@
 	 */
 	function clearSliderAutoplay( state ) {
 		if ( state.autoplayTimer ) {
-			window.clearTimeout( state.autoplayTimer );
+			state.view.clearTimeout( state.autoplayTimer );
 			state.autoplayTimer = 0;
 		}
 	}
@@ -1557,7 +1623,7 @@
 			return;
 		}
 
-		state.autoplayTimer = window.setTimeout( function () {
+		state.autoplayTimer = state.view.setTimeout( function () {
 			state.autoplayTimer = 0;
 			if ( ! canSliderAutoplay( state ) ) {
 				syncSliderAutoplay( state );
@@ -1622,7 +1688,7 @@
 			prepareSliderItem( target ).then( function () {
 				if (
 					preloadToken !== state.preloadToken
-					|| ! state.root.isConnected
+					|| ! isRuntimeConnected( state.root )
 				) {
 					return;
 				}
@@ -1686,16 +1752,16 @@
 		cancelSliderPreparation( state, false );
 
 		if ( state.transitionTimer ) {
-			window.clearTimeout( state.transitionTimer );
+			state.view.clearTimeout( state.transitionTimer );
 		}
 		if ( state.transitionWatchFrame ) {
-			window.cancelAnimationFrame( state.transitionWatchFrame );
+			state.view.cancelAnimationFrame( state.transitionWatchFrame );
 		}
 		if ( state.transitionLayer ) {
 			state.transitionLayer.remove();
 		}
 		if ( state.unlockFrame ) {
-			window.cancelAnimationFrame( state.unlockFrame );
+			state.view.cancelAnimationFrame( state.unlockFrame );
 		}
 		if ( state.intersectionObserver ) {
 			state.intersectionObserver.disconnect();
@@ -1716,6 +1782,8 @@
 	 * @return {void}
 	 */
 	function initializeSlider( root ) {
+		const ownerDocument = getOwnerDocument( root );
+		const view = getOwnerView( root );
 		const track = root.querySelector( '.mai-cyber-gallery' );
 		const previous = root.querySelector( '[data-cyber-slider-previous]' );
 		const next = root.querySelector( '[data-cyber-slider-next]' );
@@ -1769,7 +1837,7 @@
 			cleanupSliderRuntime( existing );
 
 			if ( existing.frame ) {
-				window.cancelAnimationFrame( existing.frame );
+				existing.view.cancelAnimationFrame( existing.frame );
 			}
 			if ( existing.resizeObserver ) {
 				existing.resizeObserver.disconnect();
@@ -1793,6 +1861,8 @@
 		}
 
 		const state = {
+			document: ownerDocument,
+			view: view,
 			root: root,
 			track: track,
 			previous: previous,
@@ -1810,7 +1880,7 @@
 			suppressUpdate: false,
 			resizeObserver: null,
 			intersectionObserver: null,
-			controller: 'AbortController' in window ? new window.AbortController() : null,
+			controller: 'AbortController' in view ? new view.AbortController() : null,
 			transition: root.dataset.cyberSliderTransition || 'native',
 			transitionLayer: null,
 			transitionTimer: 0,
@@ -1833,7 +1903,7 @@
 			focused: false,
 			autoplayPointerFocus: false,
 			inViewport: true,
-			motionQuery: window.matchMedia( '(prefers-reduced-motion: reduce)' ),
+			motionQuery: view.matchMedia( '(prefers-reduced-motion: reduce)' ),
 			motionHandler: null,
 		};
 
@@ -1875,7 +1945,7 @@
 		if ( autoplayToggle ) {
 			autoplayToggle.addEventListener( 'pointerdown', function () {
 				state.autoplayPointerFocus = true;
-				window.setTimeout( function () {
+				state.view.setTimeout( function () {
 					state.autoplayPointerFocus = false;
 				}, 0 );
 			}, listenerOptions );
@@ -1908,7 +1978,7 @@
 				return;
 			}
 
-			const isRtl = window.getComputedStyle( track ).direction === 'rtl';
+			const isRtl = state.view.getComputedStyle( track ).direction === 'rtl';
 			let target = null;
 
 			if ( 'ArrowRight' === event.key ) {
@@ -1961,7 +2031,7 @@
 				syncSliderAutoplay( state );
 			}
 		}, listenerOptions );
-		document.addEventListener( 'visibilitychange', function () {
+		state.document.addEventListener( 'visibilitychange', function () {
 			syncSliderAutoplay( state );
 		}, listenerOptions );
 
@@ -1983,13 +2053,13 @@
 		};
 		state.motionQuery.addEventListener( 'change', state.motionHandler );
 
-		if ( 'ResizeObserver' in window ) {
-			state.resizeObserver = new window.ResizeObserver( scheduleUpdate );
+		if ( 'ResizeObserver' in state.view ) {
+			state.resizeObserver = new state.view.ResizeObserver( scheduleUpdate );
 			state.resizeObserver.observe( track );
 		}
 
-		if ( 'IntersectionObserver' in window ) {
-			state.intersectionObserver = new window.IntersectionObserver( function ( entries ) {
+		if ( 'IntersectionObserver' in state.view ) {
+			state.intersectionObserver = new state.view.IntersectionObserver( function ( entries ) {
 				const entry = entries[0];
 				state.inViewport = Boolean( entry && entry.isIntersecting && 0.1 <= entry.intersectionRatio );
 				syncSliderAutoplay( state );
@@ -2048,7 +2118,7 @@
 		}
 
 		if ( state.frame ) {
-			window.cancelAnimationFrame( state.frame );
+			state.view.cancelAnimationFrame( state.frame );
 		}
 
 		if ( filmstripStates === states ) {
@@ -2121,6 +2191,124 @@
 	}
 
 	/**
+	 * Find the currently connected editor owner for a managed block entry.
+	 *
+	 * Gutenberg can replace the outer block element while retaining its client
+	 * ID, so a fresh owner lookup is required before considering the entry stale.
+	 *
+	 * @param {string} blockId Managed block client ID.
+	 * @param {Object} entry   Managed block entry.
+	 * @return {Element|null}
+	 */
+	function getConnectedManagedOwner( blockId, entry ) {
+		if ( isRuntimeConnected( entry.owner ) ) {
+			return entry.owner;
+		}
+
+		if ( ! entry.document || ! entry.document.querySelectorAll ) {
+			return null;
+		}
+
+		return Array.from( entry.document.querySelectorAll( '[data-block]' ) ).find(
+			function ( candidate ) {
+				return isRuntimeConnected( candidate )
+					&& blockId === String( candidate.getAttribute( 'data-block' ) || '' );
+			}
+		) || null;
+	}
+
+	/**
+	 * Drop detached preview roots and block entries from the strong-ID map.
+	 *
+	 * The currently reconciling ID is left intact until its old runtime state has
+	 * been read, allowing a replaced preview to retain the active Slider index.
+	 *
+	 * @param {string} preservedBlockId Block ID currently being reconciled.
+	 * @return {void}
+	 */
+	function pruneManagedEditorBlocks( preservedBlockId = '' ) {
+		managedEditorBlocks.forEach( function ( entry, blockId ) {
+			if ( blockId === preservedBlockId ) {
+				return;
+			}
+
+			const connectedRoots = new Set();
+
+			entry.roots.forEach( function ( root ) {
+				if ( isRuntimeConnected( root ) ) {
+					connectedRoots.add( root );
+					return;
+				}
+
+				const state = sliderStates.get( root );
+				if ( state ) {
+					entry.sliderIndex = Math.max( 0, state.intentIndex );
+				} else if ( root.classList.contains( 'mai-cyber-gallery-layout-slider' ) ) {
+					entry.sliderIndex = Math.max(
+						0,
+						( Number.parseInt( root.dataset.cyberSliderIndex || '1', 10 ) || 1 ) - 1
+					);
+				}
+
+				destroyWithin( root );
+			} );
+
+			entry.roots = connectedRoots;
+			const connectedOwner = getConnectedManagedOwner( blockId, entry );
+
+			if ( connectedOwner ) {
+				entry.owner = connectedOwner;
+				return;
+			}
+
+			if ( ! connectedRoots.size ) {
+				managedEditorBlocks.delete( blockId );
+			}
+		} );
+	}
+
+	/**
+	 * Prune managed editor state after mutations in its owning document.
+	 *
+	 * @param {Document} ownerDocument Editor document.
+	 * @return {void}
+	 */
+	function observeManagedEditorDocument( ownerDocument ) {
+		if ( managedEditorObservers.has( ownerDocument ) ) {
+			return;
+		}
+
+		const view = ownerDocument.defaultView || window;
+		const target = ownerDocument.body || ownerDocument.documentElement;
+
+		if ( ! target || ! ( 'MutationObserver' in view ) ) {
+			return;
+		}
+
+		const state = {
+			frame: 0,
+			view: view,
+			observer: null,
+		};
+
+		state.observer = new view.MutationObserver( function () {
+			if ( state.frame ) {
+				return;
+			}
+
+			state.frame = state.view.requestAnimationFrame( function () {
+				state.frame = 0;
+				pruneManagedEditorBlocks();
+			} );
+		} );
+		state.observer.observe( target, {
+			childList: true,
+			subtree: true,
+		} );
+		managedEditorObservers.set( ownerDocument, state );
+	}
+
+	/**
 	 * Reconcile editor previews whose rendered gallery root may be replaced.
 	 *
 	 * @param {Document|Element} scope Current preview scope.
@@ -2134,6 +2322,13 @@
 		const blockOwner = scope.closest ? scope.closest( '[data-block]' ) : null;
 		const blockId = blockOwner ? String( blockOwner.getAttribute( 'data-block' ) || '' ) : '';
 		const owner = blockOwner || scope;
+		const ownerDocument = getOwnerDocument( owner );
+
+		if ( blockId ) {
+			pruneManagedEditorBlocks( blockId );
+			observeManagedEditorDocument( ownerDocument );
+		}
+
 		const previousEntry = blockId
 			? managedEditorBlocks.get( blockId )
 			: managedEditorRoots.get( owner );
@@ -2197,6 +2392,8 @@
 		} );
 
 		const entry = {
+			document: ownerDocument,
+			owner: blockOwner,
 			roots: currentRoots,
 			sliderIndex: sliderIndex,
 		};
@@ -2209,9 +2406,11 @@
 	}
 
 	// Internal bridge used by the editor bundle for iframe-rendered ACF previews.
-	window.MaiCyberGalleryRuntime = {
+	const runtime = {
 		initialize: initializeManagedWithin,
 	};
+	window.CyberGalleryMaiRuntime = runtime;
+	window.MaiCyberGalleryRuntime = runtime;
 
 	/**
 	 * Start global behavior.
@@ -2247,6 +2446,8 @@
 						initializeWithin( root );
 					}
 				} );
+
+				pruneManagedEditorBlocks();
 
 				addedRoots.clear();
 				removedRoots.clear();
@@ -2285,7 +2486,12 @@
 
 				if (
 					! mutationFrame
-					&& ( addedRoots.size || removedRoots.size || changedRoots.size )
+					&& (
+						addedRoots.size
+						|| removedRoots.size
+						|| changedRoots.size
+						|| managedEditorBlocks.size
+					)
 				) {
 					mutationFrame = window.requestAnimationFrame( flushMutations );
 				}

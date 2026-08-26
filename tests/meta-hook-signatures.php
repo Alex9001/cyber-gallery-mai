@@ -2,15 +2,15 @@
 /**
  * Regression coverage for WordPress metadata hook argument shapes.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-$mai_cyber_gallery_test_hooks  = array();
-$mai_cyber_gallery_test_purges = array();
+$cyber_gallery_mai_test_hooks  = array();
+$cyber_gallery_mai_test_purges = array();
 
 /**
  * Minimal WordPress action registration test double.
@@ -23,14 +23,21 @@ $mai_cyber_gallery_test_purges = array();
  * @return void
  */
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ): void {
-	global $mai_cyber_gallery_test_hooks;
+	global $cyber_gallery_mai_test_hooks;
 
-	$mai_cyber_gallery_test_hooks[ $hook ] = array(
+	$cyber_gallery_mai_test_hooks[ $hook ] = array(
 		'callback'      => $callback,
 		'priority'      => $priority,
 		'accepted_args' => $accepted_args,
 	);
 }
+
+/**
+ * Ignore activation-hook registration in the standalone test.
+ *
+ * @return void
+ */
+function register_activation_hook(): void {}
 
 /**
  * Minimal WordPress filter registration test double.
@@ -55,10 +62,10 @@ function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ): voi
  * @return void
  */
 function do_action( $hook, ...$args ): void {
-	global $mai_cyber_gallery_test_purges;
+	global $cyber_gallery_mai_test_purges;
 
 	if ( 'litespeed_purge' === $hook ) {
-		$mai_cyber_gallery_test_purges[] = $args[0] ?? null;
+		$cyber_gallery_mai_test_purges[] = $args[0] ?? null;
 	}
 }
 
@@ -82,7 +89,7 @@ function plugin_dir_path( $file ): string {
  */
 function plugin_dir_url( $file ): string {
 	unset( $file );
-	return 'https://example.test/wp-content/plugins/mai-cyber-gallery/';
+	return 'https://example.test/wp-content/plugins/cyber-gallery-mai/';
 }
 
 /**
@@ -119,15 +126,15 @@ function absint( $value ): int {
 	return abs( (int) $value );
 }
 
-require dirname( __DIR__ ) . '/mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/cyber-gallery-mai.php';
 
-$plugin                             = mai_cyber_gallery_plugin();
-$mai_cyber_gallery_test_plugin_root = dirname( __DIR__ ) . '/';
-$source                             = file_get_contents( $mai_cyber_gallery_test_plugin_root . 'classes/class-mai-cyber-gallery-plugin.php' );
+$plugin                             = cyber_gallery_mai_plugin();
+$cyber_gallery_mai_test_plugin_root = dirname( __DIR__ ) . '/';
+$source                             = file_get_contents( $cyber_gallery_mai_test_plugin_root . 'classes/class-cyber-gallery-mai-plugin.php' );
 
 if (
-	MAI_CYBER_GALLERY_PLUGIN_FILE !== $mai_cyber_gallery_test_plugin_root . 'mai-cyber-gallery.php'
-	|| MAI_CYBER_GALLERY_PLUGIN_DIR !== $mai_cyber_gallery_test_plugin_root
+	CYBER_GALLERY_MAI_PLUGIN_FILE !== $cyber_gallery_mai_test_plugin_root . 'cyber-gallery-mai.php'
+	|| CYBER_GALLERY_MAI_PLUGIN_DIR !== $cyber_gallery_mai_test_plugin_root
 ) {
 	throw new RuntimeException( 'Bootstrap constants must resolve to the plugin root, not the classes directory.' );
 }
@@ -161,7 +168,16 @@ $plugin->purge_deleted_attachment_meta_cache(
 	array()
 );
 
-if ( array( 'MCG.A.123', 'MCG.A.123', 'MCG.A.123' ) !== $mai_cyber_gallery_test_purges ) {
+if (
+	array(
+		'CGM.A.123',
+		'MCG.A.123',
+		'CGM.A.123',
+		'MCG.A.123',
+		'CGM.A.123',
+		'MCG.A.123',
+	) !== $cyber_gallery_mai_test_purges
+) {
 	throw new RuntimeException( 'Metadata callbacks did not emit the expected cache tags.' );
 }
 

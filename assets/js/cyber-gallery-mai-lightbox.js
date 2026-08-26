@@ -5,7 +5,12 @@
 ( function () {
 	'use strict';
 
-	const settings = window.MaiCyberGalleryLightboxSettings || {};
+	const settings = window.CyberGalleryMaiLightboxSettings
+		|| window.MaiCyberGalleryLightboxSettings
+		|| {};
+
+	window.CyberGalleryMaiLightboxSettings = settings;
+	window.MaiCyberGalleryLightboxSettings = settings;
 	let dialogState = null;
 
 	/**

@@ -1,0 +1,24 @@
+{
+	"$schema": "https://advancedcustomfields.com/schemas/json/main/block.json",
+	"apiVersion": 3,
+	"name": "acf/cyber-gallery-mai",
+	"title": "Cyber Gallery for Mai Theme",
+	"category": "widgets",
+	"keywords": ["gallery", "masonry", "slider", "comparison", "before after", "filmstrip", "mosaic"],
+	"icon": "format-gallery",
+	"textdomain": "cyber-gallery-mai",
+	"editorStyle": "cyber-gallery-mai-editor",
+	"editorScript": "cyber-gallery-mai-editor",
+	"acf": {
+		"blockVersion": 3,
+		"mode": "preview",
+		"renderCallback": "cyber_gallery_mai_render_block",
+		"validate": true,
+		"expandedEditorButtonText": "Open Expanded Editor"
+	},
+	"supports": {
+		"align": ["wide", "full"],
+		"anchor": true,
+		"customClassName": true
+	}
+}

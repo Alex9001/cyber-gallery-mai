@@ -2,7 +2,7 @@
 /**
  * Render actual Comparison markup for browser regression tests.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
@@ -95,17 +95,13 @@ function mai_get_svg_icon( $icon ): string {
 	return sprintf( '<svg aria-hidden="true" data-icon="%s"></svg>', esc_attr( $icon ) );
 }
 
-require dirname( __DIR__, 2 ) . '/classes/class-mai-cyber-gallery.php';
+require dirname( __DIR__, 2 ) . '/classes/class-cyber-gallery-mai.php';
 
-$reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
+$reflection = new ReflectionClass( Cyber_Gallery_Mai::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
 $args       = $reflection->getProperty( 'args' );
 $image_size = $reflection->getProperty( 'image_size' );
 $method     = $reflection->getMethod( 'get_comparison_markup' );
-
-$args->setAccessible( true );
-$image_size->setAccessible( true );
-$method->setAccessible( true );
 
 $args->setValue(
 	$gallery,

@@ -4,9 +4,11 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = readFileSync(
-	new URL( '../assets/js/mai-cyber-gallery-editor.js', import.meta.url ),
+	new URL( '../assets/js/cyber-gallery-mai-editor.js', import.meta.url ),
 	'utf8'
 );
+const targetBlock = 'acf/cyber-gallery-mai';
+const legacyBlock = 'acf/mai-cyber-gallery';
 
 /**
  * Load the editor source with small WordPress, ACF, and DOM test doubles.
@@ -39,8 +41,8 @@ function loadEditorTransform() {
 		document,
 		wp: {
 			blocks: {
-				createBlock( name, attributes ) {
-					const block = { name, attributes };
+				createBlock( name, attributes, innerBlocks = [] ) {
+					const block = { name, attributes, innerBlocks };
 					createCalls.push( block );
 					return block;
 				},
@@ -51,7 +53,7 @@ function loadEditorTransform() {
 					assert.equal( hook, 'blocks.registerBlockType' );
 					assert.equal(
 						namespace,
-						'mai-cyber-gallery/gallery-transforms'
+						'cyber-gallery-mai/gallery-transforms'
 					);
 					filter = callback;
 				},
@@ -66,7 +68,7 @@ function loadEditorTransform() {
 			document,
 			window,
 		},
-		{ filename: 'mai-cyber-gallery-editor.js' }
+		{ filename: 'cyber-gallery-mai-editor.js' }
 	);
 
 	assert.equal( typeof filter, 'function' );
@@ -94,19 +96,50 @@ test( 'adds Core and Mai Gallery transforms without replacing existing transform
 		},
 	};
 	const unrelated = filter( settings, 'core/paragraph' );
-	const result = filter( settings, 'acf/mai-cyber-gallery' );
+	const result = filter( settings, targetBlock );
 
 	assert.equal( unrelated, settings );
-	assert.equal( result.transforms.from.length, 3 );
+	assert.equal( result.transforms.from.length, 4 );
 	assert.equal( result.transforms.from[0], existing );
 	assert.equal( result.transforms.to, settings.transforms.to );
 	assert.equal( result.transforms.from[1].type, 'block' );
-	assert.deepEqual( plain( result.transforms.from[1].blocks ), [ 'core/gallery' ] );
+	assert.deepEqual( plain( result.transforms.from[1].blocks ), [ legacyBlock ] );
 	assert.equal( result.transforms.from[2].type, 'block' );
 	assert.deepEqual(
 		plain( result.transforms.from[2].blocks ),
+		[ 'core/gallery' ]
+	);
+	assert.equal( result.transforms.from[3].type, 'block' );
+	assert.deepEqual(
+		plain( result.transforms.from[3].blocks ),
 		[ 'acf/mai-gallery' ]
 	);
+} );
+
+test( 'converts the 1.x block name without changing saved ACF field data', () => {
+	const { filter } = loadEditorTransform();
+	const transform = filter( {}, targetBlock ).transforms.from.find( ( item ) =>
+		plain( item.blocks ).includes( legacyBlock )
+	);
+	const data = {
+		layout: 'comparison',
+		_layout: 'mai_cyber_gallery_layout',
+		comparison_before_image: '42',
+		_comparison_before_image: 'mai_cyber_gallery_comparison_before_image',
+	};
+	const innerBlocks = [ { name: 'core/paragraph', attributes: { content: 'Kept' } } ];
+	const block = plain( transform.transform( {
+		name: legacyBlock,
+		mode: 'preview',
+		align: 'wide',
+		data,
+	}, innerBlocks ) );
+
+	assert.equal( block.name, targetBlock );
+	assert.equal( block.attributes.name, targetBlock );
+	assert.equal( block.attributes.align, 'wide' );
+	assert.deepEqual( block.attributes.data, data );
+	assert.deepEqual( block.innerBlocks, innerBlocks );
 } );
 
 test( 'preserves hidden Mai column values inside the Cyber clone wrapper', () => {
@@ -214,7 +247,9 @@ test( 'leaves duplicate navigation selected when a filtered list has no None cho
 
 test( 'converts modern Core Gallery image blocks in source order', () => {
 	const { filter } = loadEditorTransform();
-	const transform = filter( {}, 'acf/mai-cyber-gallery' ).transforms.from[0];
+	const transform = filter( {}, targetBlock ).transforms.from.find( ( item ) =>
+		plain( item.blocks ).includes( 'core/gallery' )
+	);
 	const attributes = {
 		align: 'wide',
 		anchor: 'portfolio',
@@ -236,8 +271,8 @@ test( 'converts modern Core Gallery image blocks in source order', () => {
 
 	const block = plain( transform.transform( attributes, innerBlocks ) );
 
-	assert.equal( block.name, 'acf/mai-cyber-gallery' );
-	assert.equal( block.attributes.name, 'acf/mai-cyber-gallery' );
+	assert.equal( block.name, targetBlock );
+	assert.equal( block.attributes.name, targetBlock );
 	assert.equal( block.attributes.mode, 'preview' );
 	assert.equal( block.attributes.align, 'wide' );
 	assert.equal( block.attributes.anchor, 'portfolio' );
@@ -262,7 +297,9 @@ test( 'converts modern Core Gallery image blocks in source order', () => {
 
 test( 'supports legacy ids and images while applying safe defaults', () => {
 	const { filter } = loadEditorTransform();
-	const transform = filter( {}, 'acf/mai-cyber-gallery' ).transforms.from[0];
+	const transform = filter( {}, targetBlock ).transforms.from.find( ( item ) =>
+		plain( item.blocks ).includes( 'core/gallery' )
+	);
 	const fromIds = plain(
 		transform.transform(
 			{
@@ -299,7 +336,9 @@ test( 'supports legacy ids and images while applying safe defaults', () => {
 
 test( 'maps Core image lightboxes and rejects galleries without attachment IDs', () => {
 	const { filter } = loadEditorTransform();
-	const transform = filter( {}, 'acf/mai-cyber-gallery' ).transforms.from[0];
+	const transform = filter( {}, targetBlock ).transforms.from.find( ( item ) =>
+		plain( item.blocks ).includes( 'core/gallery' )
+	);
 	const innerBlocks = [
 		{
 			name: 'core/image',
@@ -325,7 +364,7 @@ test( 'maps Core image lightboxes and rejects galleries without attachment IDs',
 
 test( 'converts serialized Mai Gallery data while preserving compatible settings', () => {
 	const { filter } = loadEditorTransform();
-	const transforms = filter( {}, 'acf/mai-cyber-gallery' ).transforms.from;
+	const transforms = filter( {}, targetBlock ).transforms.from;
 	const transform = transforms.find( ( item ) =>
 		plain( item.blocks ).includes( 'acf/mai-gallery' )
 	);
@@ -371,8 +410,8 @@ test( 'converts serialized Mai Gallery data while preserving compatible settings
 
 	const block = plain( transform.transform( attributes ) );
 
-	assert.equal( block.name, 'acf/mai-cyber-gallery' );
-	assert.equal( block.attributes.name, 'acf/mai-cyber-gallery' );
+	assert.equal( block.name, targetBlock );
+	assert.equal( block.attributes.name, targetBlock );
 	assert.equal( block.attributes.mode, 'preview' );
 	assert.equal( block.attributes.align, 'wide' );
 	assert.equal( block.attributes.anchor, 'client-gallery' );
@@ -423,7 +462,7 @@ test( 'converts serialized Mai Gallery data while preserving compatible settings
 
 test( 'converts Mai Gallery custom-link repeaters and rejects empty active sources', () => {
 	const { filter } = loadEditorTransform();
-	const transforms = filter( {}, 'acf/mai-cyber-gallery' ).transforms.from;
+	const transforms = filter( {}, targetBlock ).transforms.from;
 	const transform = transforms.find( ( item ) =>
 		plain( item.blocks ).includes( 'acf/mai-gallery' )
 	);
@@ -599,7 +638,11 @@ test( 'opens ACF expanded editing from an empty preview action', () => {
 		return null;
 	};
 
-	actions.get( 'render_block_preview/type=mai-cyber-gallery' )( preview );
+	const canonicalPreview = actions.get( 'render_block_preview/type=cyber-gallery-mai' );
+	const legacyPreview = actions.get( 'render_block_preview/type=mai-cyber-gallery' );
+
+	assert.equal( canonicalPreview, legacyPreview );
+	canonicalPreview( preview );
 	assert.equal( typeof clickHandler, 'function' );
 
 	clickHandler();

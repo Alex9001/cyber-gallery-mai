@@ -2,7 +2,7 @@
 /**
  * Development-only signatures for the Mai Engine and Genesis APIs used here.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 /**

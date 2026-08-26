@@ -4,12 +4,12 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = readFileSync(
-	new URL( '../assets/js/mai-cyber-gallery-lightbox.js', import.meta.url ),
+	new URL( '../assets/js/cyber-gallery-mai-lightbox.js', import.meta.url ),
 	'utf8'
 );
 const instrumented = source.replace(
 	/\n\}\(\) \);\s*$/,
-	'\nwindow.MaiCyberGalleryLightboxTestRuntime = { formatStatus: formatStatus };$&'
+	'\nwindow.CyberGalleryMaiLightboxTestRuntime = { formatStatus: formatStatus };$&'
 );
 
 if ( instrumented === source ) {
@@ -20,18 +20,23 @@ const document = {
 	addEventListener() {},
 };
 const window = {
-	MaiCyberGalleryLightboxSettings: {
+	CyberGalleryMaiLightboxSettings: {
 		status: '%1$s, %2$s',
 	},
 };
 window.window = window;
 
 vm.runInNewContext( instrumented, { document, window }, {
-	filename: 'mai-cyber-gallery-lightbox.js',
+	filename: 'cyber-gallery-mai-lightbox.js',
 } );
 
 test( 'lightbox status preserves dollar sequences in user captions', () => {
-	const runtime = window.MaiCyberGalleryLightboxTestRuntime;
+	const runtime = window.CyberGalleryMaiLightboxTestRuntime;
+
+	assert.equal(
+		window.MaiCyberGalleryLightboxSettings,
+		window.CyberGalleryMaiLightboxSettings
+	);
 
 	assert.equal(
 		runtime.formatStatus( "Cost $5 and token $& $` $' %2$s", '2 of 4' ),

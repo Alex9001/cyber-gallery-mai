@@ -15,7 +15,7 @@
 	<arg name="cache" value=".phpcs-cache"/>
 	<arg value="ps"/>
 
-	<config name="minimum_wp_version" value="6.5"/>
+	<config name="minimum_wp_version" value="7.1"/>
 
 	<rule ref="WordPress"/>
 
@@ -23,6 +23,7 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
+				<element value="cyber_gallery_mai"/>
 				<element value="mai_cyber_gallery"/>
 				<element value="mai_get_cyber_gallery"/>
 				<element value="mai_do_cyber_gallery"/>
@@ -38,10 +39,12 @@
 	</rule>
 	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/migration.php</exclude-pattern>
 		<exclude-pattern>*/stubs/mai-engine.stub.php</exclude-pattern>
 	</rule>
 	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/migration.php</exclude-pattern>
 	</rule>
 
 	<!-- PHPStan recognizes the *.stub.php suffix; those files mirror external Mai/Genesis declarations. -->
@@ -66,6 +69,7 @@
 	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
 		<exclude-pattern>*/tests/choices.php</exclude-pattern>
+		<exclude-pattern>*/tests/migration.php</exclude-pattern>
 	</rule>
 	<rule ref="WordPress.Security.EscapeOutput.OutputNotEscaped">
 		<exclude-pattern>*/tests/fixtures/render-comparison.php</exclude-pattern>

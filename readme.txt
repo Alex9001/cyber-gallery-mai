@@ -1,10 +1,10 @@
 === Cyber Gallery for Mai Theme ===
-Requires at least: 6.5
-Tested up to: 7.0
+Requires at least: 7.1
+Tested up to: 7.1
 Requires PHP: 8.3
 Requires Plugins: mai-engine
 Tags: gallery, masonry, slider, image comparison, filmstrip
-Stable tag: 1.0.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -34,6 +34,8 @@ Cyber Gallery for Mai Theme is a deliberate Mai Engine add-on. It adds a dynamic
 The block reuses Mai Engine's ACF Pro integration, responsive columns, image sizes, gap and margin fields, color formatting, configured breakpoints, controls, utility classes, Genesis markup API, and design tokens. Mai Engine 2.40.0 or later is required.
 
 Mai Engine is proprietary and distributed separately from this plugin. The dependency header prevents activation when Engine is not active, but WordPress.org cannot download the missing dependency. Install and activate it manually from the Mai Theme distribution or the [Mai Engine GitHub project](https://github.com/maithemewp/mai-engine). Cyber Gallery consumes Mai Engine's supported APIs but does not vendor, fork, or modify Engine.
+
+Version 2.0.0 uses the trademark-safe plugin slug `cyber-gallery-mai` and canonical block name `acf/cyber-gallery-mai`. Existing `acf/mai-cyber-gallery` blocks continue to edit and render through a hidden compatibility registration, and their persisted `mai_cyber_gallery_*` ACF field keys remain unchanged. Former PHP symbols, filters, asset handles, JavaScript globals, CSS selectors, and Genesis contexts remain compatibility aliases or stable markup contracts while new integrations use the Cyber Gallery for Mai Theme identity.
 
 For ordinary image layouts other than Slider and Before / After, click actions include a keyboard-accessible lightbox, media file, attachment page, custom per-image links, or no link. Captions can appear below images, as overlays, or be hidden. Lightbox arrows can use Frosted Circle, Rounded Square, Minimal Chevron, or Edge Tab designs.
 
@@ -82,6 +84,10 @@ The Image Quality / Source Size setting chooses the WordPress image source. A la
 Image Corners can be Square or Rounded. Circle Tiles always remain circular.
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+
+Renames the plugin slug and canonical block for trademark safety, requires WordPress 7.1, PHP 8.3, and Mai Engine 2.40.0, and preserves existing galleries through a hidden block alias plus an optional dry-run-first WP-CLI migration.
 
 = 1.0.0 =
 
@@ -155,7 +161,7 @@ Slider now uses canonical Slides rows with no legacy Images fallback. Re-add ima
 
 1. Obtain Mai Engine separately from the Mai Theme distribution or its GitHub project. If installing a GitHub archive directly, ensure its final plugin directory is named `mai-engine`, not a versioned archive name.
 2. Install and activate Genesis, a Mai child theme, and Mai Engine 2.40.0 or later.
-3. Upload the `mai-cyber-gallery` directory to `/wp-content/plugins/`.
+3. Upload the `cyber-gallery-mai` directory to `/wp-content/plugins/`.
 4. Activate Cyber Gallery for Mai Theme.
 5. Add the Cyber Gallery for Mai Theme block in the block editor.
 
@@ -171,7 +177,17 @@ Mai Engine is not a WordPress.org plugin. WordPress can enforce its installed `m
 
 = Can Mai Galleries remain active? =
 
-Yes. Cyber-owned block, field, class, function, asset, filter, and markup names are unique. Shared responsive controls deliberately clone Mai Engine's fields.
+Yes. The canonical Cyber Gallery symbols are distinct, while narrowly scoped 1.x aliases remain for this plugin's own saved content and integrations. Shared responsive controls deliberately clone Mai Engine's fields.
+
+= How do I upgrade existing 1.x galleries? =
+
+Install version 2.0.0 in `wp-content/plugins/cyber-gallery-mai/` and activate it. Activation deactivates the former `mai-cyber-gallery/mai-cyber-gallery.php` basename so both runtimes do not load together. Existing galleries need no immediate rewrite: the hidden `acf/mai-cyber-gallery` compatibility block keeps them editable and renderable, and the editor Transform menu can convert individual blocks to `acf/cyber-gallery-mai` without changing their ACF data.
+
+For a site-wide conversion, back up the database and run `wp cyber-gallery-mai migrate-blocks` first. That command is a read-only dry run. Review its totals, then run `wp cyber-gallery-mai migrate-blocks --execute` and confirm, or add `--yes` for an automated deployment. Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The recursive command is idempotent and preserves all saved ACF field keys and values.
+
+= Do I need to migrate shortcodes? =
+
+No. Cyber Gallery has never registered a shortcode. Version 2.0 migration applies only to the saved ACF block name.
 
 = Which image size should I use for masonry? =
 
@@ -194,6 +210,18 @@ Optionally. It always retains native touch, mouse, trackpad, keyboard scrolling,
 Autoplay is optional. Set the time between slides from 3 through 30 seconds, optionally pause while the pointer is over the Slider, and choose whether to show its Pause/Start control. Reduced-motion preferences disable autoplay.
 
 == Changelog ==
+
+= 2.0.0 =
+
+* Completed the trademark-safe repository, package, plugin slug, main-file, text-domain, block, PHP, asset, and JavaScript identity change to Cyber Gallery for Mai Theme / `cyber-gallery-mai`.
+* Added the canonical `acf/cyber-gallery-mai` block while retaining `acf/mai-cyber-gallery` as a hidden, non-inserter compatibility block for existing content.
+* Added an editor transform and the dry-run-first `wp cyber-gallery-mai migrate-blocks` command for optional recursive block-name migration across posts, nested/reusable content, templates, and block widgets.
+* Preserved the `mai_cyber_gallery_*` ACF field schema, stable markup selectors and Genesis contexts, and deprecated 1.x PHP, filter, handle, constant, class, and JavaScript aliases.
+* Raised the platform requirements to WordPress 7.1, PHP 8.3 or later, and Mai Engine 2.40.0 or later.
+* Updated release packaging, distribution validation, security audits, static analysis, browser coverage, and runtime smoke tests for the canonical 2.0 artifact.
+* Confirmed that the plugin has never registered shortcodes; migration is block-only.
+* Added the canonical translation template and WordPress 7.1 iframe integration coverage.
+* Preserved every former global block callback/helper through guarded wrappers and verified the stable markup/Genesis contracts against the live editor runtime.
 
 = 1.0.0 =
 

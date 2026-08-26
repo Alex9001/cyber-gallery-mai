@@ -1,0 +1,1307 @@
+# Copyright (C) 2026 CYBER BRAND
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Cyber Gallery for Mai Theme 2.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/Alex9001/cyber-gallery-mai/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-08-26T08:17:15+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: cyber-gallery-mai\n"
+
+#. Plugin Name of the plugin
+#: cyber-gallery-mai.php
+#: blocks/cyber-gallery-mai/block.php:1206
+msgid "Cyber Gallery for Mai Theme"
+msgstr ""
+
+#. Description of the plugin
+#: cyber-gallery-mai.php
+msgid "Advanced galleries with masonry, tiled mosaic, content slider, lightbox, and Before / After comparison layouts powered by Mai Engine."
+msgstr ""
+
+#. Author of the plugin
+#: cyber-gallery-mai.php
+msgid "CYBER BRAND"
+msgstr ""
+
+#. Author URI of the plugin
+#: cyber-gallery-mai.php
+msgid "https://cyberbrand.net/"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:125
+#: blocks/cyber-gallery-mai/block.php:150
+msgid "Logo Size"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:126
+#: blocks/cyber-gallery-mai/block.php:155
+msgid "Use a custom size for this image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:127
+#: blocks/cyber-gallery-mai/block.php:158
+msgid "Logo size percentage"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:128
+#: blocks/cyber-gallery-mai/block.php:159
+msgid "100%"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:129
+#: blocks/cyber-gallery-mai/block.php:161
+msgid "Applies only to this gallery."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:323
+#: blocks/cyber-gallery-mai/block.php:1282
+#: classes/class-cyber-gallery-mai.php:215
+#: classes/class-cyber-gallery-mai.php:1656
+msgid "Before"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:326
+#: blocks/cyber-gallery-mai/block.php:1291
+#: classes/class-cyber-gallery-mai.php:216
+msgid "After"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:701
+msgid "Add link text to use as the button label."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:734
+#: blocks/cyber-gallery-mai/block.php:1232
+#: blocks/cyber-gallery-mai/block.php:1653
+#: blocks/cyber-gallery-mai/block.php:2528
+#: blocks/cyber-gallery-mai/block.php:2547
+#: includes/functions.php:167
+#: includes/functions.php:287
+msgid "None"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:735
+msgid "Zoom"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:736
+msgid "Lift"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:737
+#: includes/functions.php:199
+msgid "Fade"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:738
+msgid "Desaturate"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:742
+msgid "Full Size"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1129
+msgid "Default"
+msgstr ""
+
+#. translators: %s: Color setting label.
+#: blocks/cyber-gallery-mai/block.php:1158
+#, php-format
+msgid "Custom %s"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1172
+msgid "Main Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1173
+msgid "Border Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1174
+msgid "Inner Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1175
+msgid "Main Hover Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1176
+msgid "Border Hover Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1177
+msgid "Inner Hover Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1188
+msgid "Overlay Color"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1197
+msgid "CYBER BRAND: Custom Web Development →"
+msgstr ""
+
+#. translators: %s: Linked CYBER BRAND credit and service description.
+#: blocks/cyber-gallery-mai/block.php:1201
+#, php-format
+msgid "Built by %s"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1221
+#: blocks/cyber-gallery-mai/block.php:1423
+msgid "Images"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1227
+msgid "Click Action"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1233
+msgid "Lightbox"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1234
+msgid "Media File"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1235
+msgid "Attachment Page"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1236
+msgid "Custom Links"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1256
+msgid "Before Image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1267
+msgid "After Image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1278
+msgid "Before Label"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1279
+#: blocks/cyber-gallery-mai/block.php:1288
+msgid "Leave blank to hide this badge."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1287
+msgid "After Label"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1296
+msgid "Starting Position"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1297
+msgid "Percentage of the Before image visible from the inline start edge."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1309
+msgid "Slides"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1310
+msgid "Add an image and optional content for each slide. Buttons use the site-wide Mai Engine button styles."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1316
+msgid "Add Slide"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1320
+#: blocks/cyber-gallery-mai/block.php:1464
+#: blocks/cyber-gallery-mai/block.php:1944
+msgid "Image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1331
+msgid "Title"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1338
+msgid "Subtext"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1347
+msgid "Horizontal Alignment"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1352
+#: blocks/cyber-gallery-mai/block.php:2319
+msgid "Start"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1353
+#: blocks/cyber-gallery-mai/block.php:1369
+#: blocks/cyber-gallery-mai/block.php:2320
+#: blocks/cyber-gallery-mai/block.php:2393
+msgid "Center"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1354
+#: blocks/cyber-gallery-mai/block.php:2321
+msgid "End"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1363
+msgid "Vertical Alignment"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1368
+#: blocks/cyber-gallery-mai/block.php:2056
+msgid "Top"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1370
+#: blocks/cyber-gallery-mai/block.php:2057
+msgid "Bottom"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1379
+msgid "CTA Buttons"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1380
+msgid "Add up to two calls to action."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1385
+msgid "Add Button"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1390
+#: blocks/cyber-gallery-mai/block.php:1473
+msgid "Link"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1391
+msgid "The link title is used as the button label."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1400
+msgid "Style"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1453
+msgid "Linked Images"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1454
+msgid "Add an image and optional link. Link title and target are respected."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1460
+msgid "Add Image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1502
+msgid "Image Orientation"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1503
+msgid "Used by Mai Grid, Before / After, and Filmstrip Natural/Uniform Crop modes. Natural-ratio layouts use the selected image size below."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1539
+msgid "Image Quality / Source Size"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1540
+msgid "Choose a source at least as large as its display dimensions. Larger sources look sharper but use more bandwidth. Logo / Contain automatically replaces a cropped preset with Full Size."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1616
+msgid "Image Overlay"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1635
+msgid "Overlay Opacity"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1647
+msgid "Captions"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1648
+msgid "Uses the caption saved for each image in the Media Library."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1654
+#: blocks/cyber-gallery-mai/block.php:2031
+msgid "Below"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1655
+#: blocks/cyber-gallery-mai/block.php:1835
+#: blocks/cyber-gallery-mai/block.php:2030
+msgid "Overlay"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1677
+msgid "Image Corners"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1682
+msgid "Square"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1683
+msgid "Rounded"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1702
+msgid "Add image shadow"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1707
+msgid "Layout"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1713
+msgid "Gallery Layout"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1722
+msgid "Accessible Label"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1723
+msgid "Optional name that distinguishes this gallery region from other galleries on the page. Leave blank to use the built-in layout label."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1731
+msgid "Lightbox Arrow Design"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1759
+msgid "Filmstrip Autoplay"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1762
+msgid "Advance the filmstrip automatically"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1769
+msgid "Autoplay Interval"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1776
+#: blocks/cyber-gallery-mai/block.php:2105
+msgid "seconds"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1784
+msgid "Items Per Advance"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1787
+msgid "Choose how many items autoplay moves at a time."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1791
+msgid "items"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1799
+#: blocks/cyber-gallery-mai/block.php:2124
+msgid "Pause on Mouse Over"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1802
+msgid "Pause autoplay while the pointer is over the filmstrip"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1809
+msgid "Filmstrip Controls"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1812
+msgid "Autoplay can continue when controls are hidden. Swiping, dragging, scrolling, or focusing the filmstrip pauses it."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1813
+msgid "Show playback and arrow controls"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1820
+msgid "Filmstrip Arrows"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1823
+msgid "Show previous and next controls"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1830
+msgid "Filmstrip Controls Position"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1836
+msgid "Above — Start"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1837
+msgid "Above — Center"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1838
+msgid "Above — End"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1839
+msgid "Below — Start"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1840
+msgid "Below — Center"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1841
+msgid "Below — End"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1848
+msgid "Filmstrip Arrow Design"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1858
+msgid "Filmstrip Image Mode"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1863
+msgid "Natural"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1864
+msgid "Uniform Crop"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1865
+msgid "Logo / Contain"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1872
+msgid "Filmstrip Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1873
+msgid "Desktop image height."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1888
+msgid "Filmstrip Mobile Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1903
+msgid "Horizontal Logo Padding"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1904
+msgid "Optional space on the left and right of every logo."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1916
+msgid "Vertical Logo Padding"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1917
+msgid "Optional space above and below every logo."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1929
+msgid "Logo Size Overrides"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1930
+msgid "Fine-tune individual logos relative to the shared logo size."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1936
+msgid "Add Logo Override"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1955
+msgid "Scale"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1969
+msgid "Slider Title Element"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1970
+msgid "Choose a heading level that fits the surrounding page structure, or Paragraph to keep the title styling without adding a heading."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1975
+msgid "Heading 2"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1976
+msgid "Heading 3"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1977
+msgid "Heading 4"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1978
+msgid "Heading 5"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1979
+msgid "Heading 6"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1980
+msgid "Paragraph"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1987
+msgid "Primary Navigation"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:1988
+msgid "Choose the first navigation type."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2006
+msgid "Secondary Navigation"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2007
+msgid "Optionally add another navigation type. Duplicate selections render only once."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2025
+msgid "Navigation Position"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2040
+msgid "Slider Arrow Design"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2050
+msgid "Circle Position"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2051
+msgid "Choose whether overlay circles sit at the top or bottom of the slide."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2066
+msgid "Slide Transition"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2076
+msgid "Transition Speed"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2088
+msgid "Auto Slide"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2089
+msgid "Automatically advance slides on the front end. Reduced-motion preferences disable autoplay."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2098
+msgid "Time Between Slides"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2113
+msgid "Autoplay Control"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2114
+msgid "Autoplay continues when this control is hidden."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2117
+msgid "Show the Pause / Start button"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2125
+msgid "Pause while a pointer is over the slider. Keyboard focus and hidden tabs always pause autoplay."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2134
+msgid "Navigation Hover Effect"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2144
+msgid "Navigation Colors"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2145
+msgid "Main controls the surface; Inner controls arrow icons, circle fills, and counter text."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2160
+msgid "Slider Width"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2161
+msgid "Full Width follows the available block or parent width. Contained uses the maximum width below. Inset adds responsive side spacing."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2166
+msgid "Full Width"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2167
+msgid "Contained"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2168
+msgid "Inset"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2185
+msgid "Maximum Slider Width"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2186
+msgid "Used by Contained mode. Use 0 to remove the maximum."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2215
+msgid "Desktop Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2239
+msgid "Mobile Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2263
+msgid "Slider Image Fit"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2268
+msgid "Crop to Fill"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2269
+msgid "Show Full Image"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2286
+msgid "Masonry Packing"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2287
+msgid "Balanced fills the shortest column. Ordered cycles images through columns for a more regular rhythm."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2292
+msgid "Balanced / Shortest Column"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2293
+msgid "Ordered / Column Rhythm"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2300
+msgid "Target Row Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2301
+msgid "The layout balances each row around this height."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2313
+msgid "Last Row Alignment"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2314
+msgid "Positions the final partial row without stretching its images."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2330
+msgid "Tiled Pattern"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2331
+msgid "Organic mixes rows and stacks, Calm favors broad bands, and Dense favors more vertical stacks."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2336
+msgid "Organic Mix"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2337
+msgid "Calm Bands"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2338
+msgid "Dense Stacks"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2345
+msgid "First Feature Side"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2346
+msgid "Positions the first image in the mosaic and sets the starting side when alternation is enabled."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2351
+msgid "Left"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2352
+msgid "Right"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2363
+msgid "Alternate the feature side for each image group"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2369
+msgid "Images After Feature"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2370
+msgid "Sets how many smaller images follow each feature before the next feature group begins."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2377
+msgid "images"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2385
+msgid "Odd Remainder"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2386
+msgid "Controls the unpaired final small image when a group contains an odd number."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2391
+msgid "Fill the Row"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2392
+msgid "Align Start"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2394
+msgid "Align End"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2401
+msgid "Mosaic Tile Height"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2402
+msgid "Use 0 for the responsive automatic height, or set a fixed row height."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2417
+#: blocks/cyber-gallery-mai/block.php:2439
+msgid "Hover Effect"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2448
+msgid "Desaturate Amount"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2449
+msgid "Color removed at rest; the image returns to full color on hover."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2491
+msgid "Responsive Columns & Gaps"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2492
+msgid "Justified and Editorial Mosaic expose gaps only because they calculate their own item arrangement. Tiled Mosaic caps its visual-group column count at four."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2511
+msgid "Block Spacing"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2512
+msgid "Outer margin around the complete gallery. Left and right controls follow below."
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2523
+msgid "Left Margin"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2529
+#: blocks/cyber-gallery-mai/block.php:2548
+msgid "XS"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2530
+#: blocks/cyber-gallery-mai/block.php:2549
+msgid "S"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2531
+#: blocks/cyber-gallery-mai/block.php:2550
+msgid "M"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2532
+#: blocks/cyber-gallery-mai/block.php:2551
+msgid "L"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2533
+#: blocks/cyber-gallery-mai/block.php:2552
+msgid "XL"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2534
+#: blocks/cyber-gallery-mai/block.php:2553
+msgid "2XL"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.php:2542
+msgid "Right Margin"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:67
+msgid "Unserializing the plugin instance is not allowed."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:278
+#: classes/class-cyber-gallery-mai.php:2350
+msgid "Pause automatic slides"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:279
+msgid "Start automatic slides"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:280
+#: classes/class-cyber-gallery-mai.php:2262
+msgid "Pause automatic gallery movement"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:281
+msgid "Start automatic gallery movement"
+msgstr ""
+
+#. translators: 1: Current image number. 2: Total images.
+#: classes/class-cyber-gallery-mai-plugin.php:283
+#: classes/class-cyber-gallery-mai.php:2287
+#, php-format
+msgid "Image %1$d of %2$d"
+msgstr ""
+
+#. translators: 1: Current slide number. 2: Total slides.
+#: classes/class-cyber-gallery-mai-plugin.php:288
+#: classes/class-cyber-gallery-mai.php:2433
+#, php-format
+msgid "Slide %1$d of %2$d"
+msgstr ""
+
+#. translators: 1: Current slide number. 2: Total slides. 3: Slide title.
+#: classes/class-cyber-gallery-mai-plugin.php:293
+#: classes/class-cyber-gallery-mai.php:2426
+#, php-format
+msgid "Slide %1$d of %2$d: %3$s"
+msgstr ""
+
+#. translators: 1: Before image label. 2: Percentage visible.
+#: classes/class-cyber-gallery-mai-plugin.php:337
+#: classes/class-cyber-gallery-mai.php:1659
+#, php-format
+msgid "%1$s: %2$d%% visible"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:347
+msgid "Image viewer"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:348
+msgid "Close image viewer"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:349
+msgid "Next image"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai-plugin.php:350
+msgid "Previous image"
+msgstr ""
+
+#. translators: 1: Current image number. 2: Total images.
+#. translators: 1: Current slide number. 2: Total slides.
+#: classes/class-cyber-gallery-mai-plugin.php:352
+#: classes/class-cyber-gallery-mai.php:1857
+#, php-format
+msgid "%1$d of %2$d"
+msgstr ""
+
+#. translators: 1: Image position. 2: Image description.
+#: classes/class-cyber-gallery-mai-plugin.php:357
+#, php-format
+msgid "%1$s, %2$s"
+msgstr ""
+
+#. translators: %s: Minimum Mai Engine version.
+#: classes/class-cyber-gallery-mai-plugin.php:815
+#, php-format
+msgid "Cyber Gallery for Mai Theme requires Mai Engine %s or later with an active Mai theme."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:567
+msgid "Before and after image comparison"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:569
+msgid "Content slider"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:571
+msgid "Image gallery"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:579
+msgid "carousel"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:643
+msgid "Gallery filmstrip"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:644
+msgid "Gallery slider"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:1702
+msgid "Adjust before and after image comparison"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:1843
+msgid "slide"
+msgstr ""
+
+#. translators: 1: Current slide number. 2: Total slides. 3: Slide title.
+#: classes/class-cyber-gallery-mai.php:1848
+#, php-format
+msgid "%1$d of %2$d: %3$s"
+msgstr ""
+
+#. translators: %d: Image number.
+#: classes/class-cyber-gallery-mai.php:2017
+#, php-format
+msgid "Image %d"
+msgstr ""
+
+#. translators: %s: Image description.
+#: classes/class-cyber-gallery-mai.php:2033
+#, php-format
+msgid "Follow image link: %s"
+msgstr ""
+
+#. translators: %s: Image description.
+#: classes/class-cyber-gallery-mai.php:2050
+#, php-format
+msgid "View image attachment page: %s"
+msgstr ""
+
+#. translators: %s: Image description.
+#: classes/class-cyber-gallery-mai.php:2066
+#, php-format
+msgid "View full-size image: %s"
+msgstr ""
+
+#. translators: 1: Current image number. 2: Total images. 3: Image description.
+#: classes/class-cyber-gallery-mai.php:2086
+#, php-format
+msgid "Open image %1$d of %2$d in viewer: %3$s"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2202
+msgid "Select both a Before and an After image to build this comparison."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2204
+msgid "Add slides to begin building this gallery."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2206
+msgid "Add images to begin building this gallery."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2212
+msgid "Manage Gallery"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2213
+msgid "Use Open Expanded Editor in the block settings."
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2278
+msgid "Previous images"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2280
+msgid "Next images"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2299
+msgid "Gallery navigation"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2374
+msgid "Previous slide"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2376
+msgid "Next slide"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2384
+msgid "Choose a slide"
+msgstr ""
+
+#. translators: 1: Slide number. 2: Slide title.
+#: classes/class-cyber-gallery-mai.php:2393
+#, php-format
+msgid "Go to slide %1$d: %2$s"
+msgstr ""
+
+#. translators: %d: Slide number.
+#: classes/class-cyber-gallery-mai.php:2399
+#, php-format
+msgid "Go to slide %d"
+msgstr ""
+
+#: classes/class-cyber-gallery-mai.php:2450
+msgid "Slider controls"
+msgstr ""
+
+#: cyber-gallery-mai.php:99
+msgid "Cyber Gallery for Mai Theme detected the former Mai Cyber Gallery plugin still active. Deactivate the former plugin, then reactivate Cyber Gallery for Mai Theme; existing galleries will remain available."
+msgstr ""
+
+#: includes/functions.php:100
+msgid "Mai Grid"
+msgstr ""
+
+#: includes/functions.php:101
+msgid "Masonry Columns"
+msgstr ""
+
+#: includes/functions.php:102
+msgid "Justified Rows"
+msgstr ""
+
+#: includes/functions.php:103
+msgid "Tiled Mosaic"
+msgstr ""
+
+#: includes/functions.php:104
+msgid "Editorial Mosaic"
+msgstr ""
+
+#: includes/functions.php:105
+msgid "Square Tiles"
+msgstr ""
+
+#: includes/functions.php:106
+msgid "Circle Tiles"
+msgstr ""
+
+#: includes/functions.php:107
+msgid "Before / After"
+msgstr ""
+
+#: includes/functions.php:108
+msgid "Filmstrip"
+msgstr ""
+
+#: includes/functions.php:109
+msgid "Slider"
+msgstr ""
+
+#: includes/functions.php:136
+msgid "Frosted Circle"
+msgstr ""
+
+#: includes/functions.php:137
+msgid "Rounded Square"
+msgstr ""
+
+#: includes/functions.php:138
+msgid "Minimal Chevron"
+msgstr ""
+
+#: includes/functions.php:139
+msgid "Edge Tab"
+msgstr ""
+
+#: includes/functions.php:164
+msgid "Arrows"
+msgstr ""
+
+#: includes/functions.php:165
+msgid "Circles"
+msgstr ""
+
+#: includes/functions.php:166
+msgid "Slide Counter"
+msgstr ""
+
+#: includes/functions.php:198
+msgid "Smooth Slide"
+msgstr ""
+
+#: includes/functions.php:200
+msgid "Zoom In"
+msgstr ""
+
+#: includes/functions.php:201
+msgid "Zoom Out"
+msgstr ""
+
+#: includes/functions.php:202
+msgid "Rise"
+msgstr ""
+
+#: includes/functions.php:203
+msgid "Soft Focus"
+msgstr ""
+
+#: includes/functions.php:204
+msgid "Reveal"
+msgstr ""
+
+#: includes/functions.php:205
+msgid "Cinematic"
+msgstr ""
+
+#: includes/functions.php:230
+msgid "Fast"
+msgstr ""
+
+#: includes/functions.php:231
+msgid "Normal"
+msgstr ""
+
+#: includes/functions.php:232
+msgid "Slow"
+msgstr ""
+
+#: includes/functions.php:257
+msgid "Color Shift"
+msgstr ""
+
+#: includes/functions.php:258
+msgid "Grow"
+msgstr ""
+
+#: includes/functions.php:259
+msgid "Nudge"
+msgstr ""
+
+#: includes/functions.php:260
+msgid "Glow"
+msgstr ""
+
+#: includes/functions.php:261
+msgid "Fill"
+msgstr ""
+
+#: includes/functions.php:262
+msgid "Ring"
+msgstr ""
+
+#: includes/functions.php:288
+msgid "Solid"
+msgstr ""
+
+#: includes/functions.php:289
+msgid "Gradient from Bottom"
+msgstr ""
+
+#: includes/functions.php:290
+msgid "Gradient from Top"
+msgstr ""
+
+#: includes/functions.php:291
+msgid "Gradient from Left"
+msgstr ""
+
+#: includes/functions.php:292
+msgid "Gradient from Right"
+msgstr ""
+
+#: includes/functions.php:293
+msgid "Vignette"
+msgstr ""
+
+#: includes/functions.php:320
+msgid "Primary Button"
+msgstr ""
+
+#: includes/functions.php:321
+msgid "Secondary Button"
+msgstr ""
+
+#: includes/functions.php:322
+msgid "Outline Button"
+msgstr ""
+
+#: includes/functions.php:323
+msgid "Link Button"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block title"
+msgid "Cyber Gallery for Mai Theme"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "gallery"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "masonry"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "slider"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "comparison"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "before after"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "filmstrip"
+msgstr ""
+
+#: blocks/cyber-gallery-mai/block.json
+msgctxt "block keyword"
+msgid "mosaic"
+msgstr ""

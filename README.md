@@ -7,15 +7,15 @@ Cyber Gallery for Mai Theme is a Mai Engine add-on with ten advanced image galle
 <table>
 	<tr>
 		<td width="50%" valign="top">
-			<a href="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/tiled-mosaic.webp">
-				<img src="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/tiled-mosaic.webp" alt="Tiled Mosaic gallery presenting architectural photography in a close-packed layout">
+			<a href="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/tiled-mosaic.webp">
+				<img src="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/tiled-mosaic.webp" alt="Tiled Mosaic gallery presenting architectural photography in a close-packed layout">
 			</a>
 			<br>
 			<strong>Tiled Mosaic</strong> — ratio-aware rows and stacks preserve image order while filling the available canvas.
 		</td>
 		<td width="50%" valign="top">
-			<a href="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/filmstrip-logos.webp">
-				<img src="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/filmstrip-logos.webp" alt="Filmstrip gallery presenting differently proportioned client logos in one aligned row">
+			<a href="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/filmstrip-logos.webp">
+				<img src="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/filmstrip-logos.webp" alt="Filmstrip gallery presenting differently proportioned client logos in one aligned row">
 			</a>
 			<br>
 			<strong>Filmstrip for logos</strong> — mixed logo proportions align cleanly without forced cropping or empty global padding.
@@ -23,15 +23,15 @@ Cyber Gallery for Mai Theme is a Mai Engine add-on with ten advanced image galle
 	</tr>
 	<tr>
 		<td width="50%" valign="top">
-			<a href="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/slider-backend.webp">
-				<img src="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/slider-backend.webp" alt="WordPress editor showing a content Slider preview beside its title, subtext, alignment, and CTA fields">
+			<a href="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/slider-backend.webp">
+				<img src="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/slider-backend.webp" alt="WordPress editor showing a content Slider preview beside its title, subtext, alignment, and CTA fields">
 			</a>
 			<br>
 			<strong>Live Slider editing</strong> — structured content controls update alongside the active slide preview.
 		</td>
 		<td width="50%" valign="top">
-			<a href="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/expanded-options.webp">
-				<img src="https://raw.githubusercontent.com/Alex9001/mai-cyber-gallery/main/docs/images/expanded-options.webp" alt="Expanded Cyber Gallery for Mai Theme editor showing layout, packing, columns, gaps, alignment, and margin controls">
+			<a href="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/expanded-options.webp">
+				<img src="https://raw.githubusercontent.com/Alex9001/cyber-gallery-mai/main/docs/images/expanded-options.webp" alt="Expanded Cyber Gallery for Mai Theme editor showing layout, packing, columns, gaps, alignment, and margin controls">
 			</a>
 			<br>
 			<strong>Expanded design controls</strong> — packing, responsive columns, alignment, gaps, and four-sided spacing in one focused editor.
@@ -41,7 +41,7 @@ Cyber Gallery for Mai Theme is a Mai Engine add-on with ten advanced image galle
 
 ## Requirements
 
-- WordPress 6.5 or later
+- WordPress 7.1 or later
 - PHP 8.3 or later
 - Genesis Framework
 - A Genesis child theme with Mai Engine support
@@ -80,6 +80,8 @@ Version 0.9.0 expands Editorial Mosaic into configurable feature groups, adds ne
 
 Version 1.0.0 adds an accessible Before / After comparison with dedicated images, editable badges, an RTL-aware native range control, configurable starting position, no-JavaScript and print fallbacks, and Mai orientation/source-size integration.
 
+Version 2.0.0 completes the trademark-safe identity change to **Cyber Gallery for Mai Theme**, the plugin slug `cyber-gallery-mai`, and the canonical block name `acf/cyber-gallery-mai`. It also raises the supported platform to WordPress 7.1, PHP 8.3 or later, and Mai Engine 2.40.0 or later. Existing saved galleries continue to render and edit through a hidden `acf/mai-cyber-gallery` compatibility block; the former PHP symbols, filters, asset handles, JavaScript globals, ACF field keys, markup selectors, and Genesis contexts remain available as documented aliases or persisted contracts.
+
 ## Performance and page caching
 
 Public gallery output is deterministic and works with full-page caches. Frontend behavior is natively deferred and divided into packing-layout, carousel, comparison, and lightbox scripts. The renderer requests the enhancement required by each gallery, while an early scan of queried block content—including nested and synced/reusable blocks—queues known requirements during WordPress's normal asset phase. Public behavior scripts print in the footer, so render-time requests made after `wp_head` remain valid. The scan applies the same layout exclusions as the renderer, so a retained Slider lightbox setting does not request an impossible behavior. Masonry, Justified, and Tiled do not inherently depend on carousel code; Filmstrip and Slider do not inherently depend on the packing algorithms; Comparison has its own small enhancement; and lightbox code is requested for rendered, linkable galleries using the Lightbox action. Dynamic preview and content updates are batched so multiple DOM mutations trigger one focused gallery pass instead of repeated document rescans.
@@ -90,14 +92,14 @@ Cold-cache rendering primes attachment posts and metadata in bulk before buildin
 
 ## Building a release
 
-Run `npm run build:zip` from a committed, clean checkout. The command rebuilds and validates generated assets, runs the JavaScript and PHP checks, refuses uncommitted release source, recreates `build/mai-cyber-gallery/`, and writes `build/mai-cyber-gallery-{version}.zip` with its source revision and SHA-256 checksum. `MAI_CYBER_GALLERY_ALLOW_DIRTY_BUILD=1` exists only for local staging and marks the result as dirty; never publish that artifact. The ZIP contains runtime assets, PHP, block metadata, licensing, and user-facing documentation; repository-only development files and `CHANGES.md` are excluded.
+Run `npm run build:zip` from a committed, clean checkout. The command rebuilds and validates generated assets, runs the JavaScript and PHP checks, refuses uncommitted release source, recreates `build/cyber-gallery-mai/`, and writes `build/cyber-gallery-mai-{version}.zip` with its source revision and SHA-256 checksum. `CYBER_GALLERY_MAI_ALLOW_DIRTY_BUILD=1` exists only for local staging and marks the result as dirty; never publish that artifact. The ZIP contains runtime assets, PHP, canonical and compatibility block metadata, migration support, licensing, and user-facing documentation; repository-only development files and `CHANGES.md` are excluded.
 
 The public CI job runs strict Plugin Check against that exact staged directory with the minimum Mai Engine release installed. Genesis is separately distributed and cannot be fetched non-interactively in public CI, so the complete theme/runtime lane runs on a disposable authorized Mai site. The smoke script is intentionally repository-only; from a repository checkout, point WP-CLI at both the staged ZIP and the checkout's absolute test path:
 
 ```bash
-REPOSITORY_PATH=/absolute/path/to/mai-cyber-gallery
+REPOSITORY_PATH=/absolute/path/to/cyber-gallery-mai
 WORDPRESS_PATH=/absolute/path/to/disposable-wordpress
-wp --path="$WORDPRESS_PATH" plugin install "$REPOSITORY_PATH/build/mai-cyber-gallery-1.0.0.zip" --force --activate
+wp --path="$WORDPRESS_PATH" plugin install "$REPOSITORY_PATH/build/cyber-gallery-mai-2.0.0.zip" --force --activate
 wp --path="$WORDPRESS_PATH" eval-file "$REPOSITORY_PATH/tests/runtime-smoke.php"
 ```
 
@@ -130,6 +132,45 @@ The ordinary image layouts use Mai's column/row gap controls; Before / After and
 2. Activate Cyber Gallery for Mai Theme.
 3. Add the **Cyber Gallery for Mai Theme** block.
 4. Choose a layout and use **Open Expanded Editor** to add gallery images or structured Slider rows.
+
+### Upgrading from 1.x
+
+Install version 2.0.0 in the canonical `wp-content/plugins/cyber-gallery-mai/` directory and activate it. WordPress sees a changed directory/main-file pair as a different plugin, so activation deactivates the former `mai-cyber-gallery/mai-cyber-gallery.php` basename before the canonical runtime starts. If both basenames were forced active by direct option editing, the canonical runtime pauses and displays an administrator notice instead of loading duplicate symbols.
+
+No immediate content rewrite is required. Saved `acf/mai-cyber-gallery` blocks remain registered as a hidden, non-inserter compatibility block and keep the existing `mai_cyber_gallery_*` ACF field keys. Select one of those blocks and use the editor Transform menu to replace only its block name with `acf/cyber-gallery-mai`; its ACF data and supported block attributes remain intact.
+
+For a site-wide migration, back up the database and run the WP-CLI command without flags first. It is deliberately read-only by default and reports affected posts, nested blocks, reusable/synced blocks, templates, and block widgets:
+
+```bash
+wp cyber-gallery-mai migrate-blocks
+```
+
+After reviewing the dry-run totals, persist the same recursive conversion with confirmation, or use `--yes` in an automated deployment:
+
+```bash
+wp cyber-gallery-mai migrate-blocks --execute
+wp cyber-gallery-mai migrate-blocks --execute --yes
+```
+
+Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The command is idempotent: it changes only the parsed block name and its `attrs.name`, preserves ACF data/field keys, and safely reports zero changes when repeated.
+
+Cyber Gallery has never registered a shortcode, so there is no plugin shortcode syntax to convert. The upgrade is exclusively a block-name migration. Third-party code should adopt the canonical PHP API, filters, handles, and JavaScript globals below; the 1.x names remain compatibility aliases in 2.0.0.
+
+### 2.0 compatibility contracts
+
+| Integration surface | Canonical 2.0 identity | 1.x compatibility behavior |
+| --- | --- | --- |
+| Saved block | `acf/cyber-gallery-mai` | `acf/mai-cyber-gallery` remains registered without an inserter entry and has a lossless editor transform. |
+| Saved ACF schema | Existing `mai_cyber_gallery_*` field keys | Keys are intentionally unchanged; renaming them would disconnect serialized field references from their values. |
+| Main classes | `Cyber_Gallery_Mai_Plugin`, `Cyber_Gallery_Mai` | `Mai_Cyber_Gallery_Plugin` and `Mai_Cyber_Gallery` are class aliases. |
+| Bootstrap/render helpers | `cyber_gallery_mai_plugin()`, `cyber_gallery_mai_get_gallery()`, `cyber_gallery_mai_do_gallery()` | `mai_cyber_gallery_plugin()`, `mai_get_cyber_gallery()`, and `mai_do_cyber_gallery()` are deprecated wrappers. |
+| Choice helpers | `cyber_gallery_mai_normalize_choices()` and the public `cyber_gallery_mai_get_*()` helpers | Their former `mai_cyber_gallery_*()` names are deprecated wrappers. |
+| Block callbacks/helpers | Public `cyber_gallery_mai_*()` registration, rendering, ACF migration, logo-control, and validation functions | Every corresponding former `mai_cyber_gallery_*()` function remains a guarded forwarding wrapper. |
+| Constants | `CYBER_GALLERY_MAI_*` | The six former `MAI_CYBER_GALLERY_*` constants alias the canonical values. |
+| Filters | `cyber_gallery_mai_*` | The matching `mai_cyber_gallery_*` hook runs second with the canonical result. |
+| Asset handles | `cyber-gallery-mai*` | Matching `mai-cyber-gallery*` handles are dependency-only aliases and do not load duplicate assets. |
+| Browser globals | `CyberGalleryMai*` | Matching `MaiCyberGallery*` names reference the same settings/runtime objects. |
+| Public markup/cache contracts | Existing `.mai-cyber-gallery*`, `data-cyber-*`, Genesis contexts, and canonical `CGM.A.*` cache tags | Markup names remain unchanged; attachment purges also emit the former `MCG.A.*` tag so pre-2.0 cached pages expire correctly. |
 
 An existing Core Gallery can be changed to **Cyber Gallery for Mai Theme** through the block toolbar's Transform menu. Conversion creates a Mai Grid gallery and preserves valid local attachment IDs in source order, columns, supported link behavior, wide/full alignment, anchor, and custom class. An uncropped Core gallery keeps its selected source size; a cropped gallery maps to the nearest Mai orientation and retains its old size only as a dormant value for a later switch to Custom orientation. Core-only data such as external images without attachment IDs, individual captions, focal points, per-image links, styling, and unsupported nested content is intentionally dropped. The original block remains unchanged when it has no convertible local attachments.
 
@@ -184,7 +225,7 @@ Core Gallery conversion preserves local attachment order, valid IDs, columns, su
 ## PHP API
 
 ```php
-echo mai_get_cyber_gallery(
+echo cyber_gallery_mai_get_gallery(
 	[
 		'layout'       => 'masonry',
 		'images'       => [ 123, 456, 789 ],
@@ -196,12 +237,12 @@ echo mai_get_cyber_gallery(
 );
 ```
 
-`mai_do_cyber_gallery( $args )` is the echoing equivalent.
+`cyber_gallery_mai_do_gallery( $args )` is the echoing equivalent. The former `mai_get_cyber_gallery()` and `mai_do_cyber_gallery()` functions remain deprecated aliases for 1.x integrations.
 
 Slider uses structured rows rather than the gallery image arrays:
 
 ```php
-echo mai_get_cyber_gallery(
+echo cyber_gallery_mai_get_gallery(
 	[
 		'layout'                       => 'slider',
 		'slider_width_mode'            => 'full',
@@ -326,7 +367,7 @@ For backward compatibility, a PHP API call that explicitly supplies an atomic `s
 Custom links use the same array shape returned by ACF's Link field:
 
 ```php
-echo mai_get_cyber_gallery(
+echo cyber_gallery_mai_get_gallery(
 	[
 		'layout'       => 'filmstrip',
 		'click_action' => 'custom',
@@ -352,29 +393,35 @@ When a template will render a PHP/API gallery after `wp_head`, enqueue at least 
 
 | Requirement | Registered handle |
 | --- | --- |
-| Every gallery | Style `mai-cyber-gallery` |
-| Masonry, Justified, or Tiled Mosaic | Script `mai-cyber-gallery-packing` |
-| Filmstrip or Slider | Script `mai-cyber-gallery` |
-| Before / After | Script `mai-cyber-gallery-comparison` |
-| A linkable layout using `click_action=lightbox` | Script `mai-cyber-gallery-lightbox` |
+| Every gallery | Style `cyber-gallery-mai` |
+| Masonry, Justified, or Tiled Mosaic | Script `cyber-gallery-mai-packing` |
+| Filmstrip or Slider | Script `cyber-gallery-mai` |
+| Before / After | Script `cyber-gallery-mai-comparison` |
+| A linkable layout using `click_action=lightbox` | Script `cyber-gallery-mai-lightbox` |
 
-The base style and carousel script deliberately share `mai-cyber-gallery` because WordPress maintains separate style and script registries. Enqueue only the rows that match the output. Unlike footer scripts, a style first requested after `wp_head` cannot be relied on for the initial render, which is why PHP/API templates should schedule the base style during `wp_enqueue_scripts`.
+The base style and carousel script deliberately share `cyber-gallery-mai` because WordPress maintains separate style and script registries. Enqueue only the rows that match the output. Unlike footer scripts, a style first requested after `wp_head` cannot be relied on for the initial render, which is why PHP/API templates should schedule the base style during `wp_enqueue_scripts`.
+
+The former `mai-cyber-gallery`, `mai-cyber-gallery-packing`, `mai-cyber-gallery-lightbox`, `mai-cyber-gallery-comparison`, and `mai-cyber-gallery-editor` script handles remain dependency-only aliases of their canonical counterparts. The former base and editor style handles are preserved the same way, so existing enqueue calls load the 2.0 assets without serving duplicate files.
+
+Frontend integrations should use `CyberGalleryMaiSettings`, `CyberGalleryMaiRuntime`, `CyberGalleryMaiPackingRuntime`, `CyberGalleryMaiComparisonSettings`, `CyberGalleryMaiComparisonRuntime`, and `CyberGalleryMaiLightboxSettings`. Their former `MaiCyberGallery*` names reference the same objects for 1.x compatibility.
 
 ## Extension points
 
-- `mai_cyber_gallery_layouts( array $layouts ): array` filters layout slug/label pairs. A custom layout must supply its own CSS and behavior.
-- `mai_cyber_gallery_arrow_styles( array $styles ): array` filters the arrow design slug/label pairs shared by the lightbox, Slider, and Filmstrip.
-- `mai_cyber_gallery_slider_navigation_choices( array $choices ): array` removes, reorders, or relabels the implemented `arrows`, `dots`, `counter`, and `none` controls shared by the Primary and Secondary selectors. Unsupported slugs are discarded because they have no renderer behavior.
-- `mai_cyber_gallery_slider_transition_choices( array $choices ): array` filters Slider transition slug/label pairs.
-- `mai_cyber_gallery_slider_transition_speed_choices( array $choices ): array` filters Slider transition-speed slug/label pairs.
-- `mai_cyber_gallery_slider_navigation_hover_choices( array $choices ): array` filters shared Slider/Filmstrip navigation-hover slug/label pairs.
-- `mai_cyber_gallery_slider_overlay_style_choices( array $choices ): array` filters shared image-overlay style slug/label pairs; the original hook name remains stable.
-- `mai_cyber_gallery_button_style_choices( array $choices ): array` filters Slider CTA style slug/label pairs.
-- `mai_cyber_gallery_button_style_classes( array $styles ): array` filters CTA style-to-class mappings.
-- `mai_cyber_gallery_args( array $args ): array` filters parsed arguments before sanitization.
-- `mai_cyber_gallery_image_size( string $image_size, array $args ): string` filters the thumbnail size.
-- `mai_cyber_gallery_item( array $item, array $args ): array` filters each normalized item.
-- `mai_cyber_gallery_items( array $items, array $args ): array` filters the complete ordered item list.
+- `cyber_gallery_mai_layouts( array $layouts ): array` filters layout slug/label pairs. A custom layout must supply its own CSS and behavior.
+- `cyber_gallery_mai_arrow_styles( array $styles ): array` filters the arrow design slug/label pairs shared by the lightbox, Slider, and Filmstrip.
+- `cyber_gallery_mai_slider_navigation_choices( array $choices ): array` removes, reorders, or relabels the implemented `arrows`, `dots`, `counter`, and `none` controls shared by the Primary and Secondary selectors. Unsupported slugs are discarded because they have no renderer behavior.
+- `cyber_gallery_mai_slider_transition_choices( array $choices ): array` filters Slider transition slug/label pairs.
+- `cyber_gallery_mai_slider_transition_speed_choices( array $choices ): array` filters Slider transition-speed slug/label pairs.
+- `cyber_gallery_mai_slider_navigation_hover_choices( array $choices ): array` filters shared Slider/Filmstrip navigation-hover slug/label pairs.
+- `cyber_gallery_mai_slider_overlay_style_choices( array $choices ): array` filters shared image-overlay style slug/label pairs.
+- `cyber_gallery_mai_button_style_choices( array $choices ): array` filters Slider CTA style slug/label pairs.
+- `cyber_gallery_mai_button_style_classes( array $styles ): array` filters CTA style-to-class mappings.
+- `cyber_gallery_mai_args( array $args ): array` filters parsed arguments before sanitization.
+- `cyber_gallery_mai_image_size( string $image_size, array $args ): string` filters the thumbnail size.
+- `cyber_gallery_mai_item( array $item, array $args ): array` filters each normalized item.
+- `cyber_gallery_mai_items( array $items, array $args ): array` filters the complete ordered item list.
+
+Each canonical filter runs first; its `mai_cyber_gallery_*` 1.x counterpart then receives that result. Existing callbacks therefore continue to work, while new integrations should use only the canonical `cyber_gallery_mai_*` hook. The same canonical-first/legacy-second order applies to layout, arrow, navigation, transition, overlay, CTA, argument, image-size, item, and items filters.
 
 Every slug/label choice filter is normalized before ACF or rendering consumes it: invalid entries are discarded, a removed preferred default falls back to the first valid filtered choice, and an empty or malformed result restores the complete core list. Slider navigation is additionally restricted to its four implemented atomic controls. Primary and Secondary defaults remain distinct when the filtered list has an alternative; a list with only one retained navigation choice safely renders that choice once. The arguments filter is merged back over the complete defaults before sanitization, so removing a required key cannot cause an incomplete runtime argument set.
 
@@ -382,9 +429,9 @@ An item contains `id`, rendered `image` HTML, `caption`, `alt`, attachment `titl
 
 `filmstrip_logo_scale` is normalized from 50 through 200 and defaults to 100. `comparison_side` is either `before`, `after`, or empty. Comparison output requires exactly one retained item for each non-empty side, so item filters must preserve those values unless intentionally suppressing the entire comparison. Entries returned by the all-items filter are normalized again; non-array entries and entries without image HTML are discarded.
 
-Genesis attribute filters are available for the `mai-cyber-gallery`, `mai-cyber-gallery-items`, `mai-cyber-gallery-item`, and `mai-cyber-gallery-image-link` contexts. The standard Genesis markup open/content/close filters are available for the first three contexts; the image link uses `genesis_attr()` only.
+Genesis attribute filters remain available for the `mai-cyber-gallery`, `mai-cyber-gallery-items`, `mai-cyber-gallery-item`, and `mai-cyber-gallery-image-link` contexts. The standard Genesis markup open/content/close filters are available for the first three contexts; the image link uses `genesis_attr()` only. These context names and the `.mai-cyber-gallery*` CSS classes are intentionally stable markup contracts, not the canonical plugin slug.
 
-Every Cyber-owned PHP symbol, ACF field key, block name, asset handle, CSS selector, and Genesis context is distinct from Mai Galleries, so both plugins can be active during migration.
+Canonical PHP symbols, block names, asset handles, text domain, and JavaScript globals use the `cyber-gallery-mai` / `cyber_gallery_mai` / `CyberGalleryMai` identity. Persisted `mai_cyber_gallery_*` ACF keys and the former block, PHP, filter, asset, global, selector, and Genesis names remain narrowly scoped compatibility contracts. They do not conflict with the separate Mai Galleries plugin, which can remain active while its galleries are transformed.
 
 ## Design notes
 

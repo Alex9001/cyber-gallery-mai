@@ -20,7 +20,7 @@ import {
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath( new URL( '../', import.meta.url ) );
-const pluginSlug = 'mai-cyber-gallery';
+const pluginSlug = 'cyber-gallery-mai';
 const buildDirectory = join( root, 'build' );
 const stageDirectory = join( buildDirectory, pluginSlug );
 const packageJson = JSON.parse(
@@ -30,7 +30,7 @@ const version = String( packageJson.version || '' );
 const zipName = `${ pluginSlug }-${ version }.zip`;
 const zipPath = join( buildDirectory, zipName );
 const releaseFiles = [
-	'mai-cyber-gallery.php',
+	'cyber-gallery-mai.php',
 	'readme.txt',
 	'README.md',
 	'LICENSE',
@@ -39,22 +39,29 @@ const releaseFiles = [
 	'blocks',
 	'classes',
 	'includes',
+	'languages',
 ];
 const requiredArchiveFiles = [
-	`${ pluginSlug }/mai-cyber-gallery.php`,
+	`${ pluginSlug }/cyber-gallery-mai.php`,
 	`${ pluginSlug }/readme.txt`,
 	`${ pluginSlug }/LICENSE`,
 	`${ pluginSlug }/NOTICE`,
-	`${ pluginSlug }/blocks/mai-cyber-gallery/block.php`,
-	`${ pluginSlug }/blocks/mai-cyber-gallery/block.json`,
-	`${ pluginSlug }/classes/class-mai-cyber-gallery-plugin.php`,
-	`${ pluginSlug }/classes/class-mai-cyber-gallery.php`,
+	`${ pluginSlug }/blocks/cyber-gallery-mai/block.php`,
+	`${ pluginSlug }/blocks/cyber-gallery-mai/block.json`,
+	`${ pluginSlug }/blocks/cyber-gallery-mai/legacy-block.json`,
+	`${ pluginSlug }/classes/class-cyber-gallery-mai-plugin.php`,
+	`${ pluginSlug }/classes/class-cyber-gallery-mai.php`,
+	`${ pluginSlug }/includes/class-cyber-gallery-mai-cli-command.php`,
+	`${ pluginSlug }/includes/compatibility.php`,
 	`${ pluginSlug }/includes/functions.php`,
-	`${ pluginSlug }/assets/css/mai-cyber-gallery.min.css`,
-	`${ pluginSlug }/assets/js/mai-cyber-gallery.min.js`,
-	`${ pluginSlug }/assets/js/mai-cyber-gallery-packing.min.js`,
-	`${ pluginSlug }/assets/js/mai-cyber-gallery-comparison.min.js`,
-	`${ pluginSlug }/assets/js/mai-cyber-gallery-lightbox.min.js`,
+	`${ pluginSlug }/languages/cyber-gallery-mai.pot`,
+	`${ pluginSlug }/assets/css/cyber-gallery-mai.min.css`,
+	`${ pluginSlug }/assets/css/cyber-gallery-mai-editor.min.css`,
+	`${ pluginSlug }/assets/js/cyber-gallery-mai.min.js`,
+	`${ pluginSlug }/assets/js/cyber-gallery-mai-packing.min.js`,
+	`${ pluginSlug }/assets/js/cyber-gallery-mai-comparison.min.js`,
+	`${ pluginSlug }/assets/js/cyber-gallery-mai-lightbox.min.js`,
+	`${ pluginSlug }/assets/js/cyber-gallery-mai-editor.min.js`,
 ];
 const forbiddenSegments = new Set( [
 	'.git',
@@ -157,13 +164,13 @@ const sourceStatus = output( 'git', [
 	'--porcelain',
 	'--untracked-files=all',
 ] );
-const allowDirtyBuild = '1' === process.env.MAI_CYBER_GALLERY_ALLOW_DIRTY_BUILD;
+const allowDirtyBuild = '1' === process.env.CYBER_GALLERY_MAI_ALLOW_DIRTY_BUILD;
 
 if ( sourceStatus && ! allowDirtyBuild ) {
 	throw new Error(
 		'Refusing to create a release from uncommitted source. '
 		+ 'Commit all source and generated assets first. '
-		+ 'For local staging only, set MAI_CYBER_GALLERY_ALLOW_DIRTY_BUILD=1.'
+		+ 'For local staging only, set CYBER_GALLERY_MAI_ALLOW_DIRTY_BUILD=1.'
 	);
 }
 

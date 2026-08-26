@@ -2,14 +2,14 @@
 /**
  * Regression coverage for filtered choices and filtered gallery arguments.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-$mai_cyber_gallery_test_filters = array();
+$cyber_gallery_mai_test_filters = array();
 
 /**
  * Apply a configured test filter.
@@ -21,13 +21,13 @@ $mai_cyber_gallery_test_filters = array();
  * @return mixed
  */
 function apply_filters( $hook, $value, ...$args ) {
-	global $mai_cyber_gallery_test_filters;
+	global $cyber_gallery_mai_test_filters;
 
-	if ( ! array_key_exists( $hook, $mai_cyber_gallery_test_filters ) ) {
+	if ( ! array_key_exists( $hook, $cyber_gallery_mai_test_filters ) ) {
 		return $value;
 	}
 
-	$filtered = $mai_cyber_gallery_test_filters[ $hook ];
+	$filtered = $cyber_gallery_mai_test_filters[ $hook ];
 
 	return is_callable( $filtered ) ? $filtered( $value, ...$args ) : $filtered;
 }
@@ -244,32 +244,41 @@ function wp_get_registered_image_subsizes(): array {
 }
 
 require dirname( __DIR__ ) . '/includes/functions.php';
-require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-cyber-gallery-mai.php';
 
-$mai_cyber_gallery_test_filters['mai_cyber_gallery_layouts'] = array(
+$cyber_gallery_mai_test_filters['cyber_gallery_mai_layouts'] = array(
 	' Custom Layout ' => ' <b>Custom Layout</b> ',
 	'no-label'        => '<script></script>',
 	'bad-value'       => array( 'Not scalar' ),
 	'???'             => 'No slug',
 );
 
-$normalized = mai_cyber_gallery_get_layout_choices();
+$normalized = cyber_gallery_mai_get_layout_choices();
 
 if ( array( 'customlayout' => 'Custom Layout' ) !== $normalized ) {
 	throw new RuntimeException( 'Filtered choices were not normalized to usable slug/label pairs.' );
 }
 
 if (
-	'customlayout' !== mai_cyber_gallery_get_choice_default( $normalized, 'masonry' )
-	|| 'customlayout' !== mai_cyber_gallery_get_choice_default( $normalized, 'masonry', 'customlayout' )
+	'customlayout' !== cyber_gallery_mai_get_choice_default( $normalized, 'masonry' )
+	|| 'customlayout' !== cyber_gallery_mai_get_choice_default( $normalized, 'masonry', 'customlayout' )
 ) {
 	throw new RuntimeException( 'Choice defaults did not fall back deterministically for a single custom choice.' );
 }
 
-$mai_cyber_gallery_test_filters['mai_cyber_gallery_layouts'] = false;
+$cyber_gallery_mai_test_filters['cyber_gallery_mai_layouts'] = false;
 
-if ( ! isset( mai_cyber_gallery_get_layout_choices()['masonry'] ) ) {
+if ( ! isset( cyber_gallery_mai_get_layout_choices()['masonry'] ) ) {
 	throw new RuntimeException( 'A malformed filter did not restore the core choice list.' );
+}
+
+$cyber_gallery_mai_test_filters = array(
+	'cyber_gallery_mai_layouts' => array( 'canonical-layout' => 'Canonical Layout' ),
+	'mai_cyber_gallery_layouts' => array( 'legacy-layout' => 'Legacy Layout' ),
+);
+
+if ( array( 'legacy-layout' => 'Legacy Layout' ) !== cyber_gallery_mai_get_layout_choices() ) {
+	throw new RuntimeException( 'The 1.x layout filter alias did not run after the canonical filter.' );
 }
 
 $distinct = array(
@@ -279,17 +288,17 @@ $distinct = array(
 );
 
 if (
-	'dots' !== mai_cyber_gallery_get_choice_default( $distinct, 'dots', 'arrows' )
-	|| 'dots' !== mai_cyber_gallery_get_choice_default( $distinct, 'arrows', 'arrows' )
+	'dots' !== cyber_gallery_mai_get_choice_default( $distinct, 'dots', 'arrows' )
+	|| 'dots' !== cyber_gallery_mai_get_choice_default( $distinct, 'arrows', 'arrows' )
 ) {
 	throw new RuntimeException( 'Choice defaults did not select a registered alternative.' );
 }
 
-$mai_cyber_gallery_test_filters['mai_cyber_gallery_slider_navigation_choices'] = array(
+$cyber_gallery_mai_test_filters['cyber_gallery_mai_slider_navigation_choices'] = array(
 	'pager' => 'Unsupported Pager',
 );
 
-$navigation_fallback = mai_cyber_gallery_get_slider_navigation_choices();
+$navigation_fallback = cyber_gallery_mai_get_slider_navigation_choices();
 if (
 	! isset( $navigation_fallback['arrows'], $navigation_fallback['dots'], $navigation_fallback['counter'], $navigation_fallback['none'] )
 	|| isset( $navigation_fallback['pager'] )
@@ -297,16 +306,16 @@ if (
 	throw new RuntimeException( 'Unsupported navigation choices did not restore the implemented core controls.' );
 }
 
-$mai_cyber_gallery_test_filters = array(
-	'mai_cyber_gallery_layouts'                         => array( 'custom-layout' => 'Custom Layout' ),
-	'mai_cyber_gallery_arrow_styles'                    => array( 'custom-arrow' => 'Custom Arrow' ),
-	'mai_cyber_gallery_button_style_choices'            => array( 'custom-button' => 'Custom Button' ),
-	'mai_cyber_gallery_slider_navigation_choices'       => array( 'counter' => 'Renamed Counter' ),
-	'mai_cyber_gallery_slider_transition_choices'       => array( 'dissolve' => 'Dissolve' ),
-	'mai_cyber_gallery_slider_transition_speed_choices' => array( 'deliberate' => 'Deliberate' ),
-	'mai_cyber_gallery_slider_navigation_hover_choices' => array( 'pulse' => 'Pulse' ),
-	'mai_cyber_gallery_slider_overlay_style_choices'    => array( 'wash' => 'Wash' ),
-	'mai_cyber_gallery_args'                            => static function ( $args ): array {
+$cyber_gallery_mai_test_filters = array(
+	'cyber_gallery_mai_layouts'                         => array( 'custom-layout' => 'Custom Layout' ),
+	'cyber_gallery_mai_arrow_styles'                    => array( 'custom-arrow' => 'Custom Arrow' ),
+	'cyber_gallery_mai_button_style_choices'            => array( 'custom-button' => 'Custom Button' ),
+	'cyber_gallery_mai_slider_navigation_choices'       => array( 'counter' => 'Renamed Counter' ),
+	'cyber_gallery_mai_slider_transition_choices'       => array( 'dissolve' => 'Dissolve' ),
+	'cyber_gallery_mai_slider_transition_speed_choices' => array( 'deliberate' => 'Deliberate' ),
+	'cyber_gallery_mai_slider_navigation_hover_choices' => array( 'pulse' => 'Pulse' ),
+	'cyber_gallery_mai_slider_overlay_style_choices'    => array( 'wash' => 'Wash' ),
+	'cyber_gallery_mai_args'                            => static function ( $args ): array {
 		unset( $args );
 
 		// Deliberately omit almost every required key and supply stale core
@@ -328,11 +337,10 @@ $mai_cyber_gallery_test_filters = array(
 	},
 );
 
-$gallery    = new Mai_Cyber_Gallery();
+$gallery    = new Cyber_Gallery_Mai();
 $reflection = new ReflectionClass( $gallery );
 $property   = $reflection->getProperty( 'args' );
-$property->setAccessible( true );
-$args = $property->getValue( $gallery );
+$args       = $property->getValue( $gallery );
 
 $expected = array(
 	'align'                       => '',

@@ -10,11 +10,11 @@ const markup = execFileSync(
 	{ encoding: 'utf8' }
 );
 const stylePath = fileURLToPath(
-	new URL( 'assets/css/mai-cyber-gallery.css', root )
+	new URL( 'assets/css/cyber-gallery-mai.css', root )
 );
 const styles = readFileSync( stylePath, 'utf8' );
 const scriptPath = fileURLToPath(
-	new URL( 'assets/js/mai-cyber-gallery-comparison.js', root )
+	new URL( 'assets/js/cyber-gallery-mai-comparison.js', root )
 );
 
 /**
@@ -61,7 +61,7 @@ test( 'JavaScript activates native keyboard, RTL pointer, and print behavior', a
 } ) => {
 	await loadComparison( page, 'rtl' );
 	await page.evaluate( () => {
-		window.MaiCyberGalleryComparisonSettings = {
+		window.CyberGalleryMaiComparisonSettings = {
 			valueText: '%1$s: %2$d%% visible',
 		};
 	} );

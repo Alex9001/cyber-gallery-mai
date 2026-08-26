@@ -2,7 +2,7 @@
 /**
  * Main Cyber Gallery for Mai Theme plugin class.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 // Prevent direct file access.
@@ -13,20 +13,27 @@ defined( 'ABSPATH' ) || die;
  *
  * @since 0.1.0
  */
-final class Mai_Cyber_Gallery_Plugin {
+final class Cyber_Gallery_Mai_Plugin {
 	/**
 	 * Plugin instance.
 	 *
-	 * @var Mai_Cyber_Gallery_Plugin|null
+	 * @var Cyber_Gallery_Mai_Plugin|null
 	 */
 	private static ?self $instance = null;
+
+	/**
+	 * Prevent direct construction.
+	 *
+	 * @since 2.0.0
+	 */
+	private function __construct() {}
 
 	/**
 	 * Get the plugin instance.
 	 *
 	 * @since 0.1.0
 	 *
-	 * @return Mai_Cyber_Gallery_Plugin
+	 * @return Cyber_Gallery_Mai_Plugin
 	 */
 	public static function instance(): self {
 		if ( is_null( self::$instance ) ) {
@@ -45,19 +52,19 @@ final class Mai_Cyber_Gallery_Plugin {
 	 *
 	 * @return void
 	 */
-	public function __clone(): void {
-		_doing_it_wrong( __FUNCTION__, esc_html__( 'Cloning is not allowed.', 'mai-cyber-gallery' ), '0.1.0' );
-	}
+	private function __clone() {}
 
 	/**
 	 * Prevent unserializing.
 	 *
 	 * @since 0.1.0
 	 *
+	 * @throws LogicException Always, because plugin instances cannot be unserialized.
+	 *
 	 * @return void
 	 */
 	public function __wakeup(): void {
-		_doing_it_wrong( __FUNCTION__, esc_html__( 'Unserializing is not allowed.', 'mai-cyber-gallery' ), '0.1.0' );
+		throw new LogicException( esc_html__( 'Unserializing the plugin instance is not allowed.', 'cyber-gallery-mai' ) );
 	}
 
 	/**
@@ -68,16 +75,16 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return void
 	 */
 	private function setup_constants(): void {
-		$plugin_file = defined( 'MAI_CYBER_GALLERY_PLUGIN_FILE' )
-			? MAI_CYBER_GALLERY_PLUGIN_FILE
-			: dirname( __DIR__ ) . '/mai-cyber-gallery.php';
+		$plugin_file = defined( 'CYBER_GALLERY_MAI_PLUGIN_FILE' )
+			? CYBER_GALLERY_MAI_PLUGIN_FILE
+			: dirname( __DIR__ ) . '/cyber-gallery-mai.php';
 
-		define( 'MAI_CYBER_GALLERY_VERSION', '1.0.0' );
-		define( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION', '2.40.0' );
-		defined( 'MAI_CYBER_GALLERY_PLUGIN_FILE' ) || define( 'MAI_CYBER_GALLERY_PLUGIN_FILE', $plugin_file );
-		define( 'MAI_CYBER_GALLERY_PLUGIN_DIR', plugin_dir_path( $plugin_file ) );
-		define( 'MAI_CYBER_GALLERY_PLUGIN_URL', plugin_dir_url( $plugin_file ) );
-		define( 'MAI_CYBER_GALLERY_BASENAME', plugin_basename( $plugin_file ) );
+		define( 'CYBER_GALLERY_MAI_VERSION', '2.0.0' );
+		define( 'CYBER_GALLERY_MAI_MIN_ENGINE_VERSION', '2.40.0' );
+		defined( 'CYBER_GALLERY_MAI_PLUGIN_FILE' ) || define( 'CYBER_GALLERY_MAI_PLUGIN_FILE', $plugin_file );
+		define( 'CYBER_GALLERY_MAI_PLUGIN_DIR', plugin_dir_path( $plugin_file ) );
+		define( 'CYBER_GALLERY_MAI_PLUGIN_URL', plugin_dir_url( $plugin_file ) );
+		define( 'CYBER_GALLERY_MAI_BASENAME', plugin_basename( $plugin_file ) );
 	}
 
 	/**
@@ -88,8 +95,13 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return void
 	 */
 	private function includes(): void {
-		require_once MAI_CYBER_GALLERY_PLUGIN_DIR . 'classes/class-mai-cyber-gallery.php';
-		require_once MAI_CYBER_GALLERY_PLUGIN_DIR . 'includes/functions.php';
+		require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'classes/class-cyber-gallery-mai.php';
+		require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'includes/functions.php';
+		require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'includes/compatibility.php';
+
+		if ( defined( 'WP_CLI' ) && WP_CLI ) {
+			require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'includes/class-cyber-gallery-mai-cli-command.php';
+		}
 	}
 
 	/**
@@ -120,6 +132,7 @@ final class Mai_Cyber_Gallery_Plugin {
 
 		$this->includes();
 
+		add_action( 'init', array( $this, 'load_textdomain' ), -1 );
 		add_action( 'init', array( $this, 'register_assets' ), 0 );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_detected_block_assets' ) );
 		add_filter( 'litespeed_optm_js_defer_exc', array( $this, 'litespeed_js_excludes' ) );
@@ -131,7 +144,23 @@ final class Mai_Cyber_Gallery_Plugin {
 		add_action( 'updated_post_meta', array( $this, 'purge_attachment_meta_cache' ), 10, 4 );
 		add_action( 'deleted_post_meta', array( $this, 'purge_deleted_attachment_meta_cache' ), 10, 4 );
 
-		require_once MAI_CYBER_GALLERY_PLUGIN_DIR . 'blocks/mai-cyber-gallery/block.php';
+		require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'blocks/cyber-gallery-mai/block.php';
+	}
+
+	/**
+	 * Register the bundled translation location for self-hosted releases.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return void
+	 */
+	public function load_textdomain(): void {
+		// phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- This externally distributed plugin bundles its own translations instead of using WordPress.org language packs.
+		load_plugin_textdomain(
+			'cyber-gallery-mai',
+			false,
+			dirname( CYBER_GALLERY_MAI_BASENAME ) . '/languages'
+		);
 	}
 
 	/**
@@ -142,11 +171,15 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return bool
 	 */
 	private function dependencies_met(): bool {
-		if ( ! class_exists( 'Mai_Engine' ) || ! function_exists( 'mai_get_version' ) ) {
+		if (
+			! current_theme_supports( 'mai-engine' )
+			|| ! class_exists( 'Mai_Engine' )
+			|| ! function_exists( 'mai_get_version' )
+		) {
 			return false;
 		}
 
-		if ( version_compare( mai_get_version(), MAI_CYBER_GALLERY_MIN_ENGINE_VERSION, '<' ) ) {
+		if ( version_compare( mai_get_version(), CYBER_GALLERY_MAI_MIN_ENGINE_VERSION, '<' ) ) {
 			return false;
 		}
 
@@ -194,44 +227,44 @@ final class Mai_Cyber_Gallery_Plugin {
 	public function register_assets(): void {
 		$debug              = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG;
 		$suffix             = $debug ? '' : '.min';
-		$style_file         = "assets/css/mai-cyber-gallery{$suffix}.css";
-		$editor_style_file  = "assets/css/mai-cyber-gallery-editor{$suffix}.css";
-		$script_file        = "assets/js/mai-cyber-gallery{$suffix}.js";
-		$packing_file       = "assets/js/mai-cyber-gallery-packing{$suffix}.js";
-		$comparison_file    = "assets/js/mai-cyber-gallery-comparison{$suffix}.js";
-		$lightbox_file      = "assets/js/mai-cyber-gallery-lightbox{$suffix}.js";
-		$editor_script_file = "assets/js/mai-cyber-gallery-editor{$suffix}.js";
-		$style_path         = MAI_CYBER_GALLERY_PLUGIN_DIR . $style_file;
-		$editor_style_path  = MAI_CYBER_GALLERY_PLUGIN_DIR . $editor_style_file;
-		$script_path        = MAI_CYBER_GALLERY_PLUGIN_DIR . $script_file;
-		$packing_path       = MAI_CYBER_GALLERY_PLUGIN_DIR . $packing_file;
-		$comparison_path    = MAI_CYBER_GALLERY_PLUGIN_DIR . $comparison_file;
-		$lightbox_path      = MAI_CYBER_GALLERY_PLUGIN_DIR . $lightbox_file;
-		$editor_script_path = MAI_CYBER_GALLERY_PLUGIN_DIR . $editor_script_file;
+		$style_file         = "assets/css/cyber-gallery-mai{$suffix}.css";
+		$editor_style_file  = "assets/css/cyber-gallery-mai-editor{$suffix}.css";
+		$script_file        = "assets/js/cyber-gallery-mai{$suffix}.js";
+		$packing_file       = "assets/js/cyber-gallery-mai-packing{$suffix}.js";
+		$comparison_file    = "assets/js/cyber-gallery-mai-comparison{$suffix}.js";
+		$lightbox_file      = "assets/js/cyber-gallery-mai-lightbox{$suffix}.js";
+		$editor_script_file = "assets/js/cyber-gallery-mai-editor{$suffix}.js";
+		$style_path         = CYBER_GALLERY_MAI_PLUGIN_DIR . $style_file;
+		$editor_style_path  = CYBER_GALLERY_MAI_PLUGIN_DIR . $editor_style_file;
+		$script_path        = CYBER_GALLERY_MAI_PLUGIN_DIR . $script_file;
+		$packing_path       = CYBER_GALLERY_MAI_PLUGIN_DIR . $packing_file;
+		$comparison_path    = CYBER_GALLERY_MAI_PLUGIN_DIR . $comparison_file;
+		$lightbox_path      = CYBER_GALLERY_MAI_PLUGIN_DIR . $lightbox_file;
+		$editor_script_path = CYBER_GALLERY_MAI_PLUGIN_DIR . $editor_script_file;
 		$icon_atts          = array(
 			'aria-hidden' => 'true',
 			'focusable'   => 'false',
 		);
 
 		wp_register_style(
-			'mai-cyber-gallery',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $style_file,
+			'cyber-gallery-mai',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $style_file,
 			array(),
 			$this->asset_version( $style_path )
 		);
-		wp_style_add_data( 'mai-cyber-gallery', 'path', $style_path );
+		wp_style_add_data( 'cyber-gallery-mai', 'path', $style_path );
 
 		wp_register_style(
-			'mai-cyber-gallery-editor',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $editor_style_file,
-			array( 'mai-cyber-gallery' ),
+			'cyber-gallery-mai-editor',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $editor_style_file,
+			array( 'cyber-gallery-mai' ),
 			$this->asset_version( $editor_style_path )
 		);
-		wp_style_add_data( 'mai-cyber-gallery-editor', 'path', $editor_style_path );
+		wp_style_add_data( 'cyber-gallery-mai-editor', 'path', $editor_style_path );
 
 		wp_register_script(
-			'mai-cyber-gallery',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $script_file,
+			'cyber-gallery-mai',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $script_file,
 			array(),
 			$this->asset_version( $script_path ),
 			array(
@@ -240,34 +273,34 @@ final class Mai_Cyber_Gallery_Plugin {
 			)
 		);
 		wp_localize_script(
-			'mai-cyber-gallery',
-			'MaiCyberGallerySettings',
+			'cyber-gallery-mai',
+			'CyberGalleryMaiSettings',
 			array(
-				'pauseAutoplay'     => __( 'Pause automatic slides', 'mai-cyber-gallery' ),
-				'startAutoplay'     => __( 'Start automatic slides', 'mai-cyber-gallery' ),
-				'pauseFilmstrip'    => __( 'Pause automatic gallery movement', 'mai-cyber-gallery' ),
-				'startFilmstrip'    => __( 'Start automatic gallery movement', 'mai-cyber-gallery' ),
+				'pauseAutoplay'     => __( 'Pause automatic slides', 'cyber-gallery-mai' ),
+				'startAutoplay'     => __( 'Start automatic slides', 'cyber-gallery-mai' ),
+				'pauseFilmstrip'    => __( 'Pause automatic gallery movement', 'cyber-gallery-mai' ),
+				'startFilmstrip'    => __( 'Start automatic gallery movement', 'cyber-gallery-mai' ),
 				/* translators: 1: Current image number. 2: Total images. */
 				'filmstripPosition' => __(
 					'Image %1$d of %2$d',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 				/* translators: 1: Current slide number. 2: Total slides. */
 				'slide'             => __(
 					'Slide %1$d of %2$d',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 				/* translators: 1: Current slide number. 2: Total slides. 3: Slide title. */
 				'slideTitle'        => __(
 					'Slide %1$d of %2$d: %3$s',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 			)
 		);
 
 		wp_register_script(
-			'mai-cyber-gallery-packing',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $packing_file,
+			'cyber-gallery-mai-packing',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $packing_file,
 			array(),
 			$this->asset_version( $packing_path ),
 			array(
@@ -277,8 +310,8 @@ final class Mai_Cyber_Gallery_Plugin {
 		);
 
 		wp_register_script(
-			'mai-cyber-gallery-lightbox',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $lightbox_file,
+			'cyber-gallery-mai-lightbox',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $lightbox_file,
 			array(),
 			$this->asset_version( $lightbox_path ),
 			array(
@@ -288,8 +321,8 @@ final class Mai_Cyber_Gallery_Plugin {
 		);
 
 		wp_register_script(
-			'mai-cyber-gallery-comparison',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $comparison_file,
+			'cyber-gallery-mai-comparison',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $comparison_file,
 			array(),
 			$this->asset_version( $comparison_path ),
 			array(
@@ -298,33 +331,33 @@ final class Mai_Cyber_Gallery_Plugin {
 			)
 		);
 		wp_localize_script(
-			'mai-cyber-gallery-comparison',
-			'MaiCyberGalleryComparisonSettings',
+			'cyber-gallery-mai-comparison',
+			'CyberGalleryMaiComparisonSettings',
 			array(
 				/* translators: 1: Before image label. 2: Percentage visible. */
 				'valueText' => __(
 					'%1$s: %2$d%% visible',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 			)
 		);
 		wp_localize_script(
-			'mai-cyber-gallery-lightbox',
-			'MaiCyberGalleryLightboxSettings',
+			'cyber-gallery-mai-lightbox',
+			'CyberGalleryMaiLightboxSettings',
 			array(
-				'dialogLabel' => __( 'Image viewer', 'mai-cyber-gallery' ),
-				'close'       => __( 'Close image viewer', 'mai-cyber-gallery' ),
-				'next'        => __( 'Next image', 'mai-cyber-gallery' ),
-				'previous'    => __( 'Previous image', 'mai-cyber-gallery' ),
+				'dialogLabel' => __( 'Image viewer', 'cyber-gallery-mai' ),
+				'close'       => __( 'Close image viewer', 'cyber-gallery-mai' ),
+				'next'        => __( 'Next image', 'cyber-gallery-mai' ),
+				'previous'    => __( 'Previous image', 'cyber-gallery-mai' ),
 				/* translators: 1: Current image number. 2: Total images. */
 				'position'    => __(
 					'%1$d of %2$d',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 				/* translators: 1: Image position. 2: Image description. */
 				'status'      => __(
 					'%1$s, %2$s',
-					'mai-cyber-gallery'
+					'cyber-gallery-mai'
 				),
 				'icons'       => array(
 					'close'    => mai_get_svg_icon( 'times', 'solid', $icon_atts ),
@@ -335,12 +368,12 @@ final class Mai_Cyber_Gallery_Plugin {
 		);
 
 		wp_register_script(
-			'mai-cyber-gallery-editor',
-			MAI_CYBER_GALLERY_PLUGIN_URL . $editor_script_file,
+			'cyber-gallery-mai-editor',
+			CYBER_GALLERY_MAI_PLUGIN_URL . $editor_script_file,
 			array(
-				'mai-cyber-gallery',
-				'mai-cyber-gallery-packing',
-				'mai-cyber-gallery-comparison',
+				'cyber-gallery-mai',
+				'cyber-gallery-mai-packing',
+				'cyber-gallery-mai-comparison',
 				'acf-input',
 				'wp-blocks',
 				'wp-hooks',
@@ -349,6 +382,38 @@ final class Mai_Cyber_Gallery_Plugin {
 			$this->asset_version( $editor_script_path ),
 			true
 		);
+
+		// Preserve the 1.x public asset handles as dependency-only aliases.
+		wp_register_style(
+			'mai-cyber-gallery',
+			false,
+			array( 'cyber-gallery-mai' ),
+			CYBER_GALLERY_MAI_VERSION
+		);
+		wp_register_style(
+			'mai-cyber-gallery-editor',
+			false,
+			array( 'cyber-gallery-mai-editor' ),
+			CYBER_GALLERY_MAI_VERSION
+		);
+
+		foreach (
+			array(
+				'mai-cyber-gallery'            => 'cyber-gallery-mai',
+				'mai-cyber-gallery-packing'    => 'cyber-gallery-mai-packing',
+				'mai-cyber-gallery-lightbox'   => 'cyber-gallery-mai-lightbox',
+				'mai-cyber-gallery-comparison' => 'cyber-gallery-mai-comparison',
+				'mai-cyber-gallery-editor'     => 'cyber-gallery-mai-editor',
+			) as $legacy_handle => $canonical_handle
+		) {
+			wp_register_script(
+				$legacy_handle,
+				false,
+				array( $canonical_handle ),
+				CYBER_GALLERY_MAI_VERSION,
+				true
+			);
+		}
 	}
 
 	/**
@@ -388,7 +453,8 @@ final class Mai_Cyber_Gallery_Plugin {
 			}
 
 			if (
-				! has_block( 'acf/mai-cyber-gallery', $post )
+				! has_block( 'acf/cyber-gallery-mai', $post )
+				&& ! has_block( 'acf/mai-cyber-gallery', $post )
 				&& ! has_block( 'core/block', $post )
 			) {
 				continue;
@@ -408,22 +474,22 @@ final class Mai_Cyber_Gallery_Plugin {
 			return;
 		}
 
-		wp_enqueue_style( 'mai-cyber-gallery' );
+		wp_enqueue_style( 'cyber-gallery-mai' );
 
 		if ( $asset_needs['packing'] ) {
-			wp_enqueue_script( 'mai-cyber-gallery-packing' );
+			wp_enqueue_script( 'cyber-gallery-mai-packing' );
 		}
 
 		if ( $asset_needs['carousel'] ) {
-			wp_enqueue_script( 'mai-cyber-gallery' );
+			wp_enqueue_script( 'cyber-gallery-mai' );
 		}
 
 		if ( $asset_needs['lightbox'] ) {
-			wp_enqueue_script( 'mai-cyber-gallery-lightbox' );
+			wp_enqueue_script( 'cyber-gallery-mai-lightbox' );
 		}
 
 		if ( $asset_needs['comparison'] ) {
-			wp_enqueue_script( 'mai-cyber-gallery-comparison' );
+			wp_enqueue_script( 'cyber-gallery-mai-comparison' );
 		}
 	}
 
@@ -454,7 +520,13 @@ final class Mai_Cyber_Gallery_Plugin {
 				continue;
 			}
 
-			if ( 'acf/mai-cyber-gallery' === ( $block['blockName'] ?? '' ) ) {
+			if (
+				in_array(
+					$block['blockName'] ?? '',
+					array( 'acf/cyber-gallery-mai', 'acf/mai-cyber-gallery' ),
+					true
+				)
+			) {
 				$needs['gallery'] = true;
 				$data             = isset( $block['attrs']['data'] ) && is_array( $block['attrs']['data'] )
 					? $block['attrs']['data']
@@ -529,6 +601,7 @@ final class Mai_Cyber_Gallery_Plugin {
 			$excludes = array();
 		}
 
+		$excludes[] = '/cyber-gallery-mai/assets/js/';
 		$excludes[] = '/mai-cyber-gallery/assets/js/';
 
 		return array_values( array_unique( array_filter( $excludes, 'is_string' ) ) );
@@ -600,6 +673,8 @@ final class Mai_Cyber_Gallery_Plugin {
 		if ( 0 < $attachment_id ) {
 			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Invoke LiteSpeed Cache's public purge hook.
 			do_action( 'litespeed_purge', $this->attachment_cache_tag( $attachment_id ) );
+			// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Purge cache entries tagged by plugin versions before 2.0.0.
+			do_action( 'litespeed_purge', $this->legacy_attachment_cache_tag( $attachment_id ) );
 		}
 	}
 
@@ -684,6 +759,19 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return string
 	 */
 	public function attachment_cache_tag( int $attachment_id ): string {
+		return 'CGM.A.' . absint( $attachment_id );
+	}
+
+	/**
+	 * Build the pre-2.0 cache tag for an attachment.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 *
+	 * @return string
+	 */
+	public function legacy_attachment_cache_tag( int $attachment_id ): string {
 		return 'MCG.A.' . absint( $attachment_id );
 	}
 
@@ -697,8 +785,18 @@ final class Mai_Cyber_Gallery_Plugin {
 	 * @return string
 	 */
 	private function asset_version( string $path ): string {
-		$modified = file_exists( $path ) ? (string) filemtime( $path ) : '0';
-		return MAI_CYBER_GALLERY_VERSION . '.' . $modified;
+		if ( ! ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) ) {
+			return CYBER_GALLERY_MAI_VERSION;
+		}
+
+		static $versions = array();
+
+		if ( ! isset( $versions[ $path ] ) ) {
+			$modified          = file_exists( $path ) ? (string) filemtime( $path ) : '0';
+			$versions[ $path ] = CYBER_GALLERY_MAI_VERSION . '.' . $modified;
+		}
+
+		return $versions[ $path ];
 	}
 
 	/**
@@ -715,8 +813,8 @@ final class Mai_Cyber_Gallery_Plugin {
 
 		$message = sprintf(
 			/* translators: %s: Minimum Mai Engine version. */
-			esc_html__( 'Cyber Gallery for Mai Theme requires Mai Engine %s or later with an active Mai theme.', 'mai-cyber-gallery' ),
-			esc_html( MAI_CYBER_GALLERY_MIN_ENGINE_VERSION )
+			esc_html__( 'Cyber Gallery for Mai Theme requires Mai Engine %s or later with an active Mai theme.', 'cyber-gallery-mai' ),
+			esc_html( CYBER_GALLERY_MAI_MIN_ENGINE_VERSION )
 		);
 
 		printf( '<div class="notice notice-warning"><p>%s</p></div>', esc_html( $message ) );

@@ -2,15 +2,15 @@
 /**
  * Regression coverage for image-size validation and fallbacks.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-$mai_cyber_gallery_test_filter = null;
-$mai_cyber_gallery_test_sizes  = array();
+$cyber_gallery_mai_test_filter = null;
+$cyber_gallery_mai_test_sizes  = array();
 
 /**
  * Minimal Mai orientation check.
@@ -32,9 +32,9 @@ function mai_has_image_orientiation( $orientation ): bool {
  * @return mixed
  */
 function apply_filters( $hook, $value ) {
-	global $mai_cyber_gallery_test_filter;
+	global $cyber_gallery_mai_test_filter;
 	unset( $hook );
-	return null === $mai_cyber_gallery_test_filter ? $value : $mai_cyber_gallery_test_filter;
+	return null === $cyber_gallery_mai_test_filter ? $value : $cyber_gallery_mai_test_filter;
 }
 
 /**
@@ -54,22 +54,20 @@ function sanitize_key( $key ): string {
  * @return array<string, array<string, mixed>>
  */
 function wp_get_registered_image_subsizes(): array {
-	global $mai_cyber_gallery_test_sizes;
-	return $mai_cyber_gallery_test_sizes;
+	global $cyber_gallery_mai_test_sizes;
+	return $cyber_gallery_mai_test_sizes;
 }
 
-require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-cyber-gallery-mai.php';
 
-$reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
+$reflection = new ReflectionClass( Cyber_Gallery_Mai::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
 $args       = $reflection->getProperty( 'args' );
-
-$args->setAccessible( true );
 
 /**
  * Resolve one image-size test case.
  *
- * @param Mai_Cyber_Gallery                   $gallery Gallery instance.
+ * @param Cyber_Gallery_Mai                   $gallery Gallery instance.
  * @param ReflectionProperty                  $args    Argument property.
  * @param array<string, mixed>                $values  Gallery arguments.
  * @param array<string, array<string, mixed>> $sizes  Registered sizes.
@@ -78,10 +76,10 @@ $args->setAccessible( true );
  * @return string
  */
 function cyber_image_size( $gallery, $args, array $values, array $sizes, ?string $filter ): string {
-	global $mai_cyber_gallery_test_filter, $mai_cyber_gallery_test_sizes;
+	global $cyber_gallery_mai_test_filter, $cyber_gallery_mai_test_sizes;
 
-	$mai_cyber_gallery_test_filter = $filter;
-	$mai_cyber_gallery_test_sizes  = $sizes;
+	$cyber_gallery_mai_test_filter = $filter;
+	$cyber_gallery_mai_test_sizes  = $sizes;
 	$args->setValue(
 		$gallery,
 		array_merge(

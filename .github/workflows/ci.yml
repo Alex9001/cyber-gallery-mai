@@ -36,6 +36,9 @@ jobs:
       - name: Install development tools
         run: composer install --no-interaction --no-progress --prefer-dist
 
+      - name: Audit PHP dependencies
+        run: composer audit --locked
+
       - name: Run PHP checks
         run: composer test
 
@@ -55,6 +58,9 @@ jobs:
 
       - name: Install development tools
         run: npm ci
+
+      - name: Audit Node.js dependencies
+        run: npm audit --audit-level=high
 
       - name: Verify JavaScript, assets, and block JSON
         run: npm test
@@ -101,7 +107,7 @@ jobs:
       # runtime is covered by tests/runtime-smoke.php on an authorized site.
       - name: Install WordPress test environment
         run: |
-          npm install --global @wordpress/env@11.12.0
+          npm install --global @wordpress/env@11.13.0
           cp tests/fixtures/plugin-check.wp-env.json .wp-env.json
 
       - name: Start staged-distribution environment
@@ -110,8 +116,8 @@ jobs:
       - name: Activate staged plugin
         run: |
           wp-env run cli wp plugin activate mai-engine
-          wp-env run cli wp plugin activate mai-cyber-gallery
-          wp-env run cli wp plugin status mai-cyber-gallery
+          wp-env run cli wp plugin activate cyber-gallery-mai
+          wp-env run cli wp plugin status cyber-gallery-mai
 
       - name: Run strict Plugin Check against staged release
         shell: bash
@@ -120,7 +126,7 @@ jobs:
             wp-env run cli wp \
               --no-color \
               --require=wp-content/plugins/plugin-check/cli.php \
-              plugin check mai-cyber-gallery \
+              plugin check cyber-gallery-mai \
               --format=strict-json \
               --ignore-codes=plugin_updater_detected 2>&1
           )"
@@ -136,6 +142,15 @@ jobs:
             echo 'Plugin Check reported one or more errors or warnings.' >&2
             exit 1
           fi
+
+      - name: Retain verified release ZIP
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: cyber-gallery-mai-2.0.0
+          path: build/cyber-gallery-mai-2.0.0.zip
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 30
 
       - name: Stop WordPress test environment
         if: always()

@@ -2,7 +2,7 @@
 /**
  * Regression coverage for configurable Editorial Mosaic groups.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
@@ -30,20 +30,17 @@ function mai_add_classes( $new_classes, $existing = '' ): string {
 	return implode( ' ', array_values( array_unique( array_filter( $classes ) ) ) );
 }
 
-require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-cyber-gallery-mai.php';
 
-$reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
+$reflection = new ReflectionClass( Cyber_Gallery_Mai::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
 $args       = $reflection->getProperty( 'args' );
 $method     = $reflection->getMethod( 'get_mosaic_item_attributes' );
 
-$args->setAccessible( true );
-$method->setAccessible( true );
-
 /**
  * Invoke the protected mosaic attribute helper.
  *
- * @param Mai_Cyber_Gallery $gallery Gallery test instance.
+ * @param Cyber_Gallery_Mai $gallery Gallery test instance.
  * @param ReflectionMethod  $method  Mosaic method.
  * @param int               $index   Zero-based image index.
  * @param int               $total   Total image count.

@@ -2,7 +2,7 @@
 /**
  * Regression coverage for parsed-block asset detection.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
@@ -51,10 +51,12 @@ class WP_Query {
 	}
 }
 
-$mai_cyber_gallery_test_posts              = array();
-$mai_cyber_gallery_test_styles             = array();
-$mai_cyber_gallery_test_scripts            = array();
-$mai_cyber_gallery_test_registered_scripts = array();
+$cyber_gallery_mai_test_posts              = array();
+$cyber_gallery_mai_test_styles             = array();
+$cyber_gallery_mai_test_scripts            = array();
+$cyber_gallery_mai_test_registered_styles  = array();
+$cyber_gallery_mai_test_registered_scripts = array();
+$cyber_gallery_mai_test_localized_scripts  = array();
 
 /**
  * Minimal WordPress action registration test double.
@@ -62,6 +64,13 @@ $mai_cyber_gallery_test_registered_scripts = array();
  * @return void
  */
 function add_action(): void {}
+
+/**
+ * Ignore activation-hook registration in the standalone test.
+ *
+ * @return void
+ */
+function register_activation_hook(): void {}
 
 /**
  * Return a plugin directory path.
@@ -80,7 +89,7 @@ function plugin_dir_path( $file ): string {
  * @return string
  */
 function plugin_dir_url(): string {
-	return 'https://example.test/wp-content/plugins/mai-cyber-gallery/';
+	return 'https://example.test/wp-content/plugins/cyber-gallery-mai/';
 }
 
 /**
@@ -125,8 +134,8 @@ function parse_blocks( $content ): array {
  * @return WP_Post|null
  */
 function get_post( $post_id ): ?WP_Post {
-	global $mai_cyber_gallery_test_posts;
-	return $mai_cyber_gallery_test_posts[ $post_id ] ?? null;
+	global $cyber_gallery_mai_test_posts;
+	return $cyber_gallery_mai_test_posts[ $post_id ] ?? null;
 }
 
 /**
@@ -159,8 +168,8 @@ function has_block( $block_name, $post ): bool {
  * @return void
  */
 function wp_enqueue_style( $handle ): void {
-	global $mai_cyber_gallery_test_styles;
-	$mai_cyber_gallery_test_styles[] = $handle;
+	global $cyber_gallery_mai_test_styles;
+	$cyber_gallery_mai_test_styles[] = $handle;
 }
 
 /**
@@ -171,16 +180,29 @@ function wp_enqueue_style( $handle ): void {
  * @return void
  */
 function wp_enqueue_script( $handle ): void {
-	global $mai_cyber_gallery_test_scripts;
-	$mai_cyber_gallery_test_scripts[] = $handle;
+	global $cyber_gallery_mai_test_scripts;
+	$cyber_gallery_mai_test_scripts[] = $handle;
 }
 
 /**
- * Ignore style registration details in this script-focused test.
+ * Capture registered style aliases and dependencies.
+ *
+ * @param string            $handle  Style handle.
+ * @param string|false      $src     Style source.
+ * @param array<int,string> $deps    Style dependencies.
+ * @param string|false|null $version Style version.
  *
  * @return void
  */
-function wp_register_style(): void {}
+function wp_register_style( $handle, $src, $deps = array(), $version = false ): void {
+	global $cyber_gallery_mai_test_registered_styles;
+	unset( $version );
+
+	$cyber_gallery_mai_test_registered_styles[ $handle ] = array(
+		'src'  => $src,
+		'deps' => $deps,
+	);
+}
 
 /**
  * Ignore style metadata in this script-focused test.
@@ -201,18 +223,29 @@ function wp_style_add_data(): void {}
  * @return void
  */
 function wp_register_script( $handle, $src, $deps = array(), $version = false, $args = array() ): void {
-	global $mai_cyber_gallery_test_registered_scripts;
-	unset( $src, $deps, $version );
+	global $cyber_gallery_mai_test_registered_scripts;
+	unset( $version );
 
-	$mai_cyber_gallery_test_registered_scripts[ $handle ] = $args;
+	$cyber_gallery_mai_test_registered_scripts[ $handle ] = array(
+		'src'  => $src,
+		'deps' => $deps,
+		'args' => $args,
+	);
 }
 
 /**
- * Ignore localized strings after registration.
+ * Capture localized JavaScript object names.
+ *
+ * @param string $handle      Script handle.
+ * @param string $object_name JavaScript object name.
  *
  * @return void
  */
-function wp_localize_script(): void {}
+function wp_localize_script( $handle, $object_name ): void {
+	global $cyber_gallery_mai_test_localized_scripts;
+
+	$cyber_gallery_mai_test_localized_scripts[ $handle ] = $object_name;
+}
 
 /**
  * Return untranslated test strings.
@@ -256,35 +289,69 @@ function absint( $value ): int {
 	return abs( (int) $value );
 }
 
-require dirname( __DIR__ ) . '/mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/cyber-gallery-mai.php';
 
-$reflection = new ReflectionClass( Mai_Cyber_Gallery_Plugin::class );
-$plugin     = mai_cyber_gallery_plugin();
+$reflection = new ReflectionClass( Cyber_Gallery_Mai_Plugin::class );
+$plugin     = cyber_gallery_mai_plugin();
 $method     = $reflection->getMethod( 'get_block_asset_needs' );
 
-$method->setAccessible( true );
 $plugin->register_assets();
 
 foreach (
 	array(
-		'mai-cyber-gallery',
-		'mai-cyber-gallery-packing',
-		'mai-cyber-gallery-lightbox',
-		'mai-cyber-gallery-comparison',
+		'cyber-gallery-mai',
+		'cyber-gallery-mai-packing',
+		'cyber-gallery-mai-lightbox',
+		'cyber-gallery-mai-comparison',
 	) as $runtime_handle
 ) {
-	$registration = $mai_cyber_gallery_test_registered_scripts[ $runtime_handle ] ?? null;
+	$registration = $cyber_gallery_mai_test_registered_scripts[ $runtime_handle ] ?? null;
 
-	if ( ! is_array( $registration ) || empty( $registration['in_footer'] ) ) {
+	if ( ! is_array( $registration ) || empty( $registration['args']['in_footer'] ) ) {
 		throw new RuntimeException( sprintf( '%s was not registered for safe late footer output.', $runtime_handle ) );
 	}
+}
+
+foreach (
+	array(
+		'mai-cyber-gallery'            => 'cyber-gallery-mai',
+		'mai-cyber-gallery-packing'    => 'cyber-gallery-mai-packing',
+		'mai-cyber-gallery-lightbox'   => 'cyber-gallery-mai-lightbox',
+		'mai-cyber-gallery-comparison' => 'cyber-gallery-mai-comparison',
+		'mai-cyber-gallery-editor'     => 'cyber-gallery-mai-editor',
+	) as $legacy_handle => $canonical_handle
+) {
+	$registration = $cyber_gallery_mai_test_registered_scripts[ $legacy_handle ] ?? null;
+
+	if (
+		! is_array( $registration )
+		|| false !== $registration['src']
+		|| array( $canonical_handle ) !== $registration['deps']
+	) {
+		throw new RuntimeException( sprintf( '%s did not remain a dependency-only 1.x alias.', $legacy_handle ) );
+	}
+}
+
+if (
+	array( 'cyber-gallery-mai' ) !== ( $cyber_gallery_mai_test_registered_styles['mai-cyber-gallery']['deps'] ?? null )
+	|| array( 'cyber-gallery-mai-editor' ) !== ( $cyber_gallery_mai_test_registered_styles['mai-cyber-gallery-editor']['deps'] ?? null )
+) {
+	throw new RuntimeException( 'The 1.x style handles did not remain dependency-only aliases.' );
+}
+
+if (
+	'CyberGalleryMaiSettings' !== ( $cyber_gallery_mai_test_localized_scripts['cyber-gallery-mai'] ?? null )
+	|| 'CyberGalleryMaiComparisonSettings' !== ( $cyber_gallery_mai_test_localized_scripts['cyber-gallery-mai-comparison'] ?? null )
+	|| 'CyberGalleryMaiLightboxSettings' !== ( $cyber_gallery_mai_test_localized_scripts['cyber-gallery-mai-lightbox'] ?? null )
+) {
+	throw new RuntimeException( 'Canonical JavaScript settings globals were not localized.' );
 }
 
 /**
  * Invoke the private detector.
  *
  * @param ReflectionMethod                 $method Detector method.
- * @param Mai_Cyber_Gallery_Plugin         $plugin Plugin instance.
+ * @param Cyber_Gallery_Mai_Plugin         $plugin Plugin instance.
  * @param array<int, array<string, mixed>> $blocks Parsed blocks.
  *
  * @return array{gallery: bool, packing: bool, carousel: bool, lightbox: bool, comparison: bool}
@@ -293,9 +360,13 @@ function cyber_detect_assets( $method, $plugin, array $blocks ): array {
 	return $method->invoke( $plugin, $blocks );
 }
 
-$gallery_block = static function ( string $layout, string $click = 'none' ): array {
+$gallery_block = static function (
+	string $layout,
+	string $click = 'none',
+	string $block_name = 'acf/cyber-gallery-mai'
+): array {
 	return array(
-		'blockName'   => 'acf/mai-cyber-gallery',
+		'blockName'   => $block_name,
 		'attrs'       => array(
 			'data' => array(
 				'layout'       => $layout,
@@ -317,11 +388,20 @@ if (
 	throw new RuntimeException( 'A plain Grid did not request base gallery CSS alone.' );
 }
 
+$legacy_grid = cyber_detect_assets(
+	$method,
+	$plugin,
+	array( $gallery_block( 'grid', 'none', 'acf/mai-cyber-gallery' ) )
+);
+if ( $legacy_grid !== $plain_grid ) {
+	throw new RuntimeException( 'The hidden 1.x block alias did not retain canonical asset detection.' );
+}
+
 $wp_query = new WP_Query( array( new WP_Post( array( $gallery_block( 'grid' ) ) ) ) );
 $plugin->enqueue_detected_block_assets();
 if (
-	array( 'mai-cyber-gallery' ) !== $mai_cyber_gallery_test_styles
-	|| array() !== $mai_cyber_gallery_test_scripts
+	array( 'cyber-gallery-mai' ) !== $cyber_gallery_mai_test_styles
+	|| array() !== $cyber_gallery_mai_test_scripts
 ) {
 	throw new RuntimeException( 'A plain Grid did not enqueue base CSS without behavior scripts.' );
 }
@@ -381,7 +461,7 @@ if ( ! $nested['gallery'] || ! $nested['packing'] ) {
 	throw new RuntimeException( 'Nested innerBlocks were not scanned recursively.' );
 }
 
-$mai_cyber_gallery_test_posts[101] = new WP_Post(
+$cyber_gallery_mai_test_posts[101] = new WP_Post(
 	array(
 		array(
 			'blockName'   => 'core/block',
@@ -391,7 +471,7 @@ $mai_cyber_gallery_test_posts[101] = new WP_Post(
 		$gallery_block( 'grid' ),
 	)
 );
-$mai_cyber_gallery_test_posts[102] = new WP_Post(
+$cyber_gallery_mai_test_posts[102] = new WP_Post(
 	array(
 		array(
 			'blockName'   => 'core/block',

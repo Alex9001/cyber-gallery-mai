@@ -2,15 +2,15 @@
 /**
  * Regression coverage for layout-aware ACF validation and field conditions.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 define( 'ABSPATH', __DIR__ );
 
-$mai_cyber_gallery_test_filters = array();
-$mai_cyber_gallery_test_groups  = array();
-$mai_cyber_gallery_test_values  = array();
-$mai_cyber_gallery_test_current = '';
+$cyber_gallery_mai_test_filters = array();
+$cyber_gallery_mai_test_groups  = array();
+$cyber_gallery_mai_test_values  = array();
+$cyber_gallery_mai_test_current = '';
 
 /**
  * Minimal WordPress and ACF test doubles used while loading the block file.
@@ -36,9 +36,9 @@ function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ): voi
  * @return void
  */
 function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ): void {
-	global $mai_cyber_gallery_test_filters;
+	global $cyber_gallery_mai_test_filters;
 
-	$mai_cyber_gallery_test_filters[ $hook ][] = array(
+	$cyber_gallery_mai_test_filters[ $hook ][] = array(
 		'callback'      => $callback,
 		'priority'      => $priority,
 		'accepted_args' => $accepted_args,
@@ -53,9 +53,9 @@ function add_filter( $hook, $callback, $priority = 10, $accepted_args = 1 ): voi
  * @return void
  */
 function acf_add_local_field_group( $group ): void {
-	global $mai_cyber_gallery_test_groups;
+	global $cyber_gallery_mai_test_groups;
 
-	$mai_cyber_gallery_test_groups[] = $group;
+	$cyber_gallery_mai_test_groups[] = $group;
 }
 
 /**
@@ -68,12 +68,12 @@ function acf_add_local_field_group( $group ): void {
  * @return mixed
  */
 function get_field( $name, $post_id = false, $format_value = true ) {
-	global $mai_cyber_gallery_test_current, $mai_cyber_gallery_test_values;
+	global $cyber_gallery_mai_test_current, $cyber_gallery_mai_test_values;
 	unset( $format_value );
 
-	$post_id = $post_id ? (string) $post_id : $mai_cyber_gallery_test_current;
+	$post_id = $post_id ? (string) $post_id : $cyber_gallery_mai_test_current;
 
-	return $mai_cyber_gallery_test_values[ $post_id ][ $name ] ?? null;
+	return $cyber_gallery_mai_test_values[ $post_id ][ $name ] ?? null;
 }
 
 /**
@@ -177,7 +177,7 @@ function mai_get_radio_color_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_layout_choices(): array {
+function cyber_gallery_mai_get_layout_choices(): array {
 	return array(
 		'grid'       => 'Grid',
 		'masonry'    => 'Masonry',
@@ -197,7 +197,7 @@ function mai_cyber_gallery_get_layout_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_arrow_style_choices(): array {
+function cyber_gallery_mai_get_arrow_style_choices(): array {
 	return array( 'circle' => 'Circle' );
 }
 
@@ -206,7 +206,7 @@ function mai_cyber_gallery_get_arrow_style_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_navigation_choices(): array {
+function cyber_gallery_mai_get_slider_navigation_choices(): array {
 	return array(
 		'none'   => 'None',
 		'arrows' => 'Arrows',
@@ -219,7 +219,7 @@ function mai_cyber_gallery_get_slider_navigation_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_transition_choices(): array {
+function cyber_gallery_mai_get_slider_transition_choices(): array {
 	return array( 'slide' => 'Slide' );
 }
 
@@ -228,7 +228,7 @@ function mai_cyber_gallery_get_slider_transition_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
+function cyber_gallery_mai_get_slider_transition_speed_choices(): array {
 	return array( 'normal' => 'Normal' );
 }
 
@@ -237,7 +237,7 @@ function mai_cyber_gallery_get_slider_transition_speed_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
+function cyber_gallery_mai_get_slider_navigation_hover_choices(): array {
 	return array( 'none' => 'None' );
 }
 
@@ -246,7 +246,7 @@ function mai_cyber_gallery_get_slider_navigation_hover_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
+function cyber_gallery_mai_get_slider_overlay_style_choices(): array {
 	return array( 'none' => 'None' );
 }
 
@@ -255,7 +255,7 @@ function mai_cyber_gallery_get_slider_overlay_style_choices(): array {
  *
  * @return array<string,string>
  */
-function mai_cyber_gallery_get_button_style_choices(): array {
+function cyber_gallery_mai_get_button_style_choices(): array {
 	return array( 'button' => 'Button' );
 }
 
@@ -268,7 +268,7 @@ function mai_cyber_gallery_get_button_style_choices(): array {
  *
  * @return string
  */
-function mai_cyber_gallery_get_choice_default( array $choices, $preferred, $exclude = '' ): string {
+function cyber_gallery_mai_get_choice_default( array $choices, $preferred, $exclude = '' ): string {
 	$preferred = (string) $preferred;
 	$exclude   = (string) $exclude;
 
@@ -290,11 +290,11 @@ function mai_cyber_gallery_get_choice_default( array $choices, $preferred, $excl
  *
  * @return string
  */
-function mai_cyber_gallery_get_default_button_style(): string {
+function cyber_gallery_mai_get_default_button_style(): string {
 	return 'button';
 }
 
-require dirname( __DIR__ ) . '/blocks/mai-cyber-gallery/block.php';
+require dirname( __DIR__ ) . '/blocks/cyber-gallery-mai/block.php';
 
 /**
  * Fail this standalone test with a useful message.
@@ -304,7 +304,7 @@ require dirname( __DIR__ ) . '/blocks/mai-cyber-gallery/block.php';
  *
  * @return void
  */
-function mai_cyber_gallery_test_assert( bool $condition, string $message ): void {
+function cyber_gallery_mai_test_assert( bool $condition, string $message ): void {
 	if ( $condition ) {
 		return;
 	}
@@ -321,14 +321,14 @@ function mai_cyber_gallery_test_assert( bool $condition, string $message ): void
  *
  * @return array<string,mixed>|null
  */
-function mai_cyber_gallery_test_find_field( array $fields, string $key ): ?array {
+function cyber_gallery_mai_test_find_field( array $fields, string $key ): ?array {
 	foreach ( $fields as $field ) {
 		if ( isset( $field['key'] ) && $key === $field['key'] ) {
 			return $field;
 		}
 
 		if ( ! empty( $field['sub_fields'] ) && is_array( $field['sub_fields'] ) ) {
-			$match = mai_cyber_gallery_test_find_field( $field['sub_fields'], $key );
+			$match = cyber_gallery_mai_test_find_field( $field['sub_fields'], $key );
 			if ( $match ) {
 				return $match;
 			}
@@ -345,7 +345,7 @@ function mai_cyber_gallery_test_find_field( array $fields, string $key ): ?array
  *
  * @return list<string>
  */
-function mai_cyber_gallery_test_condition_layouts( $condition ): array {
+function cyber_gallery_mai_test_condition_layouts( $condition ): array {
 	$layouts = array();
 
 	foreach ( (array) $condition as $group ) {
@@ -365,22 +365,22 @@ function mai_cyber_gallery_test_condition_layouts( $condition ): array {
 	return $layouts;
 }
 
-mai_cyber_gallery_test_assert(
-	'block_abc-123' === mai_cyber_gallery_get_validation_block_id(
+cyber_gallery_mai_test_assert(
+	'block_abc-123' === cyber_gallery_mai_get_validation_block_id(
 		'acf-block_abc-123[mai_cyber_gallery_slides][0][mai_cyber_gallery_slide_image]'
 	),
 	'block IDs must be parsed from nested ACF inputs'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_get_validation_block_id( 'acf-block/unsafe[mai_cyber_gallery_layout]' ),
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_get_validation_block_id( 'acf-block/unsafe[mai_cyber_gallery_layout]' ),
 	'unsafe block IDs must not be used as ACF post IDs'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_get_validation_block_id( 'acf[mai_cyber_gallery_layout]' ),
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_get_validation_block_id( 'acf[mai_cyber_gallery_layout]' ),
 	'ordinary ACF inputs must use the current validation context'
 );
 
-$mai_cyber_gallery_test_values  = array(
+$cyber_gallery_mai_test_values  = array(
 	'block-grid'              => array(
 		'layout'               => 'grid',
 		'filmstrip_image_mode' => 'natural',
@@ -405,15 +405,15 @@ $mai_cyber_gallery_test_values  = array(
 		'layout' => 'grid',
 	),
 );
-$mai_cyber_gallery_test_current = 'block-current';
+$cyber_gallery_mai_test_current = 'block-current';
 
 $comparison_field = array( 'key' => 'mai_cyber_gallery_comparison_before_image' );
 $slide_field      = array( 'key' => 'mai_cyber_gallery_slide_image' );
 $button_field     = array( 'key' => 'mai_cyber_gallery_slide_button_link' );
 $logo_field       = array( 'key' => 'mai_cyber_gallery_filmstrip_logo_override_image' );
 
-mai_cyber_gallery_test_assert(
-	true === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	true === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$comparison_field,
@@ -421,8 +421,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'inactive Comparison images must not invalidate an ordinary gallery'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$comparison_field,
@@ -430,8 +430,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'active Comparison images must remain required'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$slide_field,
@@ -439,8 +439,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'active Slider images must remain required'
 );
-mai_cyber_gallery_test_assert(
-	true === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	true === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$slide_field,
@@ -448,8 +448,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'inactive Slider rows must not invalidate another layout'
 );
-mai_cyber_gallery_test_assert(
-	true === mai_cyber_gallery_validate_slide_button_link(
+cyber_gallery_mai_test_assert(
+	true === cyber_gallery_mai_validate_slide_button_link(
 		false,
 		array(),
 		$button_field,
@@ -457,8 +457,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'inactive Slider CTA rows must bypass required and title validation'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_validate_slide_button_link(
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_validate_slide_button_link(
 		false,
 		array(),
 		$button_field,
@@ -466,8 +466,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'active empty Slider CTA links must retain ACF required errors'
 );
-mai_cyber_gallery_test_assert(
-	'Add link text to use as the button label.' === mai_cyber_gallery_validate_slide_button_link(
+cyber_gallery_mai_test_assert(
+	'Add link text to use as the button label.' === cyber_gallery_mai_validate_slide_button_link(
 		true,
 		array(
 			'url'   => 'https://example.com',
@@ -478,8 +478,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'active Slider CTA links must retain visible-label validation'
 );
-mai_cyber_gallery_test_assert(
-	true === mai_cyber_gallery_validate_slide_button_link(
+cyber_gallery_mai_test_assert(
+	true === cyber_gallery_mai_validate_slide_button_link(
 		true,
 		array(
 			'url'   => 'https://example.com',
@@ -490,8 +490,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'complete active Slider CTA links must validate'
 );
-mai_cyber_gallery_test_assert(
-	true === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	true === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$logo_field,
@@ -499,8 +499,8 @@ mai_cyber_gallery_test_assert(
 	),
 	'logo overrides must be dormant outside Logo / Contain mode'
 );
-mai_cyber_gallery_test_assert(
-	false === mai_cyber_gallery_validate_conditional_required_value(
+cyber_gallery_mai_test_assert(
+	false === cyber_gallery_mai_validate_conditional_required_value(
 		false,
 		'',
 		$logo_field,
@@ -518,15 +518,15 @@ foreach (
 	) as $field_key
 ) {
 	$hook = "acf/validate_value/key={$field_key}";
-	mai_cyber_gallery_test_assert(
-		isset( $mai_cyber_gallery_test_filters[ $hook ][0] )
-		&& 'mai_cyber_gallery_validate_conditional_required_value' === $mai_cyber_gallery_test_filters[ $hook ][0]['callback']
-		&& 4 === $mai_cyber_gallery_test_filters[ $hook ][0]['accepted_args'],
+	cyber_gallery_mai_test_assert(
+		isset( $cyber_gallery_mai_test_filters[ $hook ][0] )
+		&& 'cyber_gallery_mai_validate_conditional_required_value' === $cyber_gallery_mai_test_filters[ $hook ][0]['callback']
+		&& 4 === $cyber_gallery_mai_test_filters[ $hook ][0]['accepted_args'],
 		"{$field_key} must register layout-aware validation"
 	);
 }
 
-$column_field = mai_cyber_gallery_prepare_columns_clone_field(
+$column_field = cyber_gallery_mai_prepare_columns_clone_field(
 	array(
 		'key'               => 'mai_columns_md',
 		'conditional_logic' => array(
@@ -541,7 +541,7 @@ $column_field = mai_cyber_gallery_prepare_columns_clone_field(
 	),
 	array( 'key' => 'mai_cyber_gallery_columns_clone' )
 );
-mai_cyber_gallery_test_assert(
+cyber_gallery_mai_test_assert(
 	3 === count( $column_field['conditional_logic'][0] ?? array() )
 	&& 'mai_columns_responsive' === ( $column_field['conditional_logic'][0][0]['field'] ?? '' )
 	&& 'justified' === ( $column_field['conditional_logic'][0][1]['value'] ?? '' )
@@ -549,7 +549,7 @@ mai_cyber_gallery_test_assert(
 	'cloned responsive fields must retain Engine conditions while excluding layouts that calculate their own columns'
 );
 
-$alignment_field      = mai_cyber_gallery_prepare_columns_clone_field(
+$alignment_field      = cyber_gallery_mai_prepare_columns_clone_field(
 	array(
 		'key'               => 'mai_align_columns',
 		'conditional_logic' => array(),
@@ -562,7 +562,7 @@ $alignment_exclusions = array_map(
 );
 sort( $alignment_exclusions );
 
-mai_cyber_gallery_test_assert(
+cyber_gallery_mai_test_assert(
 	array( 'filmstrip', 'justified', 'masonry', 'mosaic', 'tiled' ) === $alignment_exclusions,
 	'column alignment must be hidden for layouts whose packing or rail owns alignment'
 );
@@ -571,25 +571,25 @@ $gap_field = array(
 	'key'               => 'mai_column_gap',
 	'conditional_logic' => array(),
 );
-mai_cyber_gallery_test_assert(
-	mai_cyber_gallery_prepare_columns_clone_field(
+cyber_gallery_mai_test_assert(
+	cyber_gallery_mai_prepare_columns_clone_field(
 		$gap_field,
 		array( 'key' => 'mai_cyber_gallery_columns_clone' )
 	) === $gap_field,
 	'Mai Engine gap fields must remain available for Justified and Editorial Mosaic'
 );
-mai_cyber_gallery_test_assert(
-	isset( $mai_cyber_gallery_test_filters['acf/clone_field'][0] )
-	&& 'mai_cyber_gallery_prepare_columns_clone_field' === $mai_cyber_gallery_test_filters['acf/clone_field'][0]['callback']
-	&& 20 === $mai_cyber_gallery_test_filters['acf/clone_field'][0]['priority']
-	&& 2 === $mai_cyber_gallery_test_filters['acf/clone_field'][0]['accepted_args'],
+cyber_gallery_mai_test_assert(
+	isset( $cyber_gallery_mai_test_filters['acf/clone_field'][0] )
+	&& 'cyber_gallery_mai_prepare_columns_clone_field' === $cyber_gallery_mai_test_filters['acf/clone_field'][0]['callback']
+	&& 20 === $cyber_gallery_mai_test_filters['acf/clone_field'][0]['priority']
+	&& 2 === $cyber_gallery_mai_test_filters['acf/clone_field'][0]['accepted_args'],
 	'the Mai Engine clone customization must be registered after ACF prepares cloned fields'
 );
 
-mai_cyber_gallery_register_field_group();
-mai_cyber_gallery_test_assert( 1 === count( $mai_cyber_gallery_test_groups ), 'one field group must register' );
+cyber_gallery_mai_register_field_group();
+cyber_gallery_mai_test_assert( 1 === count( $cyber_gallery_mai_test_groups ), 'one field group must register' );
 
-$fields = $mai_cyber_gallery_test_groups[0]['fields'];
+$fields = $cyber_gallery_mai_test_groups[0]['fields'];
 foreach (
 	array(
 		'mai_cyber_gallery_comparison_before_image',
@@ -599,15 +599,15 @@ foreach (
 		'mai_cyber_gallery_filmstrip_logo_override_image',
 	) as $field_key
 ) {
-	$field = mai_cyber_gallery_test_find_field( $fields, $field_key );
-	mai_cyber_gallery_test_assert(
+	$field = cyber_gallery_mai_test_find_field( $fields, $field_key );
+	cyber_gallery_mai_test_assert(
 		is_array( $field ) && 1 === ( $field['required'] ?? 0 ),
 		"{$field_key} must remain required in its active context"
 	);
 }
 
-$columns = mai_cyber_gallery_test_find_field( $fields, 'mai_cyber_gallery_columns_clone' );
-mai_cyber_gallery_test_assert(
+$columns = cyber_gallery_mai_test_find_field( $fields, 'mai_cyber_gallery_columns_clone' );
+cyber_gallery_mai_test_assert(
 	array(
 		'circle',
 		'filmstrip',
@@ -617,36 +617,36 @@ mai_cyber_gallery_test_assert(
 		'mosaic',
 		'square',
 		'tiled',
-	) === mai_cyber_gallery_test_condition_layouts( $columns['conditional_logic'] ?? array() ),
+	) === cyber_gallery_mai_test_condition_layouts( $columns['conditional_logic'] ?? array() ),
 	'the single Engine clone must cover every layout that uses columns or gaps'
 );
-mai_cyber_gallery_test_assert(
+cyber_gallery_mai_test_assert(
 	1 === count( array_keys( $fields, $columns, true ) )
 	&& count( $columns['clone'] ?? array() ) === count( array_unique( $columns['clone'] ?? array() ) )
-	&& null === mai_cyber_gallery_test_find_field( $fields, 'mai_cyber_gallery_gaps_clone' ),
+	&& null === cyber_gallery_mai_test_find_field( $fields, 'mai_cyber_gallery_gaps_clone' ),
 	'Engine spacing fields must have one canonical clone parent and one serialized value'
 );
 
-$aria_label = mai_cyber_gallery_test_find_field( $fields, 'mai_cyber_gallery_aria_label' );
-mai_cyber_gallery_test_assert(
+$aria_label = cyber_gallery_mai_test_find_field( $fields, 'mai_cyber_gallery_aria_label' );
+cyber_gallery_mai_test_assert(
 	is_array( $aria_label )
 	&& 'text' === ( $aria_label['type'] ?? '' )
 	&& '' === ( $aria_label['default_value'] ?? null )
-	&& array( 'comparison', 'filmstrip', 'slider' ) === mai_cyber_gallery_test_condition_layouts( $aria_label['conditional_logic'] ?? array() ),
+	&& array( 'comparison', 'filmstrip', 'slider' ) === cyber_gallery_mai_test_condition_layouts( $aria_label['conditional_logic'] ?? array() ),
 	'enhanced region layouts must expose an optional accessible label with a legacy-safe empty default'
 );
 
-$slider_title_tag = mai_cyber_gallery_test_find_field( $fields, 'mai_cyber_gallery_slider_title_tag' );
-mai_cyber_gallery_test_assert(
+$slider_title_tag = cyber_gallery_mai_test_find_field( $fields, 'mai_cyber_gallery_slider_title_tag' );
+cyber_gallery_mai_test_assert(
 	is_array( $slider_title_tag )
 	&& 'select' === ( $slider_title_tag['type'] ?? '' )
 	&& 'h2' === ( $slider_title_tag['default_value'] ?? '' )
 	&& array( 'h2', 'h3', 'h4', 'h5', 'h6', 'p' ) === array_keys( $slider_title_tag['choices'] ?? array() )
-	&& array( 'slider' ) === mai_cyber_gallery_test_condition_layouts( $slider_title_tag['conditional_logic'] ?? array() ),
+	&& array( 'slider' ) === cyber_gallery_mai_test_condition_layouts( $slider_title_tag['conditional_logic'] ?? array() ),
 	'Slider title semantics must offer h2-h6 and paragraph while preserving the former h2 default'
 );
 
-$desaturate                = mai_cyber_gallery_test_find_field( $fields, 'mai_cyber_gallery_hover_desaturate_amount' );
+$desaturate                = cyber_gallery_mai_test_find_field( $fields, 'mai_cyber_gallery_hover_desaturate_amount' );
 $ordinary_desaturate_rules = $desaturate['conditional_logic'][0] ?? array();
 $comparison_excluded       = false;
 foreach ( $ordinary_desaturate_rules as $rule ) {
@@ -658,7 +658,7 @@ foreach ( $ordinary_desaturate_rules as $rule ) {
 		$comparison_excluded = true;
 	}
 }
-mai_cyber_gallery_test_assert(
+cyber_gallery_mai_test_assert(
 	$comparison_excluded,
 	'Comparison must not reveal a stale Desaturate Amount setting'
 );

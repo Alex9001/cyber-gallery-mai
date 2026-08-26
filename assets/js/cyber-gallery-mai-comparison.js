@@ -2,7 +2,12 @@
 	'use strict';
 
 	const initialized = new WeakSet();
-	const settings = window.MaiCyberGalleryComparisonSettings || {};
+	const settings = window.CyberGalleryMaiComparisonSettings
+		|| window.MaiCyberGalleryComparisonSettings
+		|| {};
+
+	window.CyberGalleryMaiComparisonSettings = settings;
+	window.MaiCyberGalleryComparisonSettings = settings;
 
 	/**
 	 * Clamp an input value to the supported comparison range.
@@ -89,12 +94,14 @@
 	}
 
 	// Internal bridge used by the editor bundle.
-	window.MaiCyberGalleryComparisonRuntime = {
+	const runtime = {
 		clampPosition,
 		formatValue,
 		initialize,
 		updateComparison,
 	};
+	window.CyberGalleryMaiComparisonRuntime = runtime;
+	window.MaiCyberGalleryComparisonRuntime = runtime;
 
 	initialize( document );
 

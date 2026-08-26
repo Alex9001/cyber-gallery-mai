@@ -6,7 +6,7 @@
 >
 	<description>Enforce the complete WordPress coding standard for production PHP.</description>
 
-	<file>mai-cyber-gallery.php</file>
+	<file>cyber-gallery-mai.php</file>
 	<file>blocks</file>
 	<file>classes</file>
 	<file>includes</file>
@@ -20,14 +20,14 @@
 	<exclude-pattern>*/vendor/*</exclude-pattern>
 	<exclude-pattern>*/node_modules/*</exclude-pattern>
 
-	<config name="minimum_wp_version" value="6.5"/>
+	<config name="minimum_wp_version" value="7.1"/>
 
 	<rule ref="WordPress"/>
 
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="mai-cyber-gallery"/>
+				<element value="cyber-gallery-mai"/>
 			</property>
 		</properties>
 	</rule>
@@ -35,6 +35,7 @@
 	<rule ref="WordPress.NamingConventions.PrefixAllGlobals">
 		<properties>
 			<property name="prefixes" type="array">
+				<element value="cyber_gallery_mai"/>
 				<element value="mai_cyber_gallery"/>
 				<element value="mai_get_cyber_gallery"/>
 				<element value="mai_do_cyber_gallery"/>

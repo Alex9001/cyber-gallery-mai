@@ -2,20 +2,18 @@
 /**
  * Regression coverage for strict comparison-side normalization.
  *
- * @package MaiCyberGallery
+ * @package CyberGalleryMai
  */
 
 declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-require dirname( __DIR__ ) . '/classes/class-mai-cyber-gallery.php';
+require dirname( __DIR__ ) . '/classes/class-cyber-gallery-mai.php';
 
-$reflection = new ReflectionClass( Mai_Cyber_Gallery::class );
+$reflection = new ReflectionClass( Cyber_Gallery_Mai::class );
 $gallery    = $reflection->newInstanceWithoutConstructor();
 $method     = $reflection->getMethod( 'get_comparison_items' );
-
-$method->setAccessible( true );
 
 $before    = array(
 	'image'           => '<img alt="Before">',

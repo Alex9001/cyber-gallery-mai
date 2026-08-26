@@ -1,5 +1,5 @@
 {
-  "name": "alex9001/mai-cyber-gallery",
+  "name": "alex9001/cyber-gallery-mai",
   "description": "Development tooling for the Cyber Gallery for Mai Theme WordPress plugin.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
@@ -13,6 +13,7 @@
     "php-stubs/wordpress-stubs": "^7.0.1",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
     "phpstan/phpstan": "^2.1",
+    "squizlabs/php_codesniffer": "^3.13.6",
     "wp-coding-standards/wpcs": "^3.4.1"
   },
   "config": {
@@ -28,7 +29,7 @@
   "scripts": {
     "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
     "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G --debug",
-    "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- mai-cyber-gallery.php blocks classes includes tests stubs",
+    "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- cyber-gallery-mai.php blocks classes includes tests stubs",
     "standards": [
       "phpcs --standard=phpcs.xml.dist",
       "phpcs --standard=phpcs-tests.xml.dist"
@@ -40,7 +41,8 @@
       "php tests/validation.php",
       "php tests/choices.php",
       "php tests/asset-detection.php",
-      "php tests/image-size.php"
+      "php tests/image-size.php",
+      "php tests/migration.php"
     ],
     "test": [
       "@lint",

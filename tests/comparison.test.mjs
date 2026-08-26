@@ -4,15 +4,15 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const source = readFileSync(
-	new URL( '../assets/js/mai-cyber-gallery-comparison.js', import.meta.url ),
+	new URL( '../assets/js/cyber-gallery-mai-comparison.js', import.meta.url ),
 	'utf8'
 );
 const styles = readFileSync(
-	new URL( '../assets/css/mai-cyber-gallery.css', import.meta.url ),
+	new URL( '../assets/css/cyber-gallery-mai.css', import.meta.url ),
 	'utf8'
 );
 const gallerySource = readFileSync(
-	new URL( '../classes/class-mai-cyber-gallery.php', import.meta.url ),
+	new URL( '../classes/class-cyber-gallery-mai.php', import.meta.url ),
 	'utf8'
 );
 const document = {
@@ -21,17 +21,28 @@ const document = {
 	},
 };
 const window = {
-	MaiCyberGalleryComparisonSettings: {
+	CyberGalleryMaiComparisonSettings: {
 		valueText: '%1$s: %2$d%% visible',
 	},
 };
 window.window = window;
 
 vm.runInNewContext( source, { document, window }, {
-	filename: 'mai-cyber-gallery-comparison.js',
+	filename: 'cyber-gallery-mai-comparison.js',
 } );
 
-const runtime = window.MaiCyberGalleryComparisonRuntime;
+const runtime = window.CyberGalleryMaiComparisonRuntime;
+
+test( 'comparison preserves its 1.x runtime compatibility aliases', () => {
+	assert.equal(
+		window.MaiCyberGalleryComparisonSettings,
+		window.CyberGalleryMaiComparisonSettings
+	);
+	assert.equal(
+		window.MaiCyberGalleryComparisonRuntime,
+		window.CyberGalleryMaiComparisonRuntime
+	);
+} );
 
 test( 'comparison positions clamp to the native range', () => {
 	assert.equal( runtime.clampPosition( -20 ), 0 );

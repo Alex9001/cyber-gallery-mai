@@ -56,19 +56,19 @@ if ( ! changeVersions.length ) {
 
 const checks = [
 	[
-		'mai-cyber-gallery.php plugin header',
+		'cyber-gallery-mai.php plugin header',
 		capture(
-			'mai-cyber-gallery.php',
+			'cyber-gallery-mai.php',
 			/^\s*\*\s+Version:\s+(\d+\.\d+\.\d+)\s*$/m,
 			'plugin header version'
 		),
 	],
 	[
-		'class-mai-cyber-gallery-plugin.php MAI_CYBER_GALLERY_VERSION',
+		'class-cyber-gallery-mai-plugin.php CYBER_GALLERY_MAI_VERSION',
 		capture(
-			'classes/class-mai-cyber-gallery-plugin.php',
-			/MAI_CYBER_GALLERY_VERSION',\s*'(\d+\.\d+\.\d+)'/,
-			'MAI_CYBER_GALLERY_VERSION'
+			'classes/class-cyber-gallery-mai-plugin.php',
+			/CYBER_GALLERY_MAI_VERSION',\s*'(\d+\.\d+\.\d+)'/,
+			'CYBER_GALLERY_MAI_VERSION'
 		),
 	],
 	[ 'package-lock.json top-level version', packageLock.version ],

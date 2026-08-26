@@ -1,5 +1,22 @@
 # Changelog
 
+## 2.0.0
+
+- Completed the trademark-safe identity change to **Cyber Gallery for Mai Theme**, repository/package slug `cyber-gallery-mai`, main file `cyber-gallery-mai.php`, text domain `cyber-gallery-mai`, and canonical `acf/cyber-gallery-mai` block.
+- Renamed canonical PHP classes, functions, constants, filters, asset handles, source files, build directory, release ZIP, and frontend JavaScript globals to the Cyber Gallery for Mai Theme identity.
+- Preserved existing content with a hidden, non-inserter `acf/mai-cyber-gallery` block registration and retained every serialized `mai_cyber_gallery_*` ACF field key.
+- Added a lossless editor transform from the former block name to the canonical block while retaining ACF data, nested content, alignment, anchors, classes, and other supported block attributes.
+- Added `wp cyber-gallery-mai migrate-blocks`, which is a read-only dry run by default and can recursively update posts, synced/reusable content, templates, and block widgets with `--execute`; added post-type, widget, confirmation, and unattended-deployment controls.
+- Kept 1.x PHP classes, functions, constants, filters, asset handles, and frontend JavaScript globals as deprecated or dependency-only compatibility aliases, with canonical filters running before their legacy counterparts.
+- Retained the established `.mai-cyber-gallery*` selectors, `data-cyber-*` attributes, Genesis contexts, ACF field keys, and pre-2.0 cache tags as compatibility contracts so existing styling, content, integrations, and cached pages remain valid.
+- Added activation-time handling for the former `mai-cyber-gallery/mai-cyber-gallery.php` basename and a duplicate-runtime safety notice if both basenames are forced active.
+- Confirmed there never was a Cyber Gallery shortcode API; 2.0 content migration applies only to saved block names.
+- Raised the supported platform to WordPress 7.1, PHP 8.3 or later, and Mai Engine 2.40.0 or later while preserving the proprietary, separately distributed Mai Engine dependency.
+- Reworked release staging and CI around the canonical artifact, expanded the distribution manifest to include compatibility and migration files, pinned the WordPress test environment, added dependency security audits and verified-ZIP retention, and added focused migration/alias regressions.
+- Added a complete translation template and packaged-language validation for the canonical text domain.
+- Added a real WordPress 7.1 editor integration test and an iframe-owned preview bridge so existing and newly inserted ACF galleries initialize inside the always-iframed canvas.
+- Verified and restored the stable `.mai-cyber-gallery` inner track and Genesis contexts during the identity migration, preventing selectors, behavior, and third-party markup filters from drifting.
+
 ## 1.0.0
 
 - Added a strict, full-width Before / After comparison layout with dedicated Before and After image fields.

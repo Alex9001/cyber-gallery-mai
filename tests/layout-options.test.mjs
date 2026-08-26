@@ -4,26 +4,26 @@ import test from 'node:test';
 import vm from 'node:vm';
 
 const packingSource = readFileSync(
-	new URL( '../assets/js/mai-cyber-gallery-packing.js', import.meta.url ),
+	new URL( '../assets/js/cyber-gallery-mai-packing.js', import.meta.url ),
 	'utf8'
 );
 const styles = readFileSync(
-	new URL( '../assets/css/mai-cyber-gallery.css', import.meta.url ),
+	new URL( '../assets/css/cyber-gallery-mai.css', import.meta.url ),
 	'utf8'
 );
 const blockSource = readFileSync(
-	new URL( '../blocks/mai-cyber-gallery/block.php', import.meta.url ),
+	new URL( '../blocks/cyber-gallery-mai/block.php', import.meta.url ),
 	'utf8'
 );
 const gallerySource = readFileSync(
-	new URL( '../classes/class-mai-cyber-gallery.php', import.meta.url ),
+	new URL( '../classes/class-cyber-gallery-mai.php', import.meta.url ),
 	'utf8'
 );
 const bridgeMarker = '\t// Internal bridge used by the editor bundle';
 const instrumentedSource = packingSource.replace(
 	bridgeMarker,
 	[
-		'\twindow.MaiCyberGalleryPackingTest = {',
+		'\twindow.CyberGalleryMaiPackingTest = {',
 		'\t\tchooseTiledShape,',
 		'\t};',
 		'',
@@ -49,10 +49,17 @@ vm.runInNewContext(
 		document,
 		window,
 	},
-	{ filename: 'mai-cyber-gallery-packing.js' }
+	{ filename: 'cyber-gallery-mai-packing.js' }
 );
 
-const { chooseTiledShape } = window.MaiCyberGalleryPackingTest;
+const { chooseTiledShape } = window.CyberGalleryMaiPackingTest;
+
+test( 'packing preserves its 1.x runtime compatibility alias', () => {
+	assert.equal(
+		window.MaiCyberGalleryPackingRuntime,
+		window.CyberGalleryMaiPackingRuntime
+	);
+} );
 
 /**
  * Build uniform image-ratio entries for a packing test.

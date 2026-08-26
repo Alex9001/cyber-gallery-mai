@@ -14,6 +14,32 @@
 	const tiledStates = new WeakMap();
 
 	/**
+	 * Get the document that owns an element-rooted gallery.
+	 *
+	 * WordPress 7.1 renders post-editor previews in an iframe. The editor
+	 * bundle itself runs in the parent document, but every gallery element may
+	 * belong to the preview document instead.
+	 *
+	 * @param {Element|null} root Gallery root.
+	 * @return {Document}
+	 */
+	function getOwnerDocument( root ) {
+		return root && root.ownerDocument ? root.ownerDocument : document;
+	}
+
+	/**
+	 * Get the window that owns an element-rooted gallery.
+	 *
+	 * @param {Element|null} root Gallery root.
+	 * @return {Window}
+	 */
+	function getOwnerWindow( root ) {
+		const ownerDocument = getOwnerDocument( root );
+
+		return ownerDocument.defaultView || window;
+	}
+
+	/**
 	 * Run a callback once in the next animation frame.
 	 *
 	 * @param {Object}   state    Mutable state object.
@@ -21,11 +47,13 @@
 	 * @return {void}
 	 */
 	function scheduleFrame( state, callback ) {
+		const view = state.view;
+
 		if ( state.frame ) {
-			window.cancelAnimationFrame( state.frame );
+			view.cancelAnimationFrame( state.frame );
 		}
 
-		state.frame = window.requestAnimationFrame( function () {
+		state.frame = view.requestAnimationFrame( function () {
 			state.frame = 0;
 			callback();
 		} );
@@ -117,7 +145,7 @@
 			return;
 		}
 
-		const computed = window.getComputedStyle( track );
+		const computed = state.view.getComputedStyle( track );
 		const columns = getResponsiveColumns( computed );
 		const columnGap = positiveNumber(
 			computed.getPropertyValue( '--column-gap' ),
@@ -211,7 +239,7 @@
 			}
 
 			if ( existing.frame ) {
-				window.cancelAnimationFrame( existing.frame );
+				existing.view.cancelAnimationFrame( existing.frame );
 			}
 
 			if ( existing.resizeObserver ) {
@@ -228,6 +256,8 @@
 
 		const state = {
 			track: track,
+			document: getOwnerDocument( root ),
+			view: getOwnerWindow( root ),
 			frame: 0,
 			signature: '',
 			resizeObserver: null,
@@ -250,15 +280,15 @@
 			state.schedule( true );
 		} );
 
-		if ( 'ResizeObserver' in window ) {
-			state.resizeObserver = new window.ResizeObserver( function () {
+		if ( 'ResizeObserver' in state.view ) {
+			state.resizeObserver = new state.view.ResizeObserver( function () {
 				state.schedule( false );
 			} );
 			state.resizeObserver.observe( track );
 		}
 
-		if ( document.fonts && document.fonts.ready ) {
-			document.fonts.ready.then( function () {
+		if ( state.document.fonts && state.document.fonts.ready ) {
+			state.document.fonts.ready.then( function () {
 				state.schedule( true );
 			} );
 		}
@@ -291,7 +321,7 @@
 
 		state.lastWidth = width;
 
-		const computed = window.getComputedStyle( track );
+		const computed = state.view.getComputedStyle( track );
 		const columnGap = positiveNumber( computed.columnGap, 0 );
 		const target = Math.max(
 			100,
@@ -436,7 +466,7 @@
 			}
 
 			if ( existing.frame ) {
-				window.cancelAnimationFrame( existing.frame );
+				existing.view.cancelAnimationFrame( existing.frame );
 			}
 
 			if ( existing.resizeObserver ) {
@@ -452,6 +482,8 @@
 
 		const state = {
 			track: track,
+			document: getOwnerDocument( root ),
+			view: getOwnerWindow( root ),
 			frame: 0,
 			lastWidth: 0,
 			resizeObserver: null,
@@ -469,8 +501,8 @@
 			} );
 		};
 
-		if ( 'ResizeObserver' in window ) {
-			state.resizeObserver = new window.ResizeObserver( function () {
+		if ( 'ResizeObserver' in state.view ) {
+			state.resizeObserver = new state.view.ResizeObserver( function () {
 				schedule( false );
 			} );
 			state.resizeObserver.observe( track );
@@ -484,8 +516,8 @@
 			}
 		} );
 
-		if ( document.fonts && document.fonts.ready ) {
-			document.fonts.ready.then( function () {
+		if ( state.document.fonts && state.document.fonts.ready ) {
+			state.document.fonts.ready.then( function () {
 				schedule( true );
 			} );
 		}
@@ -723,7 +755,7 @@
 			return;
 		}
 
-		const computed = window.getComputedStyle( track );
+		const computed = state.view.getComputedStyle( track );
 		const maximumGroups = Math.max( 1, Math.min( 4, getResponsiveColumns( computed ) ) );
 		const columnGap = positiveNumber(
 			computed.getPropertyValue( '--column-gap' ),
@@ -947,7 +979,7 @@
 			}
 
 			if ( existing.frame ) {
-				window.cancelAnimationFrame( existing.frame );
+				existing.view.cancelAnimationFrame( existing.frame );
 			}
 
 			if ( existing.resizeObserver ) {
@@ -964,6 +996,8 @@
 
 		const state = {
 			track: track,
+			document: getOwnerDocument( root ),
+			view: getOwnerWindow( root ),
 			frame: 0,
 			signature: '',
 			resizeObserver: null,
@@ -986,15 +1020,15 @@
 			state.schedule( true );
 		} );
 
-		if ( 'ResizeObserver' in window ) {
-			state.resizeObserver = new window.ResizeObserver( function () {
+		if ( 'ResizeObserver' in state.view ) {
+			state.resizeObserver = new state.view.ResizeObserver( function () {
 				state.schedule( false );
 			} );
 			state.resizeObserver.observe( track );
 		}
 
-		if ( document.fonts && document.fonts.ready ) {
-			document.fonts.ready.then( function () {
+		if ( state.document.fonts && state.document.fonts.ready ) {
+			state.document.fonts.ready.then( function () {
 				state.schedule( true );
 			} );
 		}
@@ -1049,7 +1083,7 @@
 		}
 
 		if ( state.frame ) {
-			window.cancelAnimationFrame( state.frame );
+			state.view.cancelAnimationFrame( state.frame );
 		}
 
 		if ( state.resizeObserver ) {
@@ -1107,9 +1141,11 @@
 	}
 
 	// Internal bridge used by the editor bundle for iframe-rendered ACF previews.
-	window.MaiCyberGalleryPackingRuntime = {
+	const runtime = {
 		initialize: initializeWithin,
 	};
+	window.CyberGalleryMaiPackingRuntime = runtime;
+	window.MaiCyberGalleryPackingRuntime = runtime;
 
 	/**
 	 * Start packing behavior and focused dynamic-content observation.
