@@ -111,7 +111,21 @@ jobs:
           cp tests/fixtures/plugin-check.wp-env.json .wp-env.json
 
       - name: Start staged-distribution environment
-        run: wp-env start --update
+        shell: bash
+        run: |
+          for attempt in 1 2 3; do
+            if wp-env start --update; then
+              exit 0
+            fi
+
+            wp-env stop || true
+
+            if (( attempt < 3 )); then
+              sleep $(( attempt * 5 ))
+            fi
+          done
+
+          exit 1
 
       - name: Activate staged plugin
         run: |
@@ -154,4 +168,4 @@ jobs:
 
       - name: Stop WordPress test environment
         if: always()
-        run: wp-env stop
+        run: wp-env stop || true

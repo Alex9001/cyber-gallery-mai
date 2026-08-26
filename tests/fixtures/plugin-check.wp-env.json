@@ -2,6 +2,7 @@
 	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
 	"core": "https://wordpress.org/wordpress-7.1.zip",
 	"phpVersion": "8.3",
+	"testsEnvironment": false,
 	"plugins": [
 		"maithemewp/mai-engine#2.40.0",
 		"https://downloads.wordpress.org/plugin/plugin-check.2.0.0.zip"
