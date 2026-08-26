@@ -78,25 +78,39 @@ final class Cyber_Gallery_Mai_CLI_Command {
 		$results = $this->migrate_posts( $post_types, $execute );
 
 		if ( ! $skip_widgets ) {
-			$widget_results              = $this->migrate_widgets( $execute );
-			$results['blocks']          += $widget_results['blocks'];
-			$results['records']         += $widget_results['records'];
-			$results['updated_records'] += $widget_results['updated_records'];
+			$widget_results = $this->migrate_widgets( $execute );
+
+			foreach ( array_keys( $results ) as $key ) {
+				$results[ $key ] += $widget_results[ $key ];
+			}
 		}
 
-		$message = sprintf(
-			'%1$s %2$d legacy block(s) across %3$d content record(s); %4$d record(s) %5$s.',
-			$execute ? 'Migrated' : 'Found',
-			$results['blocks'],
-			$results['records'],
-			$results['updated_records'],
-			$execute ? 'updated' : 'would be updated'
-		);
-
 		if ( $execute ) {
+			$message = sprintf(
+				'Found %1$d legacy block(s) across %2$d content record(s); migrated %3$d block(s) across %4$d record(s); %5$d block(s) across %6$d record(s) failed.',
+				$results['blocks'],
+				$results['records'],
+				$results['updated_blocks'],
+				$results['updated_records'],
+				$results['failed_blocks'],
+				$results['failed_records']
+			);
+
+			if ( $results['failed_records'] ) {
+				WP_CLI::error( $message );
+			}
+
 			WP_CLI::success( $message );
 			return;
 		}
+
+		$message = sprintf(
+			'Found %1$d legacy block(s) across %2$d content record(s); %3$d block(s) across %4$d record(s) would be updated.',
+			$results['blocks'],
+			$results['records'],
+			$results['updated_blocks'],
+			$results['updated_records']
+		);
 
 		WP_CLI::log( $message );
 		WP_CLI::log( 'Dry run only. Repeat with --execute and confirm, or add --yes.' );
@@ -144,13 +158,16 @@ final class Cyber_Gallery_Mai_CLI_Command {
 	 * @param array<int,string> $post_types Post types to inspect.
 	 * @param bool              $execute    Whether to persist changes.
 	 *
-	 * @return array{blocks:int,records:int,updated_records:int}
+	 * @return array{blocks:int,records:int,updated_blocks:int,updated_records:int,failed_blocks:int,failed_records:int}
 	 */
 	private function migrate_posts( array $post_types, bool $execute ): array {
 		$results = array(
 			'blocks'          => 0,
 			'records'         => 0,
+			'updated_blocks'  => 0,
 			'updated_records' => 0,
+			'failed_blocks'   => 0,
+			'failed_records'  => 0,
 		);
 		$paged   = 1;
 
@@ -189,6 +206,7 @@ final class Cyber_Gallery_Mai_CLI_Command {
 
 				if ( ! $execute ) {
 					WP_CLI::log( sprintf( 'Would update post %d (%d block(s)).', $post_id, $migration['count'] ) );
+					$results['updated_blocks'] += $migration['count'];
 					++$results['updated_records'];
 					continue;
 				}
@@ -205,10 +223,29 @@ final class Cyber_Gallery_Mai_CLI_Command {
 					WP_CLI::warning(
 						sprintf( 'Post %1$d was not updated: %2$s', $post_id, $updated->get_error_message() )
 					);
+					$results['failed_blocks'] += $migration['count'];
+					++$results['failed_records'];
+					continue;
+				}
+
+				if ( ! $updated ) {
+					WP_CLI::warning( sprintf( 'Post %d was not updated: WordPress returned no updated post ID.', $post_id ) );
+					$results['failed_blocks'] += $migration['count'];
+					++$results['failed_records'];
 					continue;
 				}
 
 				clean_post_cache( $post_id );
+
+				$saved_content = (string) get_post_field( 'post_content', $post_id, 'raw' );
+				if ( $migration['content'] !== $saved_content ) {
+					WP_CLI::warning( sprintf( 'Post %d did not pass post-write content verification.', $post_id ) );
+					$results['failed_blocks'] += $migration['count'];
+					++$results['failed_records'];
+					continue;
+				}
+
+				$results['updated_blocks'] += $migration['count'];
 				++$results['updated_records'];
 			}
 
@@ -225,15 +262,19 @@ final class Cyber_Gallery_Mai_CLI_Command {
 	 *
 	 * @param bool $execute Whether to persist changes.
 	 *
-	 * @return array{blocks:int,records:int,updated_records:int}
+	 * @return array{blocks:int,records:int,updated_blocks:int,updated_records:int,failed_blocks:int,failed_records:int}
 	 */
 	private function migrate_widgets( bool $execute ): array {
 		$results = array(
 			'blocks'          => 0,
 			'records'         => 0,
+			'updated_blocks'  => 0,
 			'updated_records' => 0,
+			'failed_blocks'   => 0,
+			'failed_records'  => 0,
 		);
 		$widgets = get_option( 'widget_block', array() );
+		$pending = array();
 
 		if ( ! is_array( $widgets ) ) {
 			return $results;
@@ -254,23 +295,61 @@ final class Cyber_Gallery_Mai_CLI_Command {
 				continue;
 			}
 
-			$widgets[ $number ]['content'] = $migration['content'];
-			$results['blocks']            += $migration['count'];
+			$results['blocks'] += $migration['count'];
 			++$results['records'];
-			++$results['updated_records'];
 
-			WP_CLI::log(
-				sprintf(
-					'%1$s block widget %2$s (%3$d block(s)).',
-					$execute ? 'Updated' : 'Would update',
-					(string) $number,
-					$migration['count']
-				)
+			if ( ! $execute ) {
+				$results['updated_blocks'] += $migration['count'];
+				++$results['updated_records'];
+				WP_CLI::log(
+					sprintf(
+						'Would update block widget %1$s (%2$d block(s)).',
+						(string) $number,
+						$migration['count']
+					)
+				);
+				continue;
+			}
+
+			$widgets[ $number ]['content'] = $migration['content'];
+			$pending[ $number ]            = array(
+				'blocks'  => $migration['count'],
+				'content' => $migration['content'],
 			);
 		}
 
-		if ( $execute && $results['updated_records'] ) {
-			update_option( 'widget_block', $widgets );
+		if ( $execute && $pending ) {
+			$write_succeeded = update_option( 'widget_block', $widgets );
+			$saved_widgets   = get_option( 'widget_block', array() );
+			$saved_widgets   = is_array( $saved_widgets ) ? $saved_widgets : array();
+
+			foreach ( $pending as $number => $expected ) {
+				$verified = isset( $saved_widgets[ $number ]['content'] )
+					&& is_string( $saved_widgets[ $number ]['content'] )
+					&& $expected['content'] === $saved_widgets[ $number ]['content'];
+
+				if ( ! $verified ) {
+					$reason = $write_succeeded
+						? 'post-write content verification failed'
+						: 'the widget option write failed';
+					WP_CLI::warning(
+						sprintf( 'Block widget %1$s was not updated: %2$s.', (string) $number, $reason )
+					);
+					$results['failed_blocks'] += $expected['blocks'];
+					++$results['failed_records'];
+					continue;
+				}
+
+				WP_CLI::log(
+					sprintf(
+						'Updated block widget %1$s (%2$d block(s)).',
+						(string) $number,
+						$expected['blocks']
+					)
+				);
+				$results['updated_blocks'] += $expected['blocks'];
+				++$results['updated_records'];
+			}
 		}
 
 		return $results;
@@ -278,6 +357,9 @@ final class Cyber_Gallery_Mai_CLI_Command {
 
 	/**
 	 * Convert every legacy gallery in one serialized block document.
+	 *
+	 * WordPress serializes the complete parsed document, so semantically
+	 * equivalent attribute JSON for unrelated blocks may be normalized too.
 	 *
 	 * @since 2.0.0
 	 *

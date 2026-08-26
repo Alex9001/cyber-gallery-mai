@@ -25,7 +25,7 @@ $cyber_gallery_mai_test_purges = array();
 function add_action( $hook, $callback, $priority = 10, $accepted_args = 1 ): void {
 	global $cyber_gallery_mai_test_hooks;
 
-	$cyber_gallery_mai_test_hooks[ $hook ] = array(
+	$cyber_gallery_mai_test_hooks[ $hook ][] = array(
 		'callback'      => $callback,
 		'priority'      => $priority,
 		'accepted_args' => $accepted_args,
@@ -131,6 +131,36 @@ require dirname( __DIR__ ) . '/cyber-gallery-mai.php';
 $plugin                             = cyber_gallery_mai_plugin();
 $cyber_gallery_mai_test_plugin_root = dirname( __DIR__ ) . '/';
 $source                             = file_get_contents( $cyber_gallery_mai_test_plugin_root . 'classes/class-cyber-gallery-mai-plugin.php' );
+
+if (
+	1 !== count( $cyber_gallery_mai_test_hooks['plugins_loaded'] ?? array() )
+	|| PHP_INT_MIN !== ( $cyber_gallery_mai_test_hooks['plugins_loaded'][0]['priority'] ?? null )
+	|| isset( $cyber_gallery_mai_test_hooks['after_setup_theme'] )
+) {
+	throw new RuntimeException( 'The canonical singleton must remain inert until the earliest plugins_loaded bootstrap.' );
+}
+
+cyber_gallery_mai_boot();
+cyber_gallery_mai_boot();
+
+if (
+	1 !== count( $cyber_gallery_mai_test_hooks['after_setup_theme'] ?? array() )
+	|| 1 !== ( $cyber_gallery_mai_test_hooks['after_setup_theme'][0]['priority'] ?? null )
+	|| ! class_exists( 'Mai_Cyber_Gallery_Plugin', false )
+	|| ! function_exists( 'mai_cyber_gallery_plugin' )
+	|| mai_cyber_gallery_plugin() !== $plugin
+	|| ! defined( 'MAI_CYBER_GALLERY_VERSION' )
+	|| CYBER_GALLERY_MAI_VERSION !== MAI_CYBER_GALLERY_VERSION
+) {
+	throw new RuntimeException( 'Conflict-safe bootstrap aliases were not loaded once before normal callbacks.' );
+}
+
+$bootstrap_reflection = new ReflectionClass( $plugin );
+$legacy_detector      = $bootstrap_reflection->getMethod( 'has_external_legacy_runtime' );
+
+if ( $legacy_detector->invoke( $plugin ) ) {
+	throw new RuntimeException( 'The defensive legacy detector mistook canonical compatibility aliases for an external runtime.' );
+}
 
 if (
 	CYBER_GALLERY_MAI_PLUGIN_FILE !== $cyber_gallery_mai_test_plugin_root . 'cyber-gallery-mai.php'

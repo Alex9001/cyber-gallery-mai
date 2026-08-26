@@ -33,9 +33,10 @@
 		<exclude-pattern>*/stubs/*</exclude-pattern>
 	</rule>
 
-	<!-- This standalone integration test intentionally declares two WordPress class doubles and API functions together. -->
+	<!-- These standalone integration tests intentionally declare WordPress class doubles and API functions together. -->
 	<rule ref="Generic.Files.OneObjectStructurePerFile.MultipleFound">
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/migration.php</exclude-pattern>
 	</rule>
 	<rule ref="Universal.Files.SeparateFunctionsFromOO.Mixed">
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>

@@ -13,8 +13,7 @@
 		"blockVersion": 3,
 		"mode": "preview",
 		"renderCallback": "cyber_gallery_mai_render_block",
-		"validate": true,
-		"expandedEditorButtonText": "Open Expanded Editor"
+		"validate": true
 	},
 	"supports": {
 		"align": ["wide", "full"],

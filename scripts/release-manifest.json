@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"sourceFiles": [
+		"LICENSE",
+		"NOTICE",
+		"README.md",
+		"assets/css/cyber-gallery-mai-editor.css",
+		"assets/css/cyber-gallery-mai-editor.min.css",
+		"assets/css/cyber-gallery-mai.css",
+		"assets/css/cyber-gallery-mai.min.css",
+		"assets/js/cyber-gallery-mai-comparison.js",
+		"assets/js/cyber-gallery-mai-comparison.min.js",
+		"assets/js/cyber-gallery-mai-editor.js",
+		"assets/js/cyber-gallery-mai-editor.min.js",
+		"assets/js/cyber-gallery-mai-lightbox.js",
+		"assets/js/cyber-gallery-mai-lightbox.min.js",
+		"assets/js/cyber-gallery-mai-packing.js",
+		"assets/js/cyber-gallery-mai-packing.min.js",
+		"assets/js/cyber-gallery-mai.js",
+		"assets/js/cyber-gallery-mai.min.js",
+		"blocks/cyber-gallery-mai/block.json",
+		"blocks/cyber-gallery-mai/block.php",
+		"blocks/cyber-gallery-mai/legacy-block.json",
+		"classes/class-cyber-gallery-mai-plugin.php",
+		"classes/class-cyber-gallery-mai.php",
+		"cyber-gallery-mai.php",
+		"includes/class-cyber-gallery-mai-cli-command.php",
+		"includes/compatibility-bootstrap.php",
+		"includes/compatibility.php",
+		"includes/functions.php",
+		"languages/cyber-gallery-mai.pot",
+		"readme.txt"
+	],
+	"generatedFiles": [
+		"release-provenance.json"
+	]
+}

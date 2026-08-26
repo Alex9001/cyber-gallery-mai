@@ -3,6 +3,17 @@ name: CI
 on:
   pull_request:
   push:
+    branches:
+      - "**"
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      run_release_integration:
+        description: Run the protected Genesis/Mai release integration lane
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -21,10 +32,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: ${{ matrix.php }}
           coverage: none
@@ -48,10 +59,10 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -65,11 +76,11 @@ jobs:
       - name: Verify JavaScript, assets, and block JSON
         run: npm test
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install supported browsers
+        run: npx --no-install playwright install --with-deps chromium firefox webkit
 
-      - name: Run browser regressions
-        run: npm run test:browser
+      - name: Run self-contained browser regressions
+        run: npm run test:browser:public
 
   plugin-check:
     name: Staged distribution
@@ -77,17 +88,17 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7.0.1
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
         with:
           php-version: "8.3"
           coverage: none
           tools: composer:v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v7.0.0
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -100,25 +111,26 @@ jobs:
       - name: Build release artifact
         run: npm run build:zip
 
-      # The official Plugin Check action installs every Requires Plugins slug
-      # from WordPress.org. Mai Engine is distributed from its own repository,
-      # so make the exact minimum release available to WordPress while checking
-      # the staged Cyber build. The separately distributed Genesis/Mai theme
-      # runtime is covered by tests/runtime-smoke.php on an authorized site.
+      - name: Verify immutable WordPress test archives
+        run: npm run verify:test-archives
+
+      # Mai Engine is absent from WordPress.org, so wp-env checks out the exact
+      # 2.40.0 commit while the checksummed Plugin Check archive evaluates the
+      # staged Cyber build. The separately distributed Genesis/Mai theme runtime
+      # is covered by tests/runtime-smoke.php on an authorized site.
       - name: Install WordPress test environment
         run: |
-          npm install --global @wordpress/env@11.13.0
           cp tests/fixtures/plugin-check.wp-env.json .wp-env.json
 
       - name: Start staged-distribution environment
         shell: bash
         run: |
           for attempt in 1 2 3; do
-            if wp-env start --update; then
+            if npx --no-install wp-env start --update; then
               exit 0
             fi
 
-            wp-env stop || true
+            npx --no-install wp-env stop || true
 
             if (( attempt < 3 )); then
               sleep $(( attempt * 5 ))
@@ -129,26 +141,26 @@ jobs:
 
       - name: Activate staged plugin
         run: |
-          wp-env run cli wp plugin activate mai-engine
-          wp-env run cli wp plugin activate cyber-gallery-mai
-          wp-env run cli wp plugin status cyber-gallery-mai
+          npx --no-install wp-env run cli wp plugin activate mai-engine
+          npx --no-install wp-env run cli wp plugin activate cyber-gallery-mai
+          npx --no-install wp-env run cli wp plugin status cyber-gallery-mai
 
       - name: Run strict Plugin Check against staged release
         shell: bash
         run: |
           plugin_check_output="$(
-            wp-env run cli wp \
+            npx --no-install wp-env run cli wp \
               --no-color \
               --require=wp-content/plugins/plugin-check/cli.php \
               plugin check cyber-gallery-mai \
               --format=strict-json \
-              --ignore-codes=plugin_updater_detected 2>&1
+              --ignore-codes=plugin_header_requires_plugins_not_in_directory,plugin_updater_detected 2>&1
           )"
           printf '%s\n' "$plugin_check_output"
 
-          # Plugin Check reserves Update URI for non-directory distribution but
-          # reports it as a WordPress.org-policy error. It is required here to
-          # prevent update collisions for this externally distributed add-on.
+          # These are the two intentional WordPress.org-policy exceptions:
+          # Mai Engine is proprietary and absent from the directory, while the
+          # Update URI prevents collisions for this externally distributed add-on.
           # An empty strict JSON array means no other findings remain. wp-env
           # appends its own success marker to that same output line, so match
           # the JSON token at the beginning rather than requiring a bare line.
@@ -158,14 +170,92 @@ jobs:
           fi
 
       - name: Retain verified release ZIP
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: cyber-gallery-mai-2.0.0
-          path: build/cyber-gallery-mai-2.0.0.zip
+          path: |
+            build/cyber-gallery-mai-2.0.0.zip
+            build/cyber-gallery-mai-2.0.0.zip.sha256
+            build/cyber-gallery-mai-2.0.0.zip.provenance.json
           if-no-files-found: error
           compression-level: 0
           retention-days: 30
 
       - name: Stop WordPress test environment
         if: always()
-        run: wp-env stop || true
+        run: npx --no-install wp-env stop || true
+
+  release-integration:
+    name: Protected Genesis/Mai release integration
+    if: >-
+      startsWith(github.ref, 'refs/tags/v') ||
+      (github.event_name == 'workflow_dispatch' && inputs.run_release_integration == true)
+    needs:
+      - php
+      - node
+      - plugin-check
+    runs-on:
+      - self-hosted
+      - linux
+      - x64
+      - cyber-gallery-mai-release
+    environment: cyber-gallery-mai-release
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: "8.3"
+          coverage: none
+          tools: composer:v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install development tools
+        run: |
+          composer install --no-interaction --no-progress --prefer-dist
+          npm ci
+          npx --no-install playwright install chromium
+
+      - name: Build and verify canonical artifact
+        run: |
+          npm run build:zip
+          cd build
+          sha256sum --check cyber-gallery-mai-2.0.0.zip.sha256
+
+      - name: Validate protected runner configuration
+        env:
+          WORDPRESS_PATH: ${{ vars.CYBER_GALLERY_MAI_WORDPRESS_PATH }}
+          CYBER_GALLERY_MAI_WP_URL: ${{ vars.CYBER_GALLERY_MAI_WP_URL }}
+          CYBER_GALLERY_MAI_WP_POST_ID: ${{ vars.CYBER_GALLERY_MAI_WP_POST_ID }}
+          CYBER_GALLERY_MAI_WP_USERNAME: ${{ secrets.CYBER_GALLERY_MAI_WP_USERNAME }}
+          CYBER_GALLERY_MAI_WP_PASSWORD: ${{ secrets.CYBER_GALLERY_MAI_WP_PASSWORD }}
+        run: |
+          test -n "$WORDPRESS_PATH"
+          test -n "$CYBER_GALLERY_MAI_WP_URL"
+          test -n "$CYBER_GALLERY_MAI_WP_POST_ID"
+          test -n "$CYBER_GALLERY_MAI_WP_USERNAME"
+          test -n "$CYBER_GALLERY_MAI_WP_PASSWORD"
+          test -x "$(command -v wp)"
+
+      - name: Install and smoke-test on authorized Genesis/Mai site
+        env:
+          WORDPRESS_PATH: ${{ vars.CYBER_GALLERY_MAI_WORDPRESS_PATH }}
+        run: |
+          wp --path="$WORDPRESS_PATH" plugin install "$GITHUB_WORKSPACE/build/cyber-gallery-mai-2.0.0.zip" --force --activate
+          wp --path="$WORDPRESS_PATH" eval-file "$GITHUB_WORKSPACE/tests/runtime-smoke.php"
+
+      - name: Run authenticated WordPress 7.1 editor integration
+        env:
+          CYBER_GALLERY_MAI_WP_URL: ${{ vars.CYBER_GALLERY_MAI_WP_URL }}
+          CYBER_GALLERY_MAI_WP_POST_ID: ${{ vars.CYBER_GALLERY_MAI_WP_POST_ID }}
+          CYBER_GALLERY_MAI_WP_USERNAME: ${{ secrets.CYBER_GALLERY_MAI_WP_USERNAME }}
+          CYBER_GALLERY_MAI_WP_PASSWORD: ${{ secrets.CYBER_GALLERY_MAI_WP_PASSWORD }}
+        run: npm run test:browser:wp

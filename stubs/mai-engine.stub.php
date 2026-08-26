@@ -101,27 +101,6 @@ function mai_get_breakpoint_columns( array $args ): array {}
 function mai_get_columns_atts( array $atts, array $args, bool $nested = false ): array {}
 
 /**
- * Return default Mai Engine column arguments.
- *
- * @return array<string,mixed>
- */
-function mai_get_columns_defaults(): array {}
-
-/**
- * Sanitize Mai Engine column arguments without changing their array shape.
- *
- * @template T of array<string,mixed>
- *
- * @param array<string,mixed> $args Column arguments.
- *
- * @phpstan-param T $args
- *
- * @return array<string,mixed>
- * @phpstan-return T
- */
-function mai_get_columns_sanitized( array $args ): array {}
-
-/**
  * Return an incrementing index for a context.
  *
  * @param string $context Index context.

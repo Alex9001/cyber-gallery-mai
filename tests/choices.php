@@ -9,7 +9,8 @@ declare( strict_types=1 );
 
 define( 'ABSPATH', __DIR__ . '/' );
 
-$cyber_gallery_mai_test_filters = array();
+$cyber_gallery_mai_test_filters            = array();
+$cyber_gallery_mai_test_breakpoint_request = array();
 
 /**
  * Apply a configured test filter.
@@ -191,35 +192,22 @@ function mai_get_breakpoint( $breakpoint ): int {
 }
 
 /**
- * Return representative Mai Engine column defaults.
+ * Return responsive defaults through Mai Engine's public column contract.
  *
- * @return array<string,mixed>
+ * @param array<string,mixed> $args Column arguments.
+ *
+ * @return array<string,int>
  */
-function mai_get_columns_defaults(): array {
-	return array(
-		'columns'                => 3,
-		'columns_responsive'     => false,
-		'columns_md'             => 3,
-		'columns_sm'             => 2,
-		'columns_xs'             => 1,
-		'align_columns'          => '',
-		'align_columns_vertical' => '',
-		'column_gap'             => 'md',
-		'row_gap'                => 'md',
-		'margin_top'             => '',
-		'margin_bottom'          => '',
-	);
-}
+function mai_get_breakpoint_columns( $args ): array {
+	global $cyber_gallery_mai_test_breakpoint_request;
+	$cyber_gallery_mai_test_breakpoint_request = $args;
 
-/**
- * Return supplied column arguments as sanitized test data.
- *
- * @param mixed $args Supplied column arguments.
- *
- * @return array<string,mixed>
- */
-function mai_get_columns_sanitized( $args ): array {
-	return (array) $args;
+	return array(
+		'lg' => 3,
+		'md' => 1,
+		'sm' => 1,
+		'xs' => 1,
+	);
 }
 
 /**
@@ -362,4 +350,87 @@ foreach ( $expected as $key => $value ) {
 	}
 }
 
-echo "Verified normalized choices and filtered runtime defaults.\n";
+if (
+	3 !== $args['columns']
+	|| 1 !== $args['columns_md']
+	|| 1 !== $args['columns_sm']
+	|| 1 !== $args['columns_xs']
+	|| 'xl' !== $args['column_gap']
+	|| 'xl' !== $args['row_gap']
+	|| empty( $cyber_gallery_mai_test_breakpoint_request['columns_responsive'] )
+) {
+	throw new RuntimeException( 'Public Mai breakpoint defaults or stable gap defaults were not retained.' );
+}
+
+$cyber_gallery_mai_test_filters = array();
+$malformed_links_gallery        = new Cyber_Gallery_Mai(
+	array(
+		'images_links' => array(
+			array(
+				'image' => 17,
+				'link'  => array(
+					'url'    => array( 'not-a-string' ),
+					'title'  => new stdClass(),
+					'target' => array( '_blank' ),
+				),
+			),
+			array(
+				'image' => new stdClass(),
+				'link'  => array( 'url' => 'https://example.test/skipped' ),
+			),
+			array(
+				'image' => '23',
+				'link'  => array(
+					'url'    => 'https://example.test/kept',
+					'title'  => 23,
+					'target' => '_blank',
+				),
+			),
+		),
+	)
+);
+$malformed_args                 = $property->getValue( $malformed_links_gallery );
+
+if (
+	2 !== count( $malformed_args['images_links'] )
+	|| '' !== $malformed_args['images_links'][0]['link']['url']
+	|| '' !== $malformed_args['images_links'][0]['link']['title']
+	|| '' !== $malformed_args['images_links'][0]['link']['target']
+	|| 'https://example.test/kept' !== $malformed_args['images_links'][1]['link']['url']
+	|| '23' !== $malformed_args['images_links'][1]['link']['title']
+	|| '_blank' !== $malformed_args['images_links'][1]['link']['target']
+) {
+	throw new RuntimeException( 'Malformed linked-image rows were not safely normalized.' );
+}
+
+$items_method   = ( new ReflectionClass( $malformed_links_gallery ) )->getMethod( 'sanitize_filtered_items' );
+$filtered_items = $items_method->invoke(
+	$malformed_links_gallery,
+	array(
+		array(
+			'id'     => new stdClass(),
+			'image'  => '<img src="https://example.test/image.jpg" alt="">',
+			'width'  => new stdClass(),
+			'height' => array( 800 ),
+			'link'   => array(
+				'url'    => array( 'not-a-string' ),
+				'title'  => new stdClass(),
+				'target' => array( '_blank' ),
+			),
+		),
+	)
+);
+
+if (
+	1 !== count( $filtered_items )
+	|| 0 !== $filtered_items[0]['id']
+	|| 0 !== $filtered_items[0]['width']
+	|| 0 !== $filtered_items[0]['height']
+	|| '' !== $filtered_items[0]['link']['url']
+	|| '' !== $filtered_items[0]['link']['title']
+	|| '' !== $filtered_items[0]['link']['target']
+) {
+	throw new RuntimeException( 'Malformed item-filter identifiers, dimensions, or links were not safely normalized.' );
+}
+
+echo "Verified normalized choices, public Mai column defaults, and malformed link safety.\n";

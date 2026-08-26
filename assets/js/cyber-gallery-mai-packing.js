@@ -12,6 +12,7 @@
 	const masonryStates = new WeakMap();
 	const justifiedStates = new WeakMap();
 	const tiledStates = new WeakMap();
+	const itemSizeEpsilon = 0.5;
 
 	/**
 	 * Get the document that owns an element-rooted gallery.
@@ -43,19 +44,25 @@
 	 * Run a callback once in the next animation frame.
 	 *
 	 * @param {Object}   state    Mutable state object.
-	 * @param {Function} callback Callback.
+	 * @param {boolean}  force    Whether any queued request requires a full layout.
+	 * @param {Function} callback Callback receiving the coalesced force value.
 	 * @return {void}
 	 */
-	function scheduleFrame( state, callback ) {
+	function scheduleFrame( state, force, callback ) {
 		const view = state.view;
 
+		state.forceLayout = state.forceLayout || Boolean( force );
+
 		if ( state.frame ) {
-			view.cancelAnimationFrame( state.frame );
+			return;
 		}
 
 		state.frame = view.requestAnimationFrame( function () {
+			const shouldForce = state.forceLayout;
+
+			state.forceLayout = false;
 			state.frame = 0;
-			callback();
+			callback( shouldForce );
 		} );
 	}
 
@@ -79,6 +86,94 @@
 	 */
 	function getTrackItems( track ) {
 		return Array.from( track.querySelectorAll( ':scope > .mai-cyber-gallery-item' ) );
+	}
+
+	/**
+	 * Read an item's rendered border-box size.
+	 *
+	 * @param {HTMLElement} item Gallery item.
+	 * @return {{width: number, height: number}} Rendered size.
+	 */
+	function getItemSize( item ) {
+		const bounds = item.getBoundingClientRect();
+
+		return {
+			width: bounds.width,
+			height: bounds.height,
+		};
+	}
+
+	/**
+	 * Remember an observed item's current size.
+	 *
+	 * Layout writes update this snapshot before ResizeObserver delivery, avoiding
+	 * a redundant feedback pass for dimensions the runtime changed itself.
+	 *
+	 * @param {Object}      state Gallery state.
+	 * @param {HTMLElement} item  Gallery item.
+	 * @param {Object|null} size  Previously measured size.
+	 * @return {void}
+	 */
+	function rememberItemSize( state, item, size = null ) {
+		if ( state.itemSizes ) {
+			state.itemSizes.set( item, size || getItemSize( item ) );
+		}
+	}
+
+	/**
+	 * Detect a material item-size change and refresh its snapshot.
+	 *
+	 * @param {Object}      state Gallery state.
+	 * @param {HTMLElement} item  Observed item.
+	 * @return {boolean} Whether layout-relevant geometry changed.
+	 */
+	function itemSizeChanged( state, item ) {
+		const previous = state.itemSizes.get( item );
+		const current = getItemSize( item );
+		const changed = ! previous
+			|| Math.abs( current.width - previous.width ) > itemSizeEpsilon
+			|| Math.abs( current.height - previous.height ) > itemSizeEpsilon;
+
+		if ( changed ) {
+			state.itemSizes.set( item, current );
+		}
+
+		return changed;
+	}
+
+	/**
+	 * Keep one ResizeObserver aligned with the track's current direct items.
+	 *
+	 * @param {Object}        state Gallery state.
+	 * @param {HTMLElement[]} items Direct gallery items.
+	 * @return {void}
+	 */
+	function reconcileItemObservations( state, items ) {
+		if ( ! state.resizeObserver || ! state.observedItems ) {
+			return;
+		}
+
+		const currentItems = new Set( items );
+
+		state.observedItems.forEach( function ( item ) {
+			if ( currentItems.has( item ) ) {
+				return;
+			}
+
+			state.resizeObserver.unobserve( item );
+			state.observedItems.delete( item );
+			state.itemSizes.delete( item );
+		} );
+
+		items.forEach( function ( item ) {
+			if ( state.observedItems.has( item ) ) {
+				return;
+			}
+
+			state.observedItems.add( item );
+			rememberItemSize( state, item );
+			state.resizeObserver.observe( item );
+		} );
 	}
 
 	/**
@@ -107,6 +202,7 @@
 	 */
 	function watchImages( state, track, callback ) {
 		state.images = state.images || new WeakSet();
+		state.imageListeners = state.imageListeners || new Map();
 
 		track.querySelectorAll( 'img' ).forEach( function ( image ) {
 			if ( state.images.has( image ) ) {
@@ -116,9 +212,36 @@
 			state.images.add( image );
 
 			if ( ! image.complete ) {
-				image.addEventListener( 'load', callback, { once: true } );
+				const settle = function () {
+					image.removeEventListener( 'load', settle );
+					image.removeEventListener( 'error', settle );
+					state.imageListeners.delete( image );
+					callback();
+				};
+
+				state.imageListeners.set( image, settle );
+				image.addEventListener( 'load', settle, { once: true } );
+				image.addEventListener( 'error', settle, { once: true } );
 			}
 		} );
+	}
+
+	/**
+	 * Remove pending image listeners owned by a discarded packing state.
+	 *
+	 * @param {Object} state Gallery state.
+	 * @return {void}
+	 */
+	function clearImageListeners( state ) {
+		if ( ! state.imageListeners ) {
+			return;
+		}
+
+		state.imageListeners.forEach( function ( listener, image ) {
+			image.removeEventListener( 'load', listener );
+			image.removeEventListener( 'error', listener );
+		} );
+		state.imageListeners.clear();
 	}
 
 	/**
@@ -197,10 +320,12 @@
 				}
 			}
 
-			const height = item.getBoundingClientRect().height;
+			const size = getItemSize( item );
+			const height = size.height;
 			const x = column * ( columnWidth + columnGap );
 			const y = bottoms[ column ];
 
+			rememberItemSize( state, item, size );
 			bottoms[ column ] = y + height + rowGap;
 
 			return {
@@ -234,17 +359,12 @@
 				watchImages( existing, track, function () {
 					existing.schedule( true );
 				} );
+				reconcileItemObservations( existing, getTrackItems( track ) );
 				existing.schedule( true );
 				return;
 			}
 
-			if ( existing.frame ) {
-				existing.view.cancelAnimationFrame( existing.frame );
-			}
-
-			if ( existing.resizeObserver ) {
-				existing.resizeObserver.disconnect();
-			}
+			releasePackingState( existing );
 
 			masonryStates.delete( root );
 			root.classList.remove( 'is-cyber-masonry-ready' );
@@ -259,9 +379,13 @@
 			document: getOwnerDocument( root ),
 			view: getOwnerWindow( root ),
 			frame: 0,
+			forceLayout: false,
 			signature: '',
 			resizeObserver: null,
+			observedItems: new Set(),
+			itemSizes: new WeakMap(),
 			images: new WeakSet(),
+			imageListeners: new Map(),
 			schedule: null,
 		};
 
@@ -270,8 +394,8 @@
 				return;
 			}
 
-			scheduleFrame( state, function () {
-				layoutMasonry( root, state, Boolean( force ) );
+			scheduleFrame( state, force, function ( shouldForce ) {
+				layoutMasonry( root, state, shouldForce );
 			} );
 		};
 
@@ -281,10 +405,22 @@
 		} );
 
 		if ( 'ResizeObserver' in state.view ) {
-			state.resizeObserver = new state.view.ResizeObserver( function () {
-				state.schedule( false );
+			state.resizeObserver = new state.view.ResizeObserver( function ( entries ) {
+				let itemChanged = false;
+
+				entries.forEach( function ( entry ) {
+					if (
+						entry.target !== track
+						&& state.observedItems.has( entry.target )
+						&& itemSizeChanged( state, entry.target )
+					) {
+						itemChanged = true;
+					}
+				} );
+				state.schedule( itemChanged );
 			} );
 			state.resizeObserver.observe( track );
+			reconcileItemObservations( state, getTrackItems( track ) );
 		}
 
 		if ( state.document.fonts && state.document.fonts.ready ) {
@@ -459,19 +595,14 @@
 
 		if ( existing ) {
 			if ( existing.track === track ) {
-				scheduleFrame( existing, function () {
-					layoutJustified( root, existing, true );
+				watchImages( existing, track, function () {
+					existing.schedule( true );
 				} );
+				existing.schedule( true );
 				return;
 			}
 
-			if ( existing.frame ) {
-				existing.view.cancelAnimationFrame( existing.frame );
-			}
-
-			if ( existing.resizeObserver ) {
-				existing.resizeObserver.disconnect();
-			}
+			releasePackingState( existing );
 
 			justifiedStates.delete( root );
 		}
@@ -485,40 +616,39 @@
 			document: getOwnerDocument( root ),
 			view: getOwnerWindow( root ),
 			frame: 0,
+			forceLayout: false,
 			lastWidth: 0,
 			resizeObserver: null,
+			images: new WeakSet(),
+			imageListeners: new Map(),
+			schedule: null,
 		};
 
-		justifiedStates.set( root, state );
-
-		const schedule = function ( force ) {
+		state.schedule = function ( force ) {
 			if ( ! root.isConnected || justifiedStates.get( root ) !== state ) {
 				return;
 			}
 
-			scheduleFrame( state, function () {
-				layoutJustified( root, state, Boolean( force ) );
+			scheduleFrame( state, force, function ( shouldForce ) {
+				layoutJustified( root, state, shouldForce );
 			} );
 		};
 
+		justifiedStates.set( root, state );
+		watchImages( state, track, function () {
+			state.schedule( true );
+		} );
+
 		if ( 'ResizeObserver' in state.view ) {
 			state.resizeObserver = new state.view.ResizeObserver( function () {
-				schedule( false );
+				state.schedule( false );
 			} );
 			state.resizeObserver.observe( track );
 		}
 
-		track.querySelectorAll( 'img' ).forEach( function ( image ) {
-			if ( ! image.complete ) {
-				image.addEventListener( 'load', function () {
-					schedule( true );
-				}, { once: true } );
-			}
-		} );
-
 		if ( state.document.fonts && state.document.fonts.ready ) {
 			state.document.fonts.ready.then( function () {
-				schedule( true );
+				state.schedule( true );
 			} );
 		}
 
@@ -880,7 +1010,10 @@
 			const heights = new Map();
 			groups.forEach( function ( group ) {
 				group.forEach( function ( entry ) {
-					heights.set( entry, entry.item.getBoundingClientRect().height );
+					const size = getItemSize( entry.item );
+
+					heights.set( entry, size.height );
+					rememberItemSize( state, entry.item, size );
 				} );
 			} );
 
@@ -912,7 +1045,10 @@
 			if ( adjusted ) {
 				groups.forEach( function ( group ) {
 					group.forEach( function ( entry ) {
-						heights.set( entry, entry.item.getBoundingClientRect().height );
+						const size = getItemSize( entry.item );
+
+						heights.set( entry, size.height );
+						rememberItemSize( state, entry.item, size );
 					} );
 				} );
 			}
@@ -974,17 +1110,12 @@
 				watchImages( existing, track, function () {
 					existing.schedule( true );
 				} );
+				reconcileItemObservations( existing, getTrackItems( track ) );
 				existing.schedule( true );
 				return;
 			}
 
-			if ( existing.frame ) {
-				existing.view.cancelAnimationFrame( existing.frame );
-			}
-
-			if ( existing.resizeObserver ) {
-				existing.resizeObserver.disconnect();
-			}
+			releasePackingState( existing );
 
 			tiledStates.delete( root );
 			root.classList.remove( 'is-cyber-tiled-ready' );
@@ -999,9 +1130,13 @@
 			document: getOwnerDocument( root ),
 			view: getOwnerWindow( root ),
 			frame: 0,
+			forceLayout: false,
 			signature: '',
 			resizeObserver: null,
+			observedItems: new Set(),
+			itemSizes: new WeakMap(),
 			images: new WeakSet(),
+			imageListeners: new Map(),
 			schedule: null,
 		};
 
@@ -1010,8 +1145,8 @@
 				return;
 			}
 
-			scheduleFrame( state, function () {
-				layoutTiled( root, state, Boolean( force ) );
+			scheduleFrame( state, force, function ( shouldForce ) {
+				layoutTiled( root, state, shouldForce );
 			} );
 		};
 
@@ -1021,10 +1156,22 @@
 		} );
 
 		if ( 'ResizeObserver' in state.view ) {
-			state.resizeObserver = new state.view.ResizeObserver( function () {
-				state.schedule( false );
+			state.resizeObserver = new state.view.ResizeObserver( function ( entries ) {
+				let itemChanged = false;
+
+				entries.forEach( function ( entry ) {
+					if (
+						entry.target !== track
+						&& state.observedItems.has( entry.target )
+						&& itemSizeChanged( state, entry.target )
+					) {
+						itemChanged = true;
+					}
+				} );
+				state.schedule( itemChanged );
 			} );
 			state.resizeObserver.observe( track );
+			reconcileItemObservations( state, getTrackItems( track ) );
 		}
 
 		if ( state.document.fonts && state.document.fonts.ready ) {
@@ -1068,6 +1215,30 @@
 	}
 
 	/**
+	 * Release frame, observer, and pending image resources for one state.
+	 *
+	 * @param {Object} state Packing state.
+	 * @return {void}
+	 */
+	function releasePackingState( state ) {
+		if ( state.frame ) {
+			state.view.cancelAnimationFrame( state.frame );
+			state.frame = 0;
+		}
+
+		if ( state.resizeObserver ) {
+			state.resizeObserver.disconnect();
+			state.resizeObserver = null;
+		}
+
+		if ( state.observedItems ) {
+			state.observedItems.clear();
+		}
+
+		clearImageListeners( state );
+	}
+
+	/**
 	 * Disconnect and remove one packing state from a gallery.
 	 *
 	 * @param {HTMLElement} root       Gallery root.
@@ -1082,13 +1253,7 @@
 			return;
 		}
 
-		if ( state.frame ) {
-			state.view.cancelAnimationFrame( state.frame );
-		}
-
-		if ( state.resizeObserver ) {
-			state.resizeObserver.disconnect();
-		}
+		releasePackingState( state );
 
 		states.delete( root );
 		root.classList.remove( readyClass );
@@ -1142,6 +1307,7 @@
 
 	// Internal bridge used by the editor bundle for iframe-rendered ACF previews.
 	const runtime = {
+		destroy: destroyWithin,
 		initialize: initializeWithin,
 	};
 	window.CyberGalleryMaiPackingRuntime = runtime;

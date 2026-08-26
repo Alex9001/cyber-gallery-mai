@@ -2,6 +2,8 @@
 
 ## 2.0.0
 
+Release status: unreleased; no version tag or GitHub Release has been created.
+
 - Completed the trademark-safe identity change to **Cyber Gallery for Mai Theme**, repository/package slug `cyber-gallery-mai`, main file `cyber-gallery-mai.php`, text domain `cyber-gallery-mai`, and canonical `acf/cyber-gallery-mai` block.
 - Renamed canonical PHP classes, functions, constants, filters, asset handles, source files, build directory, release ZIP, and frontend JavaScript globals to the Cyber Gallery for Mai Theme identity.
 - Preserved existing content with a hidden, non-inserter `acf/mai-cyber-gallery` block registration and retained every serialized `mai_cyber_gallery_*` ACF field key.
@@ -16,6 +18,9 @@
 - Added a complete translation template and packaged-language validation for the canonical text domain.
 - Added a real WordPress 7.1 editor integration test and an iframe-owned preview bridge so existing and newly inserted ACF galleries initialize inside the always-iframed canvas.
 - Verified and restored the stable `.mai-cyber-gallery` inner track and Genesis contexts during the identity migration, preventing selectors, behavior, and third-party markup filters from drifting.
+- Replaced recursive release-directory copying with an exact tracked-file manifest that rejects extra, ignored, untracked, special, and symlinked distribution paths.
+- Added deterministic embedded provenance, external SHA-256 and provenance sidecars, and uniquely fingerprinted noncanonical filenames for explicitly permitted dirty staging builds.
+- Pinned release/test toolchains, GitHub Actions, WordPress 7.1, Plugin Check 2.1.0, and Mai Engine test inputs; separated public fixtures from the protected authenticated Genesis/Mai release lane.
 
 ## 1.0.0
 

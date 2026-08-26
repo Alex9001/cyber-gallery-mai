@@ -51,6 +51,7 @@ class WP_Query {
 	}
 }
 
+$cyber_gallery_mai_test_hooks              = array();
 $cyber_gallery_mai_test_posts              = array();
 $cyber_gallery_mai_test_styles             = array();
 $cyber_gallery_mai_test_scripts            = array();
@@ -61,9 +62,29 @@ $cyber_gallery_mai_test_localized_scripts  = array();
 /**
  * Minimal WordPress action registration test double.
  *
+ * @param string   $hook     Hook name.
+ * @param callable $callback Hook callback.
+ * @param int      $priority Hook priority.
+ *
  * @return void
  */
-function add_action(): void {}
+function add_action( $hook, $callback, $priority = 10 ): void {
+	global $cyber_gallery_mai_test_hooks;
+
+	$cyber_gallery_mai_test_hooks[ $hook ][] = array(
+		'callback' => $callback,
+		'priority' => $priority,
+	);
+}
+
+/**
+ * Simulate the former plugin's bootstrap helper.
+ *
+ * @return null
+ */
+function mai_cyber_gallery_plugin() {
+	return null;
+}
 
 /**
  * Ignore activation-hook registration in the standalone test.
@@ -294,6 +315,19 @@ require dirname( __DIR__ ) . '/cyber-gallery-mai.php';
 $reflection = new ReflectionClass( Cyber_Gallery_Mai_Plugin::class );
 $plugin     = cyber_gallery_mai_plugin();
 $method     = $reflection->getMethod( 'get_block_asset_needs' );
+
+if ( isset( $cyber_gallery_mai_test_hooks['after_setup_theme'] ) ) {
+	throw new RuntimeException( 'An early canonical helper call must not arm the runtime before conflict detection.' );
+}
+
+cyber_gallery_mai_boot();
+
+if (
+	isset( $cyber_gallery_mai_test_hooks['after_setup_theme'] )
+	|| 1 !== count( $cyber_gallery_mai_test_hooks['admin_notices'] ?? array() )
+) {
+	throw new RuntimeException( 'The former plugin runtime did not keep an early canonical singleton inert.' );
+}
 
 $plugin->register_assets();
 

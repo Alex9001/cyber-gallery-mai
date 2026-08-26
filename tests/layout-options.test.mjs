@@ -25,6 +25,8 @@ const instrumentedSource = packingSource.replace(
 	[
 		'\twindow.CyberGalleryMaiPackingTest = {',
 		'\t\tchooseTiledShape,',
+		'\t\tclearImageListeners,',
+		'\t\twatchImages,',
 		'\t};',
 		'',
 		bridgeMarker,
@@ -52,13 +54,72 @@ vm.runInNewContext(
 	{ filename: 'cyber-gallery-mai-packing.js' }
 );
 
-const { chooseTiledShape } = window.CyberGalleryMaiPackingTest;
+const {
+	chooseTiledShape,
+	clearImageListeners,
+	watchImages,
+} = window.CyberGalleryMaiPackingTest;
 
 test( 'packing preserves its 1.x runtime compatibility alias', () => {
 	assert.equal(
 		window.MaiCyberGalleryPackingRuntime,
 		window.CyberGalleryMaiPackingRuntime
 	);
+	assert.equal( typeof window.CyberGalleryMaiPackingRuntime.destroy, 'function' );
+} );
+
+/**
+ * Build an incomplete image with inspectable event listeners.
+ *
+ * @return {Object} Image double.
+ */
+function pendingImage() {
+	const listeners = new Map();
+
+	return {
+		complete: false,
+		listeners,
+		addEventListener( type, listener ) {
+			listeners.set( type, listener );
+		},
+		removeEventListener( type, listener ) {
+			if ( listeners.get( type ) === listener ) {
+				listeners.delete( type );
+			}
+		},
+	};
+}
+
+test( 'packing relayouts on image load or error and removes sibling listeners', () => {
+	for ( const eventType of [ 'load', 'error' ] ) {
+		const image = pendingImage();
+		const state = {};
+		let settlements = 0;
+
+		watchImages(
+			state,
+			{ querySelectorAll: () => [ image ] },
+			() => settlements++
+		);
+		assert.deepEqual( Array.from( image.listeners.keys() ), [ 'load', 'error' ] );
+
+		image.listeners.get( eventType )();
+
+		assert.equal( settlements, 1 );
+		assert.equal( image.listeners.size, 0 );
+		assert.equal( state.imageListeners.size, 0 );
+	}
+} );
+
+test( 'packing teardown removes pending image listeners', () => {
+	const image = pendingImage();
+	const state = {};
+
+	watchImages( state, { querySelectorAll: () => [ image ] }, () => {} );
+	clearImageListeners( state );
+
+	assert.equal( image.listeners.size, 0 );
+	assert.equal( state.imageListeners.size, 0 );
 } );
 
 /**

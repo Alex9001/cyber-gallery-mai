@@ -25,6 +25,12 @@ const blockMetadata = JSON.parse(
 		'utf8'
 	)
 );
+const legacyBlockMetadata = JSON.parse(
+	readFileSync(
+		new URL( '../blocks/cyber-gallery-mai/legacy-block.json', import.meta.url ),
+		'utf8'
+	)
+);
 const bridgeMarker = '\t// Internal bridge used by the editor bundle';
 const instrumentedSource = source.replace(
 	bridgeMarker,
@@ -75,6 +81,7 @@ const {
 test( 'carousel preserves its 1.x settings and runtime compatibility aliases', () => {
 	assert.equal( window.MaiCyberGallerySettings, window.CyberGalleryMaiSettings );
 	assert.equal( window.MaiCyberGalleryRuntime, window.CyberGalleryMaiRuntime );
+	assert.equal( typeof window.CyberGalleryMaiRuntime.destroy, 'function' );
 } );
 
 test( 'Filmstrip autoplay advances a fixed item count instead of a visible group', () => {
@@ -125,10 +132,14 @@ test( 'Filmstrip logos use intrinsic dimensions constrained by the explicit rail
 	assert.doesNotMatch( rule, /\bmax-height: 100%;/ );
 } );
 
-test( 'Filmstrip arrows are opt-in and the sidebar action names the expanded editor', () => {
+test( 'Filmstrip arrows are opt-in and block metadata contains no untranslated editor label', () => {
 	assert.equal(
-		blockMetadata.acf.expandedEditorButtonText,
-		'Open Expanded Editor'
+		Object.prototype.hasOwnProperty.call( blockMetadata.acf, 'expandedEditorButtonText' ),
+		false
+	);
+	assert.equal(
+		Object.prototype.hasOwnProperty.call( legacyBlockMetadata.acf, 'expandedEditorButtonText' ),
+		false
 	);
 	assert.match(
 		blockSource,

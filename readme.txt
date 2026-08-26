@@ -135,7 +135,7 @@ Adds true in-place Slider transitions, two combinable navigation selectors, shar
 
 = 0.5.1 =
 
-Completes the Mai Engine integration audit, delegates more shared behavior to Engine, follows the configured XL breakpoint, and requires Mai Engine 2.40.0 or later.
+Completes the Mai Engine integration audit, delegates supported shared behavior to Engine, follows the configured XL breakpoint, and requires Mai Engine 2.40.0 or later.
 
 = 0.5.0 =
 
@@ -183,11 +183,15 @@ Yes. The canonical Cyber Gallery symbols are distinct, while narrowly scoped 1.x
 
 Install version 2.0.0 in `wp-content/plugins/cyber-gallery-mai/` and activate it. Activation deactivates the former `mai-cyber-gallery/mai-cyber-gallery.php` basename so both runtimes do not load together. Existing galleries need no immediate rewrite: the hidden `acf/mai-cyber-gallery` compatibility block keeps them editable and renderable, and the editor Transform menu can convert individual blocks to `acf/cyber-gallery-mai` without changing their ACF data.
 
-For a site-wide conversion, back up the database and run `wp cyber-gallery-mai migrate-blocks` first. That command is a read-only dry run. Review its totals, then run `wp cyber-gallery-mai migrate-blocks --execute` and confirm, or add `--yes` for an automated deployment. Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The recursive command is idempotent and preserves all saved ACF field keys and values.
+For a site-wide conversion, back up the database and run `wp cyber-gallery-mai migrate-blocks` first. That command is a read-only dry run. Review its totals, then run `wp cyber-gallery-mai migrate-blocks --execute` and confirm, or add `--yes` for an automated deployment. Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The recursive command is idempotent, preserves all saved ACF field keys and values, verifies every post and widget write, and exits nonzero if any record fails. WordPress reserializes the complete parsed block document when it updates a record, so equivalent whitespace or escaping in unrelated block-attribute JSON may be normalized without changing the parsed attributes or rendered content.
 
 = Do I need to migrate shortcodes? =
 
 No. Cyber Gallery has never registered a shortcode. Version 2.0 migration applies only to the saved ACF block name.
+
+= Is version 2.0.0 publicly released? =
+
+Not yet. The current repository state is a release candidate and has no 2.0.0 tag or durable GitHub Release. Temporary CI artifacts are verification output, not published releases. A public release should include the ZIP together with its `.zip.sha256` and `.zip.provenance.json` sidecars.
 
 = Which image size should I use for masonry? =
 
@@ -222,6 +226,11 @@ Autoplay is optional. Set the time between slides from 3 through 30 seconds, opt
 * Confirmed that the plugin has never registered shortcodes; migration is block-only.
 * Added the canonical translation template and WordPress 7.1 iframe integration coverage.
 * Preserved every former global block callback/helper through guarded wrappers and verified the stable markup/Genesis contracts against the live editor runtime.
+* Made singleton construction inert, moved former-runtime detection to the earliest `plugins_loaded` callback, and published bootstrap aliases before ordinary plugin callbacks without allowing early helper calls to bypass conflict protection.
+* Kept responsive column calculation and markup on Mai Engine's public APIs while moving field-default and sanitization behavior behind a stable local boundary instead of depending on Engine's private helpers.
+* Hardened linked-image and filtered-item input against malformed scalar and structured values, and made WP-CLI migration totals reflect only verified writes with a nonzero result on partial failure.
+* Added an exact tracked-file release manifest, deterministic embedded provenance, external checksum/provenance sidecars, and uniquely named dirty staging artifacts.
+* Pinned public CI inputs, verified the exact WordPress 7.1 and Plugin Check 2.1.0 archives, and separated self-contained browser coverage from the protected authenticated Genesis/Mai release lane.
 
 = 1.0.0 =
 
@@ -326,7 +335,7 @@ Autoplay is optional. Set the time between slides from 3 through 30 seconds, opt
 = 0.5.1 =
 
 * Replaced the local ACF palette/custom-color resolver with Mai Engine's color migration and formatting callbacks.
-* Delegated column defaults, indexes, units, configured XL width, button foundations, shadows, icons, and Slider typography to Mai Engine.
+* Delegated responsive column calculation and markup, indexes, units, configured XL width, button foundations, shadows, icons, and Slider typography to Mai Engine.
 * Raised the minimum Mai Engine version to 2.40.0 for its current responsive-column fraction fix.
 * Documented why gallery algorithms and integer responsive-column values remain plugin-owned.
 

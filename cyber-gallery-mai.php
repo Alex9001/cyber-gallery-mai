@@ -26,6 +26,11 @@
 defined( 'ABSPATH' ) || die;
 
 define( 'CYBER_GALLERY_MAI_PLUGIN_FILE', __FILE__ );
+define( 'CYBER_GALLERY_MAI_VERSION', '2.0.0' );
+define( 'CYBER_GALLERY_MAI_MIN_ENGINE_VERSION', '2.40.0' );
+define( 'CYBER_GALLERY_MAI_PLUGIN_DIR', plugin_dir_path( CYBER_GALLERY_MAI_PLUGIN_FILE ) );
+define( 'CYBER_GALLERY_MAI_PLUGIN_URL', plugin_dir_url( CYBER_GALLERY_MAI_PLUGIN_FILE ) );
+define( 'CYBER_GALLERY_MAI_BASENAME', plugin_basename( CYBER_GALLERY_MAI_PLUGIN_FILE ) );
 
 require_once __DIR__ . '/classes/class-cyber-gallery-mai-plugin.php';
 
@@ -72,17 +77,14 @@ register_activation_hook( CYBER_GALLERY_MAI_PLUGIN_FILE, 'cyber_gallery_mai_acti
  * @return void
  */
 function cyber_gallery_mai_boot(): void {
-	if (
-		class_exists( 'Mai_Cyber_Gallery_Plugin', false )
-		|| function_exists( 'mai_cyber_gallery_plugin' )
-	) {
-		add_action( 'admin_notices', 'cyber_gallery_mai_legacy_conflict_notice' );
-		return;
-	}
+	static $notice_registered = false;
 
-	cyber_gallery_mai_plugin();
+	if ( ! cyber_gallery_mai_plugin()->boot() && ! $notice_registered ) {
+		add_action( 'admin_notices', 'cyber_gallery_mai_legacy_conflict_notice' );
+		$notice_registered = true;
+	}
 }
-add_action( 'plugins_loaded', 'cyber_gallery_mai_boot', PHP_INT_MAX );
+add_action( 'plugins_loaded', 'cyber_gallery_mai_boot', PHP_INT_MIN );
 
 /**
  * Explain why the canonical runtime is paused when both plugin basenames load.

@@ -17,10 +17,14 @@
 	 * WordPress 7.1 always iframes the post editor canvas. Native events must
 	 * therefore be constructed by the same window that owns their target.
 	 *
-	 * @param {Element|null} element Editor element.
+	 * @param {Document|Element|null} element Editor document or element.
 	 * @return {Window} Owning window.
 	 */
 	function getElementView( element ) {
+		if ( element && 9 === element.nodeType && element.defaultView ) {
+			return element.defaultView;
+		}
+
 		return element
 			&& element.ownerDocument
 			&& element.ownerDocument.defaultView
@@ -1295,7 +1299,7 @@
 				return null;
 			}
 			return window.wp.data.dispatch( storeName );
-		} catch ( error ) {
+		} catch {
 			return null;
 		}
 	}
@@ -1382,7 +1386,7 @@
 			let selection = null;
 			try {
 				selection = window.wp.data.select( 'core/block-editor' );
-			} catch ( error ) {
+			} catch {
 				if ( status ) {
 					status.hidden = false;
 				}
@@ -1443,18 +1447,13 @@
 	}
 
 	/**
-	 * Reinitialize progressive enhancements after an ACF preview render.
+	 * Collect each distinct preview runtime available to an iframe or its parent.
 	 *
-	 * Runtime objects may live in the parent editor window or in the canvas
-	 * window. Supporting both keeps this bridge compatible with the always-
-	 * iframed WordPress 7.1 post editor and older editor configurations.
-	 *
-	 * @param {Object|Element} block ACF preview wrapper or element.
-	 * @return {void}
+	 * @param {Document|Element} scope Preview scope.
+	 * @return {Object[]} Available runtime objects.
 	 */
-	function initializeBlockPreview( block ) {
-		const element = block && block[0] ? block[0] : block;
-		const previewView = getElementView( element );
+	function getPreviewRuntimes( scope ) {
+		const previewView = getElementView( scope );
 		const runtimes = [
 			previewView.CyberGalleryMaiPackingRuntime,
 			previewView.CyberGalleryMaiRuntime,
@@ -1470,7 +1469,41 @@
 			window.MaiCyberGalleryComparisonRuntime,
 		];
 
-		Array.from( new Set( runtimes.filter( Boolean ) ) ).forEach( function ( runtime ) {
+		return Array.from( new Set( runtimes.filter( Boolean ) ) );
+	}
+
+	/**
+	 * Tear down stateful enhancements within a discarded preview scope.
+	 *
+	 * @param {Document|Element} scope Discarded preview scope.
+	 * @return {void}
+	 */
+	function destroyBlockPreview( scope ) {
+		if ( ! scope || ! scope.querySelectorAll ) {
+			return;
+		}
+
+		getPreviewRuntimes( scope ).forEach( function ( runtime ) {
+			if ( 'function' === typeof runtime.destroy ) {
+				runtime.destroy( scope );
+			}
+		} );
+	}
+
+	/**
+	 * Reinitialize progressive enhancements after an ACF preview render.
+	 *
+	 * Runtime objects may live in the parent editor window or in the canvas
+	 * window. Supporting both keeps this bridge compatible with the always-
+	 * iframed WordPress 7.1 post editor and older editor configurations.
+	 *
+	 * @param {Object|Element} block ACF preview wrapper or element.
+	 * @return {void}
+	 */
+	function initializeBlockPreview( block ) {
+		const element = block && block[0] ? block[0] : block;
+
+		getPreviewRuntimes( element ).forEach( function ( runtime ) {
 			if ( 'function' === typeof runtime.initialize ) {
 				runtime.initialize( element );
 			}
@@ -1507,6 +1540,44 @@
 	}
 
 	/**
+	 * Disconnect one canvas document and release its preview runtimes.
+	 *
+	 * @param {Object} state Editor iframe state.
+	 * @return {void}
+	 */
+	function disconnectEditorDocument( state ) {
+		if ( state.observer ) {
+			state.observer.disconnect();
+			state.observer = null;
+		}
+
+		if ( state.document ) {
+			destroyBlockPreview( state.document );
+			state.document = null;
+		}
+	}
+
+	/**
+	 * Disconnect a removed editor-canvas iframe.
+	 *
+	 * @param {HTMLIFrameElement} frame Removed editor canvas.
+	 * @return {void}
+	 */
+	function disconnectEditorCanvas( frame ) {
+		const state = editorCanvasFrames.get( frame );
+
+		if ( ! state ) {
+			return;
+		}
+
+		disconnectEditorDocument( state );
+		if ( state.loadHandler ) {
+			frame.removeEventListener( 'load', state.loadHandler );
+		}
+		editorCanvasFrames.delete( frame );
+	}
+
+	/**
 	 * Connect one WordPress editor-canvas iframe to the parent editor bridge.
 	 *
 	 * @param {HTMLIFrameElement} frame Editor canvas iframe.
@@ -1523,31 +1594,31 @@
 			state = {
 				document: null,
 				observer: null,
+				loadHandler: null,
+			};
+			state.loadHandler = function () {
+				connectEditorCanvas( frame );
 			};
 			editorCanvasFrames.set( frame, state );
-			frame.addEventListener( 'load', function () {
-				connectEditorCanvas( frame );
-			} );
+			frame.addEventListener( 'load', state.loadHandler );
 		}
 
 		let editorDocument = null;
 		try {
 			editorDocument = frame.contentDocument;
-		} catch ( error ) {
+		} catch {
+			disconnectEditorDocument( state );
 			return;
 		}
 
 		if ( ! editorDocument || ! editorDocument.querySelectorAll ) {
+			disconnectEditorDocument( state );
 			return;
 		}
 
 		if ( state.document !== editorDocument ) {
-			if ( state.observer ) {
-				state.observer.disconnect();
-			}
-
+			disconnectEditorDocument( state );
 			state.document = editorDocument;
-			state.observer = null;
 
 			const editorView = editorDocument.defaultView;
 			const target = editorDocument.body || editorDocument.documentElement;
@@ -1555,6 +1626,11 @@
 			if ( editorView && target && 'MutationObserver' in editorView ) {
 				state.observer = new editorView.MutationObserver( function ( mutations ) {
 					mutations.forEach( function ( mutation ) {
+						mutation.removedNodes.forEach( function ( node ) {
+							if ( 1 === node.nodeType ) {
+								destroyBlockPreview( node );
+							}
+						} );
 						mutation.addedNodes.forEach( function ( node ) {
 							if ( 1 === node.nodeType ) {
 								initializeExistingBlockPreviews( node );
@@ -1573,14 +1649,14 @@
 	}
 
 	/**
-	 * Discover WordPress editor canvas iframes in one parent-document scope.
+	 * Collect WordPress editor canvas iframes in one parent-document scope.
 	 *
-	 * @param {Document|Element} scope Parent document or added subtree.
-	 * @return {void}
+	 * @param {Document|Element} scope Parent document or subtree.
+	 * @return {Set<HTMLIFrameElement>} Matching canvas iframes.
 	 */
-	function initializeEditorCanvases( scope ) {
+	function getEditorCanvases( scope ) {
 		if ( ! scope || ! scope.querySelectorAll ) {
-			return;
+			return new Set();
 		}
 
 		const selector = 'iframe[name="editor-canvas"], iframe.editor-canvas__iframe';
@@ -1590,7 +1666,27 @@
 			frames.add( scope );
 		}
 
-		frames.forEach( connectEditorCanvas );
+		return frames;
+	}
+
+	/**
+	 * Discover WordPress editor canvas iframes in one parent-document scope.
+	 *
+	 * @param {Document|Element} scope Parent document or added subtree.
+	 * @return {void}
+	 */
+	function initializeEditorCanvases( scope ) {
+		getEditorCanvases( scope ).forEach( connectEditorCanvas );
+	}
+
+	/**
+	 * Disconnect editor canvas iframes removed with a parent-document subtree.
+	 *
+	 * @param {Document|Element} scope Removed subtree.
+	 * @return {void}
+	 */
+	function disconnectEditorCanvases( scope ) {
+		getEditorCanvases( scope ).forEach( disconnectEditorCanvas );
 	}
 
 	/**
@@ -1691,6 +1787,12 @@
 		const observer = new window.MutationObserver( function ( mutations ) {
 			initializeAcf();
 			mutations.forEach( function ( mutation ) {
+				mutation.removedNodes.forEach( function ( node ) {
+					if ( 1 === node.nodeType ) {
+						destroyBlockPreview( node );
+						disconnectEditorCanvases( node );
+					}
+				} );
 				mutation.addedNodes.forEach( function ( node ) {
 					if ( 1 === node.nodeType ) {
 						syncSliderNavigationSelects( node, null );

@@ -64,7 +64,7 @@ Version 0.4.1 adds Slider width modes and editor-control refinements. Existing c
 
 Version 0.5.0 adds selectable Slider transitions, navigation hover treatments and Mai-aware colors, plus configurable image overlays.
 
-Version 0.5.1 completes a source-level Mai Engine integration audit. ACF color migration/formatting, column defaults and sanitization, instance indexes, CSS unit formatting, the configured XL breakpoint, control foundations, shadows, icons, typography, palettes, and design tokens now delegate to Mai Engine wherever it exposes a matching implementation.
+Version 0.5.1 completes a source-level Mai Engine integration audit. ACF color migration/formatting, responsive column calculation and markup, instance indexes, CSS unit formatting, the configured XL breakpoint, control foundations, shadows, icons, typography, palettes, and design tokens delegate to Mai Engine wherever it exposes a supported implementation. Gallery input normalization remains local where Engine's corresponding field helpers are explicitly private.
 
 Version 0.6.0 gives Slider effects true in-place transitions instead of layering them over a horizontal slide, sharpens circle navigation, adds two independently combinable navigation slots, and adds accessible autoplay timing and hover-pause controls.
 
@@ -92,9 +92,13 @@ Cold-cache rendering primes attachment posts and metadata in bulk before buildin
 
 ## Building a release
 
-Run `npm run build:zip` from a committed, clean checkout. The command rebuilds and validates generated assets, runs the JavaScript and PHP checks, refuses uncommitted release source, recreates `build/cyber-gallery-mai/`, and writes `build/cyber-gallery-mai-{version}.zip` with its source revision and SHA-256 checksum. `CYBER_GALLERY_MAI_ALLOW_DIRTY_BUILD=1` exists only for local staging and marks the result as dirty; never publish that artifact. The ZIP contains runtime assets, PHP, canonical and compatibility block metadata, migration support, licensing, and user-facing documentation; repository-only development files and `CHANGES.md` are excluded.
+Version 2.0.0 is currently an unreleased release candidate: this repository has no 2.0.0 tag or durable GitHub Release yet. A passing CI artifact is temporary verification output, not a published release.
 
-The public CI job runs strict Plugin Check against that exact staged directory with the minimum Mai Engine release installed. Genesis is separately distributed and cannot be fetched non-interactively in public CI, so the complete theme/runtime lane runs on a disposable authorized Mai site. The smoke script is intentionally repository-only; from a repository checkout, point WP-CLI at both the staged ZIP and the checkout's absolute test path:
+Run `npm run build:zip` from a committed, clean checkout. The command rebuilds and validates generated assets, runs the JavaScript and PHP checks, and stages only the files enumerated in `scripts/release-manifest.json`. Packaging fails if the tracked runtime set differs from that manifest or if an extra, untracked, ignored, special, or symlinked path appears under a distribution directory. A clean build writes `build/cyber-gallery-mai-{version}.zip`, its sha256sum-compatible `.zip.sha256` file, and a `.zip.provenance.json` sidecar; the ZIP also contains deterministic `release-provenance.json`. Repository-only development files and `CHANGES.md` are excluded.
+
+`CYBER_GALLERY_MAI_ALLOW_DIRTY_BUILD=1` exists only for local staging. A dirty artifact never receives the canonical filename: its full dirty-tree fingerprint and source revision appear in the filename and both provenance documents. Never publish it. `SOURCE_DATE_EPOCH` may override the normalized archive time; otherwise the source commit time is used. See [docs/RELEASING.md](docs/RELEASING.md) for checksum/provenance verification, protected integration, and publication gates.
+
+Public CI verifies the checksummed WordPress 7.1 and Plugin Check 2.1.0 archives, uses the immutable Mai Engine 2.40.0 commit, runs strict Plugin Check with only the proprietary-dependency and external-updater policy findings excluded, and exercises every self-contained browser fixture in Chromium, Firefox, and WebKit. It does not claim to run the authenticated WordPress editor test. Genesis is separately distributed, so that test and the complete runtime smoke lane run only for a version tag or an explicit release-integration dispatch on a protected, authorized self-hosted runner. The smoke script is intentionally repository-only; from a repository checkout, point WP-CLI at both the staged ZIP and the checkout's absolute test path:
 
 ```bash
 REPOSITORY_PATH=/absolute/path/to/cyber-gallery-mai
@@ -152,7 +156,7 @@ wp cyber-gallery-mai migrate-blocks --execute
 wp cyber-gallery-mai migrate-blocks --execute --yes
 ```
 
-Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The command is idempotent: it changes only the parsed block name and its `attrs.name`, preserves ACF data/field keys, and safely reports zero changes when repeated.
+Use `--post_type=post,page,wp_block` to restrict post types or `--skip-widgets` to omit block widgets. The command is idempotent: it changes only the gallery block's semantic name and `attrs.name`, preserves ACF data/field keys, verifies every persisted write, and exits nonzero if any record fails. WordPress serializes the complete parsed block document during an update, so attribute-JSON whitespace or equivalent escaping in unrelated block comments may be normalized even though their parsed attributes and rendered content remain unchanged. A repeated migration safely reports zero changes.
 
 Cyber Gallery has never registered a shortcode, so there is no plugin shortcode syntax to convert. The upgrade is exclusively a block-name migration. Third-party code should adopt the canonical PHP API, filters, handles, and JavaScript globals below; the 1.x names remain compatibility aliases in 2.0.0.
 
@@ -171,6 +175,8 @@ Cyber Gallery has never registered a shortcode, so there is no plugin shortcode 
 | Asset handles | `cyber-gallery-mai*` | Matching `mai-cyber-gallery*` handles are dependency-only aliases and do not load duplicate assets. |
 | Browser globals | `CyberGalleryMai*` | Matching `MaiCyberGallery*` names reference the same settings/runtime objects. |
 | Public markup/cache contracts | Existing `.mai-cyber-gallery*`, `data-cyber-*`, Genesis contexts, and canonical `CGM.A.*` cache tags | Markup names remain unchanged; attachment purges also emit the former `MCG.A.*` tag so pre-2.0 cached pages expire correctly. |
+
+The canonical singleton is inert when first requested. At the earliest `plugins_loaded` callback, Cyber Gallery checks for the actual former plugin runtime, publishes the 1.x bootstrap aliases and constants before ordinary plugin callbacks, and then starts once after Mai Engine's theme setup. This prevents an early canonical helper call from bypassing the dual-runtime guard.
 
 An existing Core Gallery can be changed to **Cyber Gallery for Mai Theme** through the block toolbar's Transform menu. Conversion creates a Mai Grid gallery and preserves valid local attachment IDs in source order, columns, supported link behavior, wide/full alignment, anchor, and custom class. An uncropped Core gallery keeps its selected source size; a cropped gallery maps to the nearest Mai orientation and retains its old size only as a dormant value for a later switch to Custom orientation. Core-only data such as external images without attachment IDs, individual captions, focal points, per-image links, styling, and unsupported nested content is intentionally dropped. The original block remains unchanged when it has no convertible local attachments.
 
@@ -445,7 +451,7 @@ Canonical PHP symbols, block names, asset handles, text domain, and JavaScript g
 - Non-native Slider presets use an in-place transition compositor for controls and autoplay; direct gestures retain native scrolling. Transitions and navigation hover effects honor `prefers-reduced-motion`.
 - Shared image overlays use Mai Engine palette colors when selected and remain separate from Slider's content-legibility scrim.
 - The lightbox uses the browser's modal `<dialog>` behavior, supports Escape/arrow/Home/End keys, offers four arrow designs, and returns focus to its trigger.
-- The repository-specific `Update URI` prevents WordPress.org slug collisions. Automatic GitHub updates are not bundled; install published releases manually or through the deployment process that manages this repository. The plugin never uses the upstream Mai Galleries update channel.
+- The repository-specific `Update URI` prevents WordPress.org slug collisions. Automatic GitHub updates are not bundled. No durable 2.0.0 release has been published yet; once one exists, install its checksum-verified artifact manually or through the deployment process that manages this repository. The plugin never uses the upstream Mai Galleries update channel.
 
 ## License
 

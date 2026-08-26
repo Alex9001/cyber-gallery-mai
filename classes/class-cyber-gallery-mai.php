@@ -43,7 +43,7 @@ defined( 'ABSPATH' ) || die;
  *     ratio: float,
  *     width: int,
  *     height: int,
- *     link: array<array-key, mixed>,
+ *     link: CyberGalleryLink,
  *     slide_title: string,
  *     slide_subtext: string,
  *     slide_align: 'start'|'center'|'end',
@@ -188,7 +188,7 @@ class Cyber_Gallery_Mai {
 		$provided_navigation     = $navigation_was_provided && is_scalar( $args['slider_navigation'] )
 			? sanitize_key( (string) $args['slider_navigation'] )
 			: '';
-		$column_defaults         = mai_get_columns_defaults();
+		$column_defaults         = $this->get_column_defaults();
 		$slider_width            = max( 0, min( 2400, absint( mai_get_breakpoint( 'xl' ) ) ) );
 
 		$defaults = array_merge(
@@ -317,6 +317,38 @@ class Cyber_Gallery_Mai {
 
 		$this->args       = $this->sanitize_args( $args, $defaults );
 		$this->image_size = $this->get_image_size();
+	}
+
+	/**
+	 * Get gallery column defaults from Mai Engine's public breakpoint contract.
+	 *
+	 * Mai Engine owns responsive column calculation and markup. Its field-level
+	 * defaults helper is private, so the gallery asks the public breakpoint API
+	 * for its responsive defaults and keeps only the non-breakpoint field values
+	 * that form this plugin's persisted PHP API contract.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return array<string,mixed>
+	 */
+	protected function get_column_defaults(): array {
+		$columns = (array) mai_get_breakpoint_columns(
+			array(
+				'columns_responsive' => true,
+			)
+		);
+
+		return array(
+			'columns'                => isset( $columns['lg'] ) ? max( 1, absint( $columns['lg'] ) ) : 3,
+			'columns_responsive'     => false,
+			'columns_md'             => isset( $columns['md'] ) ? max( 1, absint( $columns['md'] ) ) : 1,
+			'columns_sm'             => isset( $columns['sm'] ) ? max( 1, absint( $columns['sm'] ) ) : 1,
+			'columns_xs'             => isset( $columns['xs'] ) ? max( 1, absint( $columns['xs'] ) ) : 1,
+			'align_columns'          => '',
+			'align_columns_vertical' => '',
+			'column_gap'             => 'xl',
+			'row_gap'                => 'xl',
+		);
 	}
 
 	/**
@@ -788,8 +820,14 @@ class Cyber_Gallery_Mai {
 		$args['comparison_after_label']      = is_scalar( $args['comparison_after_label'] )
 			? sanitize_text_field( (string) $args['comparison_after_label'] )
 			: '';
-		$args['comparison_before_image']     = absint( $args['comparison_before_image'] );
-		$args['comparison_after_image']      = absint( $args['comparison_after_image'] );
+		$args['comparison_before_image']     = is_scalar( $args['comparison_before_image'] )
+			&& is_numeric( $args['comparison_before_image'] )
+			? absint( $args['comparison_before_image'] )
+			: 0;
+		$args['comparison_after_image']      = is_scalar( $args['comparison_after_image'] )
+			&& is_numeric( $args['comparison_after_image'] )
+			? absint( $args['comparison_after_image'] )
+			: 0;
 		$args['comparison_position']         = is_numeric( $args['comparison_position'] )
 			? max( 0, min( 100, (int) $args['comparison_position'] ) )
 			: $defaults['comparison_position'];
@@ -1041,7 +1079,16 @@ class Cyber_Gallery_Mai {
 			$args[ $key ] = max( $range[0], min( $range[1], (int) $args[ $key ] ) );
 		}
 
-		$args['images']       = array_values( array_filter( array_map( 'absint', (array) $args['images'] ) ) );
+		$args['images']       = array_values(
+			array_filter(
+				array_map(
+					static fn( $image_id ): int => is_scalar( $image_id ) && is_numeric( $image_id )
+						? absint( $image_id )
+						: 0,
+					(array) $args['images']
+				)
+			)
+		);
 		$args['images_links'] = $this->sanitize_linked_images( $args['images_links'] );
 		$args['slides']       = $this->sanitize_slides( $args['slides'], $button_styles );
 
@@ -1071,12 +1118,15 @@ class Cyber_Gallery_Mai {
 			if ( ! is_numeric( $args[ $key ] ) || 1 > (int) $args[ $key ] ) {
 				$args[ $key ] = $defaults[ $key ];
 			}
+			$args[ $key ] = max( 1, min( 8, absint( $args[ $key ] ) ) );
 		}
 
-		$args = mai_get_columns_sanitized( $args );
+		$args['columns_responsive'] = mai_sanitize_bool( $args['columns_responsive'] );
 
-		foreach ( array( 'columns', 'columns_md', 'columns_sm', 'columns_xs' ) as $key ) {
-			$args[ $key ] = max( 1, min( 8, absint( $args[ $key ] ) ) );
+		foreach ( array( 'align_columns', 'align_columns_vertical', 'column_gap', 'row_gap' ) as $key ) {
+			$args[ $key ] = is_scalar( $args[ $key ] )
+				? sanitize_html_class( (string) $args[ $key ] )
+				: '';
 		}
 
 		if ( in_array( $args['layout'], array( 'slider', 'comparison' ), true ) ) {
@@ -1269,13 +1319,9 @@ class Cyber_Gallery_Mai {
 				continue;
 			}
 
-			$link  = isset( $button['link'] ) && is_array( $button['link'] ) ? $button['link'] : array();
-			$url   = isset( $link['url'] ) && is_scalar( $link['url'] )
-				? esc_url_raw( (string) $link['url'] )
-				: '';
-			$title = isset( $link['title'] ) && is_scalar( $link['title'] )
-				? sanitize_text_field( (string) $link['title'] )
-				: '';
+			$link  = $this->sanitize_link( $button['link'] ?? array() );
+			$url   = $link['url'];
+			$title = $link['title'];
 
 			if ( ! $url || ! $title ) {
 				continue;
@@ -1292,13 +1338,36 @@ class Cyber_Gallery_Mai {
 				'link'  => array(
 					'url'    => $url,
 					'title'  => $title,
-					'target' => isset( $link['target'] ) && '_blank' === $link['target'] ? '_blank' : '',
+					'target' => $link['target'],
 				),
 				'style' => $style,
 			);
 		}
 
 		return $buttons;
+	}
+
+	/**
+	 * Normalize a custom link from ACF, the PHP API, or an item filter.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param mixed $link Candidate link data.
+	 *
+	 * @return CyberGalleryLink
+	 */
+	protected function sanitize_link( $link ): array {
+		$link = is_array( $link ) ? $link : array();
+
+		return array(
+			'url'    => isset( $link['url'] ) && is_scalar( $link['url'] )
+				? esc_url_raw( (string) $link['url'] )
+				: '',
+			'title'  => isset( $link['title'] ) && is_scalar( $link['title'] )
+				? sanitize_text_field( (string) $link['title'] )
+				: '',
+			'target' => isset( $link['target'] ) && '_blank' === $link['target'] ? '_blank' : '',
+		);
 	}
 
 	/**
@@ -1317,7 +1386,12 @@ class Cyber_Gallery_Mai {
 		$sanitized = array();
 
 		foreach ( (array) $rows as $row ) {
-			if ( ! is_array( $row ) || empty( $row['image'] ) ) {
+			if (
+				! is_array( $row )
+				|| ! isset( $row['image'] )
+				|| ! is_scalar( $row['image'] )
+				|| ! is_numeric( $row['image'] )
+			) {
 				continue;
 			}
 
@@ -1328,19 +1402,15 @@ class Cyber_Gallery_Mai {
 
 			$link = isset( $row['link'] ) && is_array( $row['link'] ) ? $row['link'] : array();
 
-			if ( ! $link && ! empty( $row['url'] ) ) {
+			if ( ! $link && isset( $row['url'] ) && is_scalar( $row['url'] ) ) {
 				$link = array( 'url' => $row['url'] );
 			}
 
-			$target = isset( $link['target'] ) && '_blank' === $link['target'] ? '_blank' : '';
+			$link = $this->sanitize_link( $link );
 
 			$sanitized[] = array(
 				'image' => $image_id,
-				'link'  => array(
-					'url'    => isset( $link['url'] ) ? esc_url_raw( $link['url'] ) : '',
-					'title'  => isset( $link['title'] ) ? sanitize_text_field( $link['title'] ) : '',
-					'target' => $target,
-				),
+				'link'  => $link,
 			);
 		}
 
@@ -1505,9 +1575,22 @@ class Cyber_Gallery_Mai {
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- Preserve the documented 1.x filter alias.
 		$items = (array) apply_filters( 'mai_cyber_gallery_items', $items, $this->args );
 
+		return $this->sanitize_filtered_items( $items );
+	}
+
+	/**
+	 * Re-sanitize gallery items after the public item filters have run.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @param mixed $items Filtered gallery items.
+	 *
+	 * @return list<CyberGalleryItem>
+	 */
+	protected function sanitize_filtered_items( $items ): array {
 		$normalized = array();
 
-		foreach ( $items as $item ) {
+		foreach ( (array) $items as $item ) {
 			if ( ! is_array( $item ) || empty( $item['image'] ) || ! is_string( $item['image'] ) ) {
 				continue;
 			}
@@ -1537,11 +1620,17 @@ class Cyber_Gallery_Mai {
 				$item[ $key ] = is_scalar( $item[ $key ] ) ? (string) $item[ $key ] : '';
 			}
 
-			$item['id']            = absint( $item['id'] );
+			$item['id']            = is_scalar( $item['id'] ) && is_numeric( $item['id'] )
+				? absint( $item['id'] )
+				: 0;
 			$item['ratio']         = is_numeric( $item['ratio'] ) ? (float) $item['ratio'] : 1;
-			$item['width']         = absint( $item['width'] );
-			$item['height']        = absint( $item['height'] );
-			$item['link']          = is_array( $item['link'] ) ? $item['link'] : array();
+			$item['width']         = is_scalar( $item['width'] ) && is_numeric( $item['width'] )
+				? absint( $item['width'] )
+				: 0;
+			$item['height']        = is_scalar( $item['height'] ) && is_numeric( $item['height'] )
+				? absint( $item['height'] )
+				: 0;
+			$item['link']          = $this->sanitize_link( $item['link'] );
 			$item['slide_title']   = is_scalar( $item['slide_title'] )
 				? sanitize_text_field( (string) $item['slide_title'] )
 				: '';

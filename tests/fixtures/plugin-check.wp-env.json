@@ -1,11 +1,11 @@
 {
 	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
-	"core": "https://wordpress.org/wordpress-7.1.zip",
+	"core": "./build/verified-test-archives/wordpress",
 	"phpVersion": "8.3",
 	"testsEnvironment": false,
 	"plugins": [
-		"maithemewp/mai-engine#2.40.0",
-		"https://downloads.wordpress.org/plugin/plugin-check.2.0.0.zip"
+		"maithemewp/mai-engine#f53e26fd2989bb2e6a50721ea86b771d5ffdff03",
+		"./build/verified-test-archives/plugin-check"
 	],
 	"mappings": {
 		"wp-content/plugins/cyber-gallery-mai": "./build/cyber-gallery-mai"

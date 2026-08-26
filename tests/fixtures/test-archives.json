@@ -1,0 +1,17 @@
+{
+	"schemaVersion": 1,
+	"archives": [
+		{
+			"name": "wordpress-7.1.zip",
+			"extractedDirectory": "wordpress",
+			"url": "https://wordpress.org/wordpress-7.1.zip",
+			"sha256": "d1ae02b5ae18428031ffc3943659fa87ab361d827f4aa804adf9276e4dc75df6"
+		},
+		{
+			"name": "plugin-check.2.1.0.zip",
+			"extractedDirectory": "plugin-check",
+			"url": "https://downloads.wordpress.org/plugin/plugin-check.2.1.0.zip",
+			"sha256": "6ff4bd2145f3befcf907df158cc466b1649dafed5686de8369907403c3013fc4"
+		}
+	]
+}

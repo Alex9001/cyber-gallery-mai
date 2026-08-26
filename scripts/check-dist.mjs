@@ -177,6 +177,35 @@ try {
 	}
 	console.log( 'Verified stable public markup and Genesis contexts' );
 
+	const compatibilityBootstrapSource = readFileSync(
+		new URL( 'includes/compatibility-bootstrap.php', root ),
+		'utf8'
+	);
+	for ( const bootstrapToken of [
+		"class_alias( Cyber_Gallery_Mai_Plugin::class, 'Mai_Cyber_Gallery_Plugin' )",
+		"defined( 'MAI_CYBER_GALLERY_VERSION' )",
+		"defined( 'MAI_CYBER_GALLERY_MIN_ENGINE_VERSION' )",
+		"defined( 'MAI_CYBER_GALLERY_PLUGIN_FILE' )",
+		"defined( 'MAI_CYBER_GALLERY_PLUGIN_DIR' )",
+		"defined( 'MAI_CYBER_GALLERY_PLUGIN_URL' )",
+		"defined( 'MAI_CYBER_GALLERY_BASENAME' )",
+		'function mai_cyber_gallery_plugin()',
+	] ) {
+		if ( ! compatibilityBootstrapSource.includes( bootstrapToken ) ) {
+			throw new Error(
+				`includes/compatibility-bootstrap.php is missing early alias "${ bootstrapToken }".`
+			);
+		}
+	}
+	if (
+		! pluginSource.includes(
+			"add_action( 'plugins_loaded', 'cyber_gallery_mai_boot', PHP_INT_MIN )"
+		)
+	) {
+		throw new Error( 'The canonical bootstrap must run after active plugin files load.' );
+	}
+	console.log( 'Verified the early 1.x bootstrap compatibility surface' );
+
 	const compatibilitySource = readFileSync(
 		new URL( 'includes/compatibility.php', root ),
 		'utf8'

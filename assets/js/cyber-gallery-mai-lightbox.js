@@ -303,6 +303,9 @@
 			} );
 		state.index = Math.max( 0, state.triggers.indexOf( trigger ) );
 		state.opener = trigger;
+		state.dialog.dir = 'rtl' === window.getComputedStyle( trigger ).direction
+			? 'rtl'
+			: 'ltr';
 		state.dialog.dataset.cyberArrowStyle = trigger.dataset.cyberArrowStyle || 'circle';
 
 		showDialogImage( state.index );

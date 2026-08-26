@@ -92,18 +92,6 @@
 	}
 
 	/**
-	 * Parse a finite positive number.
-	 *
-	 * @param {*}     value    Candidate.
-	 * @param {number} fallback Fallback.
-	 * @return {number}
-	 */
-	function positiveNumber( value, fallback ) {
-		const parsed = Number.parseFloat( value );
-		return Number.isFinite( parsed ) && 0 < parsed ? parsed : fallback;
-	}
-
-	/**
 	 * Parse a finite positive integer.
 	 *
 	 * @param {*}      value    Candidate.
@@ -2405,8 +2393,93 @@
 		}
 	}
 
+	/**
+	 * Tear down runtime and managed-editor state within a discarded scope.
+	 *
+	 * The public editor bridge calls this before ACF replaces a preview or
+	 * WordPress discards an iframe document. Preserve the last Slider index while
+	 * the owning block remains connected so the next preview can restore it.
+	 *
+	 * @param {Document|Element} scope Discarded preview scope.
+	 * @return {void}
+	 */
+	function destroyManagedWithin( scope ) {
+		if ( ! scope || ! scope.querySelectorAll ) {
+			return;
+		}
+
+		const scopedRoots = getRootsWithin( scope, false );
+		const scopedDocument = 9 === scope.nodeType ? scope : null;
+		const documentObserver = scopedDocument
+			? managedEditorObservers.get( scopedDocument )
+			: null;
+
+		if ( documentObserver ) {
+			if ( documentObserver.frame ) {
+				documentObserver.view.cancelAnimationFrame( documentObserver.frame );
+			}
+			documentObserver.observer.disconnect();
+			managedEditorObservers.delete( scopedDocument );
+		}
+
+		managedEditorBlocks.forEach( function ( entry, blockId ) {
+			const ownsDocument = Boolean( scopedDocument && entry.document === scopedDocument );
+			const ownsBlock = Boolean(
+				entry.owner
+				&& (
+					entry.owner === scope
+					|| ( scope.contains && scope.contains( entry.owner ) )
+				)
+			);
+			const remainingRoots = new Set();
+
+			entry.roots.forEach( function ( root ) {
+				const isScoped = ownsDocument
+					|| scopedRoots.has( root )
+					|| ( scope.contains && scope.contains( root ) );
+
+				if ( ! isScoped ) {
+					remainingRoots.add( root );
+					return;
+				}
+
+				const state = sliderStates.get( root );
+				if ( state ) {
+					entry.sliderIndex = Math.max( 0, state.intentIndex );
+				} else if ( root.classList.contains( 'mai-cyber-gallery-layout-slider' ) ) {
+					entry.sliderIndex = Math.max(
+						0,
+						( Number.parseInt( root.dataset.cyberSliderIndex || '1', 10 ) || 1 ) - 1
+					);
+				}
+
+				destroyWithin( root );
+			} );
+
+			entry.roots = remainingRoots;
+
+			if ( remainingRoots.size ) {
+				return;
+			}
+
+			const connectedOwner = ownsDocument || ownsBlock
+				? null
+				: getConnectedManagedOwner( blockId, entry );
+
+			if ( connectedOwner ) {
+				entry.owner = connectedOwner;
+				return;
+			}
+
+			managedEditorBlocks.delete( blockId );
+		} );
+
+		destroyWithin( scope );
+	}
+
 	// Internal bridge used by the editor bundle for iframe-rendered ACF previews.
 	const runtime = {
+		destroy: destroyManagedWithin,
 		initialize: initializeManagedWithin,
 	};
 	window.CyberGalleryMaiRuntime = runtime;

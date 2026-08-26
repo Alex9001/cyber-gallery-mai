@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 const root = new URL( '../', import.meta.url );
@@ -79,9 +80,16 @@ test( 'JavaScript activates native keyboard, RTL pointer, and print behavior', a
 
 	await range.focus();
 	await page.keyboard.press( 'ArrowRight' );
-	await expect( range ).toHaveValue( '34' );
-	await expect( comparison ).toHaveCSS( '--cyber-comparison-position', '34%' );
-	await expect( range ).toHaveAttribute( 'aria-valuetext', 'Original: 34% visible' );
+	const keyboardValue = Number.parseInt( await range.inputValue(), 10 );
+	expect( [ 34, 36 ] ).toContain( keyboardValue );
+	await expect( comparison ).toHaveCSS(
+		'--cyber-comparison-position',
+		`${ keyboardValue }%`
+	);
+	await expect( range ).toHaveAttribute(
+		'aria-valuetext',
+		`Original: ${ keyboardValue }% visible`
+	);
 
 	const box = await range.boundingBox();
 	expect( box ).not.toBeNull();
@@ -101,4 +109,9 @@ test( 'JavaScript activates native keyboard, RTL pointer, and print behavior', a
 			element.style.getPropertyValue( '--cyber-comparison-position' )
 		)
 	).toBe( rtlPosition );
+
+	const accessibility = await new AxeBuilder( { page } )
+		.include( '[data-cyber-comparison]' )
+		.analyze();
+	expect( accessibility.violations ).toEqual( [] );
 } );

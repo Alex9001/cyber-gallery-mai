@@ -22,6 +22,33 @@ final class Cyber_Gallery_Mai_Plugin {
 	private static ?self $instance = null;
 
 	/**
+	 * Whether startup found the former plugin runtime already loaded.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $legacy_conflict = false;
+
+	/**
+	 * Whether the canonical runtime hook has been registered.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $booted = false;
+
+	/**
+	 * Whether the runtime startup callback has already run.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @var bool
+	 */
+	private bool $run_attempted = false;
+
+	/**
 	 * Prevent direct construction.
 	 *
 	 * @since 2.0.0
@@ -38,8 +65,6 @@ final class Cyber_Gallery_Mai_Plugin {
 	public static function instance(): self {
 		if ( is_null( self::$instance ) ) {
 			self::$instance = new self();
-			self::$instance->setup_constants();
-			self::$instance->hooks();
 		}
 
 		return self::$instance;
@@ -68,23 +93,65 @@ final class Cyber_Gallery_Mai_Plugin {
 	}
 
 	/**
-	 * Define plugin constants.
+	 * Boot the canonical runtime after every active plugin file has loaded.
 	 *
-	 * @since 0.1.0
+	 * Instance construction deliberately has no hook side effects. This method
+	 * performs the legacy-runtime check before loading this plugin's own 1.x
+	 * bootstrap aliases, then registers runtime startup exactly once.
 	 *
-	 * @return void
+	 * @since 2.0.0
+	 *
+	 * @return bool True when the canonical runtime is safe to use.
 	 */
-	private function setup_constants(): void {
-		$plugin_file = defined( 'CYBER_GALLERY_MAI_PLUGIN_FILE' )
-			? CYBER_GALLERY_MAI_PLUGIN_FILE
-			: dirname( __DIR__ ) . '/cyber-gallery-mai.php';
+	public function boot(): bool {
+		if ( $this->legacy_conflict ) {
+			return false;
+		}
 
-		define( 'CYBER_GALLERY_MAI_VERSION', '2.0.0' );
-		define( 'CYBER_GALLERY_MAI_MIN_ENGINE_VERSION', '2.40.0' );
-		defined( 'CYBER_GALLERY_MAI_PLUGIN_FILE' ) || define( 'CYBER_GALLERY_MAI_PLUGIN_FILE', $plugin_file );
-		define( 'CYBER_GALLERY_MAI_PLUGIN_DIR', plugin_dir_path( $plugin_file ) );
-		define( 'CYBER_GALLERY_MAI_PLUGIN_URL', plugin_dir_url( $plugin_file ) );
-		define( 'CYBER_GALLERY_MAI_BASENAME', plugin_basename( $plugin_file ) );
+		if ( $this->booted ) {
+			return true;
+		}
+
+		if ( $this->has_external_legacy_runtime() ) {
+			$this->legacy_conflict = true;
+			return false;
+		}
+
+		require_once CYBER_GALLERY_MAI_PLUGIN_DIR . 'includes/compatibility-bootstrap.php';
+
+		$this->hooks();
+		$this->booted = true;
+
+		return true;
+	}
+
+	/**
+	 * Detect the former plugin without mistaking this plugin's own aliases for it.
+	 *
+	 * @since 2.0.0
+	 *
+	 * @return bool
+	 */
+	private function has_external_legacy_runtime(): bool {
+		$class_is_external = false;
+
+		if ( class_exists( 'Mai_Cyber_Gallery_Plugin', false ) ) {
+			$reflection        = new ReflectionClass( Mai_Cyber_Gallery_Plugin::class );
+			$class_is_external = self::class !== $reflection->getName();
+		}
+
+		$function_is_external = false;
+
+		if ( function_exists( 'mai_cyber_gallery_plugin' ) ) {
+			$reflection    = new ReflectionFunction( 'mai_cyber_gallery_plugin' );
+			$function_file = $reflection->getFileName();
+			$alias_file    = realpath( CYBER_GALLERY_MAI_PLUGIN_DIR . 'includes/compatibility-bootstrap.php' );
+			$function_file = $function_file ? realpath( $function_file ) : false;
+
+			$function_is_external = ! $function_file || ! $alias_file || $function_file !== $alias_file;
+		}
+
+		return $class_is_external || $function_is_external;
 	}
 
 	/**
@@ -114,7 +181,7 @@ final class Cyber_Gallery_Mai_Plugin {
 	 * @return void
 	 */
 	private function hooks(): void {
-		add_action( 'after_setup_theme', array( $this, 'run' ) );
+		add_action( 'after_setup_theme', array( $this, 'run' ), 1 );
 	}
 
 	/**
@@ -125,6 +192,18 @@ final class Cyber_Gallery_Mai_Plugin {
 	 * @return void
 	 */
 	public function run(): void {
+		if ( ! $this->booted || $this->legacy_conflict || $this->run_attempted ) {
+			return;
+		}
+
+		$this->run_attempted = true;
+
+		if ( $this->has_external_legacy_runtime() ) {
+			$this->legacy_conflict = true;
+			add_action( 'admin_notices', 'cyber_gallery_mai_legacy_conflict_notice' );
+			return;
+		}
+
 		if ( ! $this->dependencies_met() ) {
 			add_action( 'admin_notices', array( $this, 'admin_notice' ) );
 			return;
@@ -193,8 +272,6 @@ final class Cyber_Gallery_Mai_Plugin {
 			'mai_get_colors',
 			'mai_get_breakpoint_columns',
 			'mai_get_columns_atts',
-			'mai_get_columns_defaults',
-			'mai_get_columns_sanitized',
 			'mai_get_acf_request',
 			'mai_get_image_orientation_choices',
 			'mai_get_image_size_choices',

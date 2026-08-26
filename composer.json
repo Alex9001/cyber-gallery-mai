@@ -27,7 +27,7 @@
     "sort-packages": true
   },
   "scripts": {
-    "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude .phpstan-cache .",
+    "lint": "parallel-lint --exclude vendor --exclude node_modules --exclude build --exclude .phpstan-cache .",
     "phpstan": "phpstan analyse --configuration=phpstan.neon.dist --memory-limit=1G --debug",
     "compat": "phpcs --standard=PHPCompatibilityWP --extensions=php --parallel=8 --runtime-set testVersion 8.3- cyber-gallery-mai.php blocks classes includes tests stubs",
     "standards": [

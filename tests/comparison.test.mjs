@@ -61,7 +61,10 @@ test( 'comparison value text is localized-template compatible', () => {
 
 test( 'comparison remains a static split without JavaScript and is RTL aware', () => {
 	assert.match( styles, /--cyber-comparison-position:\s*50%/ );
-	assert.match( styles, /\[dir="rtl"\] \.mai-cyber-gallery-comparison-layer\.is-before/ );
+	assert.match(
+		styles,
+		/\.mai-cyber-gallery-comparison:dir\(rtl\) \.mai-cyber-gallery-comparison-layer\.is-before/
+	);
 	assert.match( styles, /\.is-cyber-comparison-ready \.mai-cyber-gallery-comparison-range/ );
 	assert.match( styles, /@media print[\s\S]*\.mai-cyber-gallery-comparison-range/ );
 } );
