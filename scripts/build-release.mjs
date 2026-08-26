@@ -224,7 +224,13 @@ requiredArchiveFiles.forEach( function ( path ) {
 execFileSync(
 	'zip',
 	[ '-X', '-q', zipPath, ...archiveFiles ],
-	{ cwd: buildDirectory }
+	{
+		cwd: buildDirectory,
+		env: {
+			...process.env,
+			TZ: 'UTC',
+		},
+	}
 );
 
 const archivedFiles = execFileSync( 'unzip', [ '-Z1', zipPath ], {
