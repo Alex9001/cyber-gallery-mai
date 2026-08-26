@@ -47,6 +47,11 @@
 		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
 		<exclude-pattern>*/tests/migration.php</exclude-pattern>
 	</rule>
+	<rule ref="Generic.Classes.DuplicateClassName">
+		<!-- Each file is an isolated executable and owns its own WP_Query double. -->
+		<exclude-pattern>*/tests/asset-detection.php</exclude-pattern>
+		<exclude-pattern>*/tests/migration.php</exclude-pattern>
+	</rule>
 
 	<!-- PHPStan recognizes the *.stub.php suffix; those files mirror external Mai/Genesis declarations. -->
 	<rule ref="WordPress.Files.FileName">
