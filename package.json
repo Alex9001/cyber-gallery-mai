@@ -22,14 +22,14 @@
     "check:syntax": "node --check assets/js/cyber-gallery-mai.js && node --check assets/js/cyber-gallery-mai.min.js && node --check assets/js/cyber-gallery-mai-packing.js && node --check assets/js/cyber-gallery-mai-packing.min.js && node --check assets/js/cyber-gallery-mai-comparison.js && node --check assets/js/cyber-gallery-mai-comparison.min.js && node --check assets/js/cyber-gallery-mai-lightbox.js && node --check assets/js/cyber-gallery-mai-lightbox.min.js && node --check assets/js/cyber-gallery-mai-editor.js && node --check assets/js/cyber-gallery-mai-editor.min.js"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
-    "@playwright/test": "1.62.1",
-    "@wordpress/env": "11.14.0",
+    "@playwright/test": "1.64.1",
+    "@wordpress/env": "11.17.0",
     "clean-css-cli": "5.6.3",
-    "eslint": "10.9.1",
-    "globals": "17.11.0",
-    "terser": "5.51.0"
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "terser": "5.51.2"
   },
   "overrides": {
     "clean-css-cli": {
